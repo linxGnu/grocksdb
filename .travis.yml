@@ -22,9 +22,10 @@ install:
   - sudo cp --preserve=links ./librocksdb.* /usr/lib/
   - sudo cp -r ./include/rocksdb/ /usr/include/
   - popd
-  - GO111MODULE=on go mod download
   - go get -u github.com/mattn/goveralls
+  - go get -u github.com/facebookgo/ensure
+  - go get -u github.com/stretchr/testify
 
 script: 
-- GO111MODULE=on go test -v
+- go test -v
 - $HOME/gopath/bin/goveralls -service=travis-ci
