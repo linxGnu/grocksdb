@@ -2,7 +2,6 @@ dist: xenial
 language: go
 go:
   - 1.12
-  - tip
 
 before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -23,9 +22,7 @@ install:
   - sudo cp --preserve=links ./librocksdb.* /usr/lib/
   - sudo cp -r ./include/rocksdb/ /usr/include/
   - popd
+  - go get -t ./...
+  - go get github.com/mattn/goveralls
 
-before_script:
-- GO111MODULE=on go mod download
-- go get github.com/mattn/goveralls
-
-script: GO111MODULE=on go test -v ./... && $HOME/gopath/bin/goveralls -service=travis-ci
+script: go test -v ./... && $HOME/gopath/bin/goveralls -service=travis-ci
