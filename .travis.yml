@@ -1,0 +1,12 @@
+dist: trusty
+sudo: required
+
+language: go
+
+go:
+- "1.12"
+
+before_script:
+- GO111MODULE=on go mod download
+
+script: GO111MODULE=on go test -v ./... && $HOME/gopath/bin/goveralls -service=travis-ci

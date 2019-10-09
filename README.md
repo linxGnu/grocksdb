@@ -1,5 +1,9 @@
 # grocksdb, a Go wrapper for RocksDB
 
+[![Build Status](https://travis-ci.org/linxGnu/grocksdb.svg?branch=master)](https://travis-ci.org/linxGnu/grocksdb)
+[![Go Report Card](https://goreportcard.com/badge/github.com/linxGnu/grocksdb)](https://goreportcard.com/report/github.com/linxGnu/grocksdb)
+[![godoc](https://img.shields.io/badge/docs-GoDoc-green.svg)](https://godoc.org/github.com/linxGnu/grocksdb)
+
 This is a `Fork` from [tecbot/gorocksdb](https://github.com/tecbot/gorocksdb). I respect the author work and community contribution.
 The `LICENSE` still remains as upstream.
 
