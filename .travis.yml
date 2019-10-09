@@ -26,5 +26,6 @@ install:
 
 before_script:
 - GO111MODULE=on go mod download
+- go get github.com/mattn/goveralls
 
 script: GO111MODULE=on go test -v ./... && $HOME/gopath/bin/goveralls -service=travis-ci
