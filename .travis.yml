@@ -22,7 +22,9 @@ install:
   - sudo cp --preserve=links ./librocksdb.* /usr/lib/
   - sudo cp -r ./include/rocksdb/ /usr/include/
   - popd
-  - go get -t ./...
-  - go get github.com/mattn/goveralls
+  - GO111MODULE=on go mod download
+  - go get -u github.com/mattn/goveralls
 
-script: go test -v ./... && $HOME/gopath/bin/goveralls -service=travis-ci
+script: 
+- GO111MODULE=on go test -v
+- $HOME/gopath/bin/goveralls -service=travis-ci
