@@ -101,6 +101,9 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 	actualVal, err = db.GetCF(ro, cfh[1], givenKey0)
 	ensure.Nil(t, err)
 	ensure.DeepEqual(t, actualVal.Size(), 0)
+
+	// trigger flush
+	ensure.Nil(t, db.FlushCF(cfh[0], NewDefaultFlushOptions()))
 }
 
 func TestColumnFamilyPutGetDelete(t *testing.T) {

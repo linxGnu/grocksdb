@@ -13,6 +13,34 @@ const (
 	CompactionStopStyleTotalSize   = UniversalCompactionStopStyle(C.rocksdb_total_size_compaction_stop_style)
 )
 
+// CompactionOptions represent all of the available options for
+// compact range.
+type CompactionOptions struct {
+	c *C.rocksdb_compactoptions_t
+}
+
+// NewCompactionOptions creates new compaction options.
+func NewCompactionOptions() *CompactionOptions {
+	return &CompactionOptions{
+		c: C.rocksdb_compactoptions_create(),
+	}
+}
+
+// Destroy deallocates the CompactionOptions object.
+func (opts *CompactionOptions) Destroy() {
+	C.rocksdb_compactoptions_destroy(opts.c)
+	opts.c = nil
+}
+
+// SetExclusiveManualCompaction if more than one thread calls manual compaction,
+// only one will actually schedule it while the other threads will simply wait
+// for the scheduled manual compaction to complete. If exclusive_manual_compaction
+// is set to true, the call will disable scheduling of automatic compaction jobs
+// and wait for existing automatic compaction jobs to finish.
+func (opts *CompactionOptions) SetExclusiveManualCompaction(value bool) {
+	C.rocksdb_compactoptions_set_exclusive_manual_compaction(opts.c, boolToChar(value))
+}
+
 // FIFOCompactionOptions represent all of the available options for
 // FIFO compaction.
 type FIFOCompactionOptions struct {

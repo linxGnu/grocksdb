@@ -232,6 +232,75 @@ func OpenDbForReadOnlyColumnFamilies(
 	return
 }
 
+// OpenDbAsSecondaryColumnFamilies opens database as secondary instance with column families.
+// You can open a subset of column families in secondary mode.
+// The `opts` specify the database specific options.
+// The `name` argument specifies the name of the primary db that you have used
+// to open the primary instance.
+// The `secondaryPath` argument points to a directory where the secondary
+// instance stores its info log.
+// The `column_families` arguments specifieds a list of column families to open.
+// If any of the column families does not exist, the function returns non-OK
+// status.
+func OpenDbAsSecondaryColumnFamilies(
+	opts *Options,
+	name string,
+	secondaryPath string,
+	cfNames []string,
+	cfOpts []*Options,
+) (db *DB, cfHandles []*ColumnFamilyHandle, err error) {
+	numColumnFamilies := len(cfNames)
+	if numColumnFamilies != len(cfOpts) {
+		err = ErrColumnFamilyMustMatch
+		return
+	}
+
+	cName := C.CString(name)
+	cPath := C.CString(secondaryPath)
+
+	cNames := make([]*C.char, numColumnFamilies)
+	for i, s := range cfNames {
+		cNames[i] = C.CString(s)
+	}
+
+	cOpts := make([]*C.rocksdb_options_t, numColumnFamilies)
+	for i, o := range cfOpts {
+		cOpts[i] = o.c
+	}
+
+	cHandles := make([]*C.rocksdb_column_family_handle_t, numColumnFamilies)
+
+	var cErr *C.char
+	_db := C.rocksdb_open_as_secondary_column_families(
+		opts.c,
+		cName,
+		cPath,
+		C.int(numColumnFamilies),
+		&cNames[0],
+		&cOpts[0],
+		&cHandles[0],
+		&cErr,
+	)
+	if err = fromCError(cErr); err == nil {
+		db = &DB{
+			name: name,
+			c:    _db,
+			opts: opts,
+		}
+		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
+		for i, c := range cHandles {
+			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+		}
+	}
+
+	C.free(unsafe.Pointer(cPath))
+	C.free(unsafe.Pointer(cName))
+	for _, s := range cNames {
+		C.free(unsafe.Pointer(s))
+	}
+	return
+}
+
 // ListColumnFamilies lists the names of the column families in the DB.
 func ListColumnFamilies(opts *Options, name string) (names []string, err error) {
 	var (
@@ -590,6 +659,24 @@ func (db *DB) GetPropertyCF(propName string, cf *ColumnFamilyHandle) (value stri
 	return
 }
 
+// GetIntProperty similar to `GetProperty`, but only works for a subset of properties whose
+// return value is an integer. Return the value by integer.
+func (db *DB) GetIntProperty(propName string) (value uint64, success bool) {
+	cProp := C.CString(propName)
+	success = C.rocksdb_property_int(db.c, cProp, (*C.uint64_t)(&value)) == 0
+	C.free(unsafe.Pointer(cProp))
+	return
+}
+
+// GetIntPropertyCF similar to `GetProperty`, but only works for a subset of properties whose
+// return value is an integer. Return the value by integer.
+func (db *DB) GetIntPropertyCF(propName string, cf *ColumnFamilyHandle) (value uint64, success bool) {
+	cProp := C.CString(propName)
+	success = C.rocksdb_property_int_cf(db.c, cf.c, cProp, (*C.uint64_t)(&value)) == 0
+	C.free(unsafe.Pointer(cProp))
+	return
+}
+
 // CreateColumnFamily create a new column family.
 func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFamilyHandle, err error) {
 	var (
@@ -787,6 +874,16 @@ func (db *DB) Flush(opts *FlushOptions) (err error) {
 	return
 }
 
+// FlushCF triggers a manuel flush for the database on specific column family.
+func (db *DB) FlushCF(cf *ColumnFamilyHandle, opts *FlushOptions) (err error) {
+	var cErr *C.char
+
+	C.rocksdb_flush_cf(db.c, opts.c, cf.c, &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
 // DisableFileDeletions disables file deletions and should be used when backup the database.
 func (db *DB) DisableFileDeletions() (err error) {
 	var cErr *C.char
@@ -911,16 +1008,13 @@ func (db *DB) IngestExternalFileCF(handle *ColumnFamilyHandle, filePaths []strin
 
 // NewCheckpoint creates a new Checkpoint for this db.
 func (db *DB) NewCheckpoint() (cp *Checkpoint, err error) {
-	var (
-		cErr *C.char
-	)
+	var cErr *C.char
 	cCheckpoint := C.rocksdb_checkpoint_object_create(
 		db.c, &cErr,
 	)
 	if err = fromCError(cErr); err == nil {
 		cp = NewNativeCheckpoint(cCheckpoint)
 	}
-
 	return
 }
 

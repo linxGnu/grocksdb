@@ -11,6 +11,10 @@ import (
 func TestOpenDb(t *testing.T) {
 	db := newTestDB(t, "TestOpenDb", nil)
 	defer db.Close()
+	ensure.DeepEqual(t, "0", db.GetProperty("rocksdb.num-immutable-mem-table"))
+	v, success := db.GetIntProperty("rocksdb.num-immutable-mem-table")
+	ensure.DeepEqual(t, uint64(0), v)
+	ensure.True(t, success)
 }
 
 func TestDBCRUD(t *testing.T) {
