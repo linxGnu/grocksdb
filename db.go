@@ -813,6 +813,36 @@ func (db *DB) SetOptions(keys, values []string) (err error) {
 	return
 }
 
+// SetOptionsCF dynamically changes options through the SetOptions API for specific Column Family.
+func (db *DB) SetOptionsCF(cf *ColumnFamilyHandle, keys, values []string) (err error) {
+	num_keys := len(keys)
+
+	if num_keys == 0 {
+		return nil
+	}
+
+	cKeys := make([]*C.char, num_keys)
+	cValues := make([]*C.char, num_keys)
+	for i := range keys {
+		cKeys[i] = C.CString(keys[i])
+		cValues[i] = C.CString(values[i])
+	}
+
+	var cErr *C.char
+
+	C.rocksdb_set_options_cf(
+		db.c,
+		cf.c,
+		C.int(num_keys),
+		&cKeys[0],
+		&cValues[0],
+		&cErr,
+	)
+	err = fromCError(cErr)
+
+	return
+}
+
 // LiveFileMetadata is a metadata which is associated with each SST file.
 type LiveFileMetadata struct {
 	Name        string

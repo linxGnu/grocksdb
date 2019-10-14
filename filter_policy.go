@@ -19,6 +19,9 @@ type FilterPolicy interface {
 
 	// Return the name of this policy.
 	Name() string
+
+	// Destroy filter policy object.
+	Destroy()
 }
 
 // NewNativeFilterPolicy creates a FilterPolicy object.
@@ -33,6 +36,10 @@ type nativeFilterPolicy struct {
 func (fp nativeFilterPolicy) CreateFilter(keys [][]byte) []byte          { return nil }
 func (fp nativeFilterPolicy) KeyMayMatch(key []byte, filter []byte) bool { return false }
 func (fp nativeFilterPolicy) Name() string                               { return "" }
+func (fp nativeFilterPolicy) Destroy() {
+	C.rocksdb_filterpolicy_destroy(fp.c)
+	fp.c = nil
+}
 
 // NewBloomFilter returns a new filter policy that uses a bloom filter with approximately
 // the specified number of bits per key.  A good value for bits_per_key
@@ -47,6 +54,21 @@ func (fp nativeFilterPolicy) Name() string                               { retur
 // trailing spaces in keys.
 func NewBloomFilter(bitsPerKey int) FilterPolicy {
 	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom(C.int(bitsPerKey)))
+}
+
+// NewBloomFilterFull returns a new filter policy that uses a full bloom filter
+// with approximately the specified number of bits per key. A good value for
+// bits_per_key is 10, which yields a filter with ~1% false positive rate.
+//
+// Note: if you are using a custom comparator that ignores some parts
+// of the keys being compared, you must not use NewBloomFilterPolicy()
+// and must provide your own FilterPolicy that also ignores the
+// corresponding parts of the keys.  For example, if the comparator
+// ignores trailing spaces, it would be incorrect to use a
+// FilterPolicy (like NewBloomFilterPolicy) that does not ignore
+// trailing spaces in keys.
+func NewBloomFilterFull(bitsPerKey int) FilterPolicy {
+	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom_full(C.int(bitsPerKey)))
 }
 
 // Hold references to filter policies.

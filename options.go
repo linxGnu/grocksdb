@@ -1258,6 +1258,30 @@ func (opts *Options) SetSkipStatsUpdateOnDBOpen(value bool) {
 	C.rocksdb_options_set_skip_stats_update_on_db_open(opts.c, boolToChar(value))
 }
 
+// SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
+// to maintain in memory including copies of buffers that have already been flushed.
+// Unlike max_write_buffer_number, this parameter does not affect flushing.
+// This controls the minimum amount of write history that will be available
+// in memory for conflict checking when Transactions are used.
+//
+// When using an OptimisticTransactionDB:
+// If this value is too low, some transactions may fail at commit time due
+// to not being able to determine whether there were any write conflicts.
+//
+// When using a TransactionDB:
+// If Transaction::SetSnapshot is used, TransactionDB will read either
+// in-memory write buffers or SST files to do write-conflict checking.
+// Increasing this value can reduce the number of reads to SST files
+// done for conflict detection.
+//
+// Setting this value to 0 will cause write buffers to be freed immediately
+// after they are flushed.
+// If this value is set to -1, 'max_write_buffer_number' will be used.
+//
+// Default:
+// If using a TransactionDB/OptimisticTransactionDB, the default value will
+// be set to the value of 'max_write_buffer_number' if it is not explicitly
+// set by the user.  Otherwise, the default is 0.
 func (opts *Options) SetMaxWriteBufferNumberToMaintain(value int) {
 	C.rocksdb_options_set_max_write_buffer_number_to_maintain(opts.c, C.int(value))
 }
@@ -1325,6 +1349,11 @@ func (opts *Options) SetEnableWriteThreadAdaptiveYield(value bool) {
 	C.rocksdb_options_set_enable_write_thread_adaptive_yield(opts.c, boolToChar(value))
 }
 
+// SetReportBackgroundIOStats measures IO stats in compactions and flushes, if true.
+//
+// Default: false
+//
+// Dynamically changeable through SetOptions() API
 func (opts *Options) SetReportBackgroundIOStats(value bool) {
 	C.rocksdb_options_set_report_bg_io_stats(opts.c, C.int(btoi(value)))
 }
@@ -1365,17 +1394,31 @@ func (opts *Options) SetBaseBackgroundCompactions(value int) {
 	C.rocksdb_options_set_base_background_compactions(opts.c, C.int(value))
 }
 
+// SetCuckooTableFactory sets to use cuckoo table factory.
+//
+// Default: nil.
+func (opts *Options) SetCuckooTableFactory(cuckooOpts *CuckooTableOptions) {
+	C.rocksdb_options_set_cuckoo_table_factory(opts.c, cuckooOpts.c)
+}
+
 // Destroy deallocates the Options object.
 func (opts *Options) Destroy() {
 	C.rocksdb_options_destroy(opts.c)
 	if opts.ccmp != nil {
 		C.rocksdb_comparator_destroy(opts.ccmp)
+		opts.ccmp = nil
 	}
 	if opts.cst != nil {
 		C.rocksdb_slicetransform_destroy(opts.cst)
+		opts.cst = nil
 	}
 	if opts.ccf != nil {
 		C.rocksdb_compactionfilter_destroy(opts.ccf)
+		opts.ccf = nil
+	}
+	if opts.cmo != nil {
+		C.rocksdb_mergeoperator_destroy(opts.cmo)
+		opts.cmo = nil
 	}
 	opts.c = nil
 	opts.env = nil

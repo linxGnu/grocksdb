@@ -47,45 +47,12 @@ package grocksdb
 // rocksdb_writebatch_wi_create_iterator_with_base
 // rocksdb_writebatch_wi_create_iterator_with_base_cf
 
-// rocksdb_block_based_options_set_index_block_restart_interval
-// rocksdb_block_based_options_set_metadata_block_size
-// rocksdb_block_based_options_set_partition_filters
-// rocksdb_block_based_options_set_metadata_block_size
-// rocksdb_block_based_options_set_partition_filters
-// rocksdb_block_based_options_set_use_delta_encoding
-// rocksdb_block_based_options_set_format_version
-// rocksdb_block_based_options_set_hash_index_allow_collision
-// rocksdb_block_based_options_set_cache_index_and_filter_blocks_with_high_priority
-// rocksdb_block_based_options_set_pin_top_level_index_and_filter
-
-// rocksdb_cuckoo_options_create
-// rocksdb_cuckoo_options_destroy
-// rocksdb_cuckoo_options_set_hash_ratio
-// rocksdb_cuckoo_options_set_max_search_depth
-// rocksdb_cuckoo_options_set_cuckoo_block_size
-// rocksdb_cuckoo_options_set_identity_as_first_hash
-// rocksdb_cuckoo_options_set_use_module_hash
-
-// rocksdb_options_set_cuckoo_table_factory
-// rocksdb_set_options_cf
-// rocksdb_options_set_compaction_filter_factory
-
 // rocksdb_set_perf_level
 // rocksdb_perfcontext_create
 // rocksdb_perfcontext_reset
 // rocksdb_perfcontext_report
 // rocksdb_perfcontext_metric
 // rocksdb_perfcontext_destroy
-
-// rocksdb_compactionfilter_set_ignore_snapshots
-// rocksdb_compactionfiltercontext_is_full_compaction
-// rocksdb_compactionfiltercontext_is_manual_compaction
-// rocksdb_compactionfilterfactory_create
-// rocksdb_compactionfilterfactory_destroy
-
-// rocksdb_filterpolicy_destroy
-// rocksdb_filterpolicy_create_bloom_full
-// rocksdb_mergeoperator_destroy
 
 // rocksdb_cache_set_capacity
 // rocksdb_create_mem_env
