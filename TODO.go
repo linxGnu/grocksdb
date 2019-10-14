@@ -1,18 +1,5 @@
 package grocksdb
 
-// rocksdb_create_iterators
-// rocksdb_writebatch_putv
-// rocksdb_writebatch_putv_cf
-// rocksdb_writebatch_mergev
-// rocksdb_writebatch_mergev_cf
-// rocksdb_writebatch_deletev
-// rocksdb_writebatch_deletev_cf
-// rocksdb_writebatch_delete_rangev
-// rocksdb_writebatch_delete_rangev_cf
-// rocksdb_writebatch_iterate
-// rocksdb_writebatch_set_save_point
-// rocksdb_writebatch_rollback_to_save_point
-// rocksdb_writebatch_pop_save_point
 // rocksdb_writebatch_wi_create
 // rocksdb_writebatch_wi_create_from
 // rocksdb_writebatch_wi_destroy
@@ -47,28 +34,23 @@ package grocksdb
 // rocksdb_writebatch_wi_create_iterator_with_base
 // rocksdb_writebatch_wi_create_iterator_with_base_cf
 
-// rocksdb_set_perf_level
-// rocksdb_perfcontext_create
-// rocksdb_perfcontext_reset
-// rocksdb_perfcontext_report
-// rocksdb_perfcontext_metric
-// rocksdb_perfcontext_destroy
-
-// rocksdb_cache_set_capacity
 // rocksdb_create_mem_env
 // rocksdb_env_join_all_threads
 // rocksdb_env_lower_thread_pool_io_priority
 // rocksdb_env_lower_high_priority_thread_pool_io_priority
 // rocksdb_env_lower_thread_pool_cpu_priority
 // rocksdb_env_lower_high_priority_thread_pool_cpu_priority
+
 // rocksdb_sstfilewriter_create_with_comparator
 // rocksdb_sstfilewriter_put
 // rocksdb_sstfilewriter_merge
 // rocksdb_sstfilewriter_delete
 // rocksdb_sstfilewriter_file_size
 // rocksdb_try_catch_up_with_primary
+
 // rocksdb_livefiles_entries
 // rocksdb_livefiles_deletions
+
 // rocksdb_transactiondb_create_column_family
 // rocksdb_transactiondb_open_column_families
 // rocksdb_transaction_set_savepoint

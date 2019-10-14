@@ -608,6 +608,29 @@ func (db *DB) NewIteratorCF(opts *ReadOptions, cf *ColumnFamilyHandle) *Iterator
 	return NewNativeIterator(unsafe.Pointer(cIter))
 }
 
+// NewIterators returns iterators from a consistent database state across multiple
+// column families. Iterators are heap allocated and need to be deleted
+// before the db is deleted
+func (db *DB) NewIterators(opts *ReadOptions, cfs []*ColumnFamilyHandle) (iters []*Iterator, err error) {
+	if n := len(cfs); n > 0 {
+		_cfs := make([]*C.rocksdb_column_family_handle_t, n)
+		for i := range _cfs {
+			_cfs[i] = cfs[i].c
+		}
+		_iters := make([]*C.rocksdb_iterator_t, n)
+
+		var cErr *C.char
+		C.rocksdb_create_iterators(db.c, opts.c, &_cfs[0], &_iters[0], C.size_t(n), &cErr)
+		if err = fromCError(cErr); err == nil {
+			iters = make([]*Iterator, n)
+			for i := range iters {
+				iters[i] = NewNativeIterator(unsafe.Pointer(_iters[i]))
+			}
+		}
+	}
+	return
+}
+
 func (db *DB) GetUpdatesSince(seqNumber uint64) (iter *WalIterator, err error) {
 	var cErr *C.char
 
