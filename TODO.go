@@ -46,6 +46,7 @@ package grocksdb
 // rocksdb_write_writebatch_wi
 // rocksdb_writebatch_wi_create_iterator_with_base
 // rocksdb_writebatch_wi_create_iterator_with_base_cf
+
 // rocksdb_block_based_options_set_index_block_restart_interval
 // rocksdb_block_based_options_set_metadata_block_size
 // rocksdb_block_based_options_set_partition_filters
@@ -56,6 +57,7 @@ package grocksdb
 // rocksdb_block_based_options_set_hash_index_allow_collision
 // rocksdb_block_based_options_set_cache_index_and_filter_blocks_with_high_priority
 // rocksdb_block_based_options_set_pin_top_level_index_and_filter
+
 // rocksdb_cuckoo_options_create
 // rocksdb_cuckoo_options_destroy
 // rocksdb_cuckoo_options_set_hash_ratio
@@ -63,35 +65,24 @@ package grocksdb
 // rocksdb_cuckoo_options_set_cuckoo_block_size
 // rocksdb_cuckoo_options_set_identity_as_first_hash
 // rocksdb_cuckoo_options_set_use_module_hash
+
 // rocksdb_options_set_cuckoo_table_factory
 // rocksdb_set_options_cf
 // rocksdb_options_set_compaction_filter_factory
-// rocksdb_options_compaction_readahead_size
-// rocksdb_options_set_uint64add_merge_operator
-// rocksdb_options_set_info_log
-// rocksdb_options_set_snap_refresh_nanos
-// rocksdb_options_set_skip_stats_update_on_db_open
-// rocksdb_options_set_max_write_buffer_number_to_maintain
-// rocksdb_options_set_max_subcompactions
-// rocksdb_options_set_max_background_jobs
-// rocksdb_options_set_base_background_compactions
-// rocksdb_options_set_recycle_log_file_num
-// rocksdb_options_set_wal_bytes_per_sync
-// rocksdb_options_set_writable_file_max_buffer_size
-// rocksdb_options_set_enable_write_thread_adaptive_yield
-// rocksdb_options_set_disable_auto_compactions
-// rocksdb_options_set_report_bg_io_stats
+
 // rocksdb_set_perf_level
 // rocksdb_perfcontext_create
 // rocksdb_perfcontext_reset
 // rocksdb_perfcontext_report
 // rocksdb_perfcontext_metric
 // rocksdb_perfcontext_destroy
+
 // rocksdb_compactionfilter_set_ignore_snapshots
 // rocksdb_compactionfiltercontext_is_full_compaction
 // rocksdb_compactionfiltercontext_is_manual_compaction
 // rocksdb_compactionfilterfactory_create
 // rocksdb_compactionfilterfactory_destroy
+
 // rocksdb_filterpolicy_destroy
 // rocksdb_filterpolicy_create_bloom_full
 // rocksdb_mergeoperator_destroy

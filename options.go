@@ -696,6 +696,12 @@ func (opts *Options) SetDeleteObsoleteFilesPeriodMicros(value uint64) {
 // concurrent background jobs, submitted to
 // the default LOW priority thread pool
 // Default: 1
+//
+// Deprecated: RocksDB automatically decides this based on the
+// value of max_background_jobs. For backwards compatibility we will set
+// `max_background_jobs = max_background_compactions + max_background_flushes`
+// in the case where user sets at least one of `max_background_compactions` or
+// `max_background_flushes` (we replace -1 by 1 in case one option is unset).
 func (opts *Options) SetMaxBackgroundCompactions(value int) {
 	C.rocksdb_options_set_max_background_compactions(opts.c, C.int(value))
 }
@@ -712,6 +718,12 @@ func (opts *Options) SetMaxBackgroundCompactions(value int) {
 // potentially block memtable flush jobs of other db instances, leading to
 // unnecessary Put stalls.
 // Default: 0
+//
+// Deprecated: RocksDB automatically decides this based on the
+// value of max_background_jobs. For backwards compatibility we will set
+// `max_background_jobs = max_background_compactions + max_background_flushes`
+// in the case where user sets at least one of `max_background_compactions` or
+// `max_background_flushes`.
 func (opts *Options) SetMaxBackgroundFlushes(value int) {
 	C.rocksdb_options_set_max_background_flushes(opts.c, C.int(value))
 }
@@ -791,6 +803,8 @@ func (opts *Options) SetTableCacheNumshardbits(value int) {
 // and if not enough space releases after scanning the number of
 // elements specified by this parameter, we will remove items in LRU order.
 // Default: 16
+//
+// Deprecated: this options is no longer used.
 func (opts *Options) SetTableCacheRemoveScanCountLimit(value int) {
 	C.rocksdb_options_set_table_cache_remove_scan_count_limit(opts.c, C.int(value))
 }
@@ -908,6 +922,8 @@ func (opts *Options) SetIsFdCloseOnExec(value bool) {
 // log corruption error on recovery (If client is ok with
 // losing most recent changes)
 // Default: false
+//
+// Deprecated: this options is no longer used.
 func (opts *Options) SetSkipLogErrorOnRecovery(value bool) {
 	C.rocksdb_options_set_skip_log_error_on_recovery(opts.c, boolToChar(value))
 }
@@ -1197,6 +1213,148 @@ func (opts *Options) SetMemTablePrefixBloomSizeRatio(value float64) {
 // Default: false
 func (opts *Options) SetOptimizeFiltersForHits(value bool) {
 	C.rocksdb_options_set_optimize_filters_for_hits(opts.c, C.int(btoi(value)))
+}
+
+// CompactionReadaheadSize if non-zero, we perform bigger reads when doing
+// compaction. If you're running RocksDB on spinning disks, you should set
+// this to at least 2MB. That way RocksDB's compaction is doing sequential
+// instead of random reads.
+//
+// When non-zero, we also force new_table_reader_for_compaction_inputs to
+// true.
+//
+// Default: 0
+//
+// Dynamically changeable through SetDBOptions() API.
+func (opts *Options) CompactionReadaheadSize(value int) {
+	C.rocksdb_options_compaction_readahead_size(opts.c, C.size_t(value))
+}
+
+func (opts *Options) SetUint64addMergeOperator() {
+	C.rocksdb_options_set_uint64add_merge_operator(opts.c)
+}
+
+// SetSnapRefreshNanos if non-zero, compactions will periodically refresh
+// the snapshot list. The delay for the first refresh is snap_refresh_nanos
+// nano seconds and exponentially increases afterwards. When having
+// many short-lived snapshots, this option helps reducing the cpu usage of
+// long-running compactions. The feature is disabled when
+// max_subcompactions is greater than one.
+//
+// Default: 0
+//
+// Dynamically changeable through SetOptions() API
+func (opts *Options) SetSnapRefreshNanos(value uint64) {
+	C.rocksdb_options_set_snap_refresh_nanos(opts.c, C.uint64_t(value))
+}
+
+// SetSkipStatsUpdateOnDBOpen if true, then DB::Open() will not update
+// the statistics used to optimize compaction decision by loading table
+// properties from many files. Turning off this feature will improve
+// DBOpen time especially in disk environment.
+//
+// Default: false
+func (opts *Options) SetSkipStatsUpdateOnDBOpen(value bool) {
+	C.rocksdb_options_set_skip_stats_update_on_db_open(opts.c, boolToChar(value))
+}
+
+func (opts *Options) SetMaxWriteBufferNumberToMaintain(value int) {
+	C.rocksdb_options_set_max_write_buffer_number_to_maintain(opts.c, C.int(value))
+}
+
+// SetMaxSubcompactions represents the maximum number of threads that will
+// concurrently perform a compaction job by breaking it into multiple,
+// smaller ones that are run simultaneously.
+// Default: 1 (i.e. no subcompactions)
+func (opts *Options) SetMaxSubcompactions(value uint32) {
+	C.rocksdb_options_set_max_subcompactions(opts.c, C.uint32_t(value))
+}
+
+// SetMaxBackgroundJobs maximum number of concurrent background jobs
+// (compactions and flushes).
+//
+// Default: 2
+//
+// Dynamically changeable through SetDBOptions() API.
+func (opts *Options) SetMaxBackgroundJobs(value int) {
+	C.rocksdb_options_set_max_background_jobs(opts.c, C.int(value))
+}
+
+// SetRecycleLogFileNum if non-zero, we will reuse previously written
+// log files for new logs, overwriting the old data. The value
+// indicates how many such files we will keep around at any point in
+// time for later use. This is more efficient because the blocks
+// are already allocated and fdatasync does not need to update
+// the inode after each write.
+// Default: 0
+func (opts *Options) SetRecycleLogFileNum(value int) {
+	C.rocksdb_options_set_recycle_log_file_num(opts.c, C.size_t(value))
+}
+
+// SetWALBytesPerSync same as bytes_per_sync, but applies to WAL files.
+//
+// Default: 0, turned off
+//
+// Dynamically changeable through SetDBOptions() API.
+func (opts *Options) SetWALBytesPerSync(value uint64) {
+	C.rocksdb_options_set_wal_bytes_per_sync(opts.c, C.uint64_t(value))
+}
+
+// SetWritableFileMaxBufferSize is the maximum buffer size that is
+// used by WritableFileWriter.
+// On Windows, we need to maintain an aligned buffer for writes.
+// We allow the buffer to grow until it's size hits the limit in buffered
+// IO and fix the buffer size when using direct IO to ensure alignment of
+// write requests if the logical sector size is unusual
+//
+// Default: 1024 * 1024 (1 MB)
+//
+// Dynamically changeable through SetDBOptions() API.
+func (opts *Options) SetWritableFileMaxBufferSize(value uint64) {
+	C.rocksdb_options_set_writable_file_max_buffer_size(opts.c, C.uint64_t(value))
+}
+
+// SetEnableWriteThreadAdaptiveYield if true, threads synchronizing with
+// the write batch group leader will wait for up to write_thread_max_yield_usec
+// before blocking on a mutex. This can substantially improve throughput
+// for concurrent workloads, regardless of whether allow_concurrent_memtable_write
+// is enabled.
+//
+// Default: true
+func (opts *Options) SetEnableWriteThreadAdaptiveYield(value bool) {
+	C.rocksdb_options_set_enable_write_thread_adaptive_yield(opts.c, boolToChar(value))
+}
+
+func (opts *Options) SetReportBackgroundIOStats(value bool) {
+	C.rocksdb_options_set_report_bg_io_stats(opts.c, C.int(btoi(value)))
+}
+
+// SetUnorderedWrite sets unordered_write to true trades higher write throughput with
+// relaxing the immutability guarantee of snapshots. This violates the
+// repeatability one expects from ::Get from a snapshot, as well as
+// ::MultiGet and Iterator's consistent-point-in-time view property.
+// If the application cannot tolerate the relaxed guarantees, it can implement
+// its own mechanisms to work around that and yet benefit from the higher
+// throughput. Using TransactionDB with WRITE_PREPARED write policy and
+// two_write_queues=true is one way to achieve immutable snapshots despite
+// unordered_write.
+//
+// By default, i.e., when it is false, rocksdb does not advance the sequence
+// number for new snapshots unless all the writes with lower sequence numbers
+// are already finished. This provides the immutability that we except from
+// snapshots. Moreover, since Iterator and MultiGet internally depend on
+// snapshots, the snapshot immutability results into Iterator and MultiGet
+// offering consistent-point-in-time view. If set to true, although
+// Read-Your-Own-Write property is still provided, the snapshot immutability
+// property is relaxed: the writes issued after the snapshot is obtained (with
+// larger sequence numbers) will be still not visible to the reads from that
+// snapshot, however, there still might be pending writes (with lower sequence
+// number) that will change the state visible to the snapshot after they are
+// landed to the memtable.
+//
+// Default: false
+func (opts *Options) SetUnorderedWrite(value bool) {
+	C.rocksdb_options_set_unordered_write(opts.c, boolToChar(value))
 }
 
 // Destroy deallocates the Options object.
