@@ -1357,6 +1357,14 @@ func (opts *Options) SetUnorderedWrite(value bool) {
 	C.rocksdb_options_set_unordered_write(opts.c, boolToChar(value))
 }
 
+// SetBaseBackgroundCompactions set base background compactions.
+//
+// Deprecated: RocksDB automatically decides this based on the
+// value of max_background_jobs. This option is ignored.
+func (opts *Options) SetBaseBackgroundCompactions(value int) {
+	C.rocksdb_options_set_base_background_compactions(opts.c, C.int(value))
+}
+
 // Destroy deallocates the Options object.
 func (opts *Options) Destroy() {
 	C.rocksdb_options_destroy(opts.c)
