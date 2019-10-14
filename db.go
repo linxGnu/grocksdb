@@ -232,6 +232,75 @@ func OpenDbForReadOnlyColumnFamilies(
 	return
 }
 
+// OpenDbAsSecondaryColumnFamilies opens database as secondary instance with column families.
+// You can open a subset of column families in secondary mode.
+// The `opts` specify the database specific options.
+// The `name` argument specifies the name of the primary db that you have used
+// to open the primary instance.
+// The `secondaryPath` argument points to a directory where the secondary
+// instance stores its info log.
+// The `column_families` arguments specifieds a list of column families to open.
+// If any of the column families does not exist, the function returns non-OK
+// status.
+func OpenDbAsSecondaryColumnFamilies(
+	opts *Options,
+	name string,
+	secondaryPath string,
+	cfNames []string,
+	cfOpts []*Options,
+) (db *DB, cfHandles []*ColumnFamilyHandle, err error) {
+	numColumnFamilies := len(cfNames)
+	if numColumnFamilies != len(cfOpts) {
+		err = ErrColumnFamilyMustMatch
+		return
+	}
+
+	cName := C.CString(name)
+	cPath := C.CString(secondaryPath)
+
+	cNames := make([]*C.char, numColumnFamilies)
+	for i, s := range cfNames {
+		cNames[i] = C.CString(s)
+	}
+
+	cOpts := make([]*C.rocksdb_options_t, numColumnFamilies)
+	for i, o := range cfOpts {
+		cOpts[i] = o.c
+	}
+
+	cHandles := make([]*C.rocksdb_column_family_handle_t, numColumnFamilies)
+
+	var cErr *C.char
+	_db := C.rocksdb_open_as_secondary_column_families(
+		opts.c,
+		cName,
+		cPath,
+		C.int(numColumnFamilies),
+		&cNames[0],
+		&cOpts[0],
+		&cHandles[0],
+		&cErr,
+	)
+	if err = fromCError(cErr); err == nil {
+		db = &DB{
+			name: name,
+			c:    _db,
+			opts: opts,
+		}
+		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
+		for i, c := range cHandles {
+			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+		}
+	}
+
+	C.free(unsafe.Pointer(cPath))
+	C.free(unsafe.Pointer(cName))
+	for _, s := range cNames {
+		C.free(unsafe.Pointer(s))
+	}
+	return
+}
+
 // ListColumnFamilies lists the names of the column families in the DB.
 func ListColumnFamilies(opts *Options, name string) (names []string, err error) {
 	var (
@@ -539,6 +608,29 @@ func (db *DB) NewIteratorCF(opts *ReadOptions, cf *ColumnFamilyHandle) *Iterator
 	return NewNativeIterator(unsafe.Pointer(cIter))
 }
 
+// NewIterators returns iterators from a consistent database state across multiple
+// column families. Iterators are heap allocated and need to be deleted
+// before the db is deleted
+func (db *DB) NewIterators(opts *ReadOptions, cfs []*ColumnFamilyHandle) (iters []*Iterator, err error) {
+	if n := len(cfs); n > 0 {
+		_cfs := make([]*C.rocksdb_column_family_handle_t, n)
+		for i := range _cfs {
+			_cfs[i] = cfs[i].c
+		}
+		_iters := make([]*C.rocksdb_iterator_t, n)
+
+		var cErr *C.char
+		C.rocksdb_create_iterators(db.c, opts.c, &_cfs[0], &_iters[0], C.size_t(n), &cErr)
+		if err = fromCError(cErr); err == nil {
+			iters = make([]*Iterator, n)
+			for i := range iters {
+				iters[i] = NewNativeIterator(unsafe.Pointer(_iters[i]))
+			}
+		}
+	}
+	return
+}
+
 func (db *DB) GetUpdatesSince(seqNumber uint64) (iter *WalIterator, err error) {
 	var cErr *C.char
 
@@ -586,6 +678,24 @@ func (db *DB) GetPropertyCF(propName string, cf *ColumnFamilyHandle) (value stri
 	value = C.GoString(cValue)
 
 	C.rocksdb_free(unsafe.Pointer(cValue))
+	C.free(unsafe.Pointer(cProp))
+	return
+}
+
+// GetIntProperty similar to `GetProperty`, but only works for a subset of properties whose
+// return value is an integer. Return the value by integer.
+func (db *DB) GetIntProperty(propName string) (value uint64, success bool) {
+	cProp := C.CString(propName)
+	success = C.rocksdb_property_int(db.c, cProp, (*C.uint64_t)(&value)) == 0
+	C.free(unsafe.Pointer(cProp))
+	return
+}
+
+// GetIntPropertyCF similar to `GetProperty`, but only works for a subset of properties whose
+// return value is an integer. Return the value by integer.
+func (db *DB) GetIntPropertyCF(propName string, cf *ColumnFamilyHandle) (value uint64, success bool) {
+	cProp := C.CString(propName)
+	success = C.rocksdb_property_int_cf(db.c, cf.c, cProp, (*C.uint64_t)(&value)) == 0
 	C.free(unsafe.Pointer(cProp))
 	return
 }
@@ -726,6 +836,36 @@ func (db *DB) SetOptions(keys, values []string) (err error) {
 	return
 }
 
+// SetOptionsCF dynamically changes options through the SetOptions API for specific Column Family.
+func (db *DB) SetOptionsCF(cf *ColumnFamilyHandle, keys, values []string) (err error) {
+	num_keys := len(keys)
+
+	if num_keys == 0 {
+		return nil
+	}
+
+	cKeys := make([]*C.char, num_keys)
+	cValues := make([]*C.char, num_keys)
+	for i := range keys {
+		cKeys[i] = C.CString(keys[i])
+		cValues[i] = C.CString(values[i])
+	}
+
+	var cErr *C.char
+
+	C.rocksdb_set_options_cf(
+		db.c,
+		cf.c,
+		C.int(num_keys),
+		&cKeys[0],
+		&cValues[0],
+		&cErr,
+	)
+	err = fromCError(cErr)
+
+	return
+}
+
 // LiveFileMetadata is a metadata which is associated with each SST file.
 type LiveFileMetadata struct {
 	Name        string
@@ -777,11 +917,37 @@ func (db *DB) CompactRangeCF(cf *ColumnFamilyHandle, r Range) {
 	C.rocksdb_compact_range_cf(db.c, cf.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)))
 }
 
+// CompactRange runs a manual compaction on the Range of keys given. This is
+// not likely to be needed for typical usage.
+func (db *DB) CompactRangeOpt(r Range, opt *CompactRangeOptions) {
+	cStart := byteToChar(r.Start)
+	cLimit := byteToChar(r.Limit)
+	C.rocksdb_compact_range_opt(db.c, opt.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)))
+}
+
+// CompactRangeCF runs a manual compaction on the Range of keys given on the
+// given column family. This is not likely to be needed for typical usage.
+func (db *DB) CompactRangeCFOpt(cf *ColumnFamilyHandle, r Range, opt *CompactRangeOptions) {
+	cStart := byteToChar(r.Start)
+	cLimit := byteToChar(r.Limit)
+	C.rocksdb_compact_range_cf_opt(db.c, cf.c, opt.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)))
+}
+
 // Flush triggers a manuel flush for the database.
 func (db *DB) Flush(opts *FlushOptions) (err error) {
 	var cErr *C.char
 
 	C.rocksdb_flush(db.c, opts.c, &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// FlushCF triggers a manuel flush for the database on specific column family.
+func (db *DB) FlushCF(cf *ColumnFamilyHandle, opts *FlushOptions) (err error) {
+	var cErr *C.char
+
+	C.rocksdb_flush_cf(db.c, opts.c, cf.c, &cErr)
 	err = fromCError(cErr)
 
 	return
@@ -911,16 +1077,13 @@ func (db *DB) IngestExternalFileCF(handle *ColumnFamilyHandle, filePaths []strin
 
 // NewCheckpoint creates a new Checkpoint for this db.
 func (db *DB) NewCheckpoint() (cp *Checkpoint, err error) {
-	var (
-		cErr *C.char
-	)
+	var cErr *C.char
 	cCheckpoint := C.rocksdb_checkpoint_object_create(
 		db.c, &cErr,
 	)
 	if err = fromCError(cErr); err == nil {
 		cp = NewNativeCheckpoint(cCheckpoint)
 	}
-
 	return
 }
 

@@ -56,6 +56,10 @@ type mockCompactionFilter struct {
 }
 
 func (m *mockCompactionFilter) Name() string { return "gorocksdb.test" }
+
 func (m *mockCompactionFilter) Filter(level int, key, val []byte) (bool, []byte) {
 	return m.filter(level, key, val)
+}
+
+func (m *mockCompactionFilter) SetIgnoreSnapshots(value bool) {
 }

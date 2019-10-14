@@ -28,6 +28,11 @@ func (c *Cache) GetPinnedUsage() uint64 {
 	return uint64(C.rocksdb_cache_get_pinned_usage(c.c))
 }
 
+// SetCapacity sets capacity of the cache.
+func (c *Cache) SetCapacity(value uint64) {
+	C.rocksdb_cache_set_capacity(c.c, C.size_t(value))
+}
+
 // Destroy deallocates the Cache object.
 func (c *Cache) Destroy() {
 	C.rocksdb_cache_destroy(c.c)

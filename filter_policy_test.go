@@ -68,9 +68,13 @@ type mockFilterPolicy struct {
 }
 
 func (m *mockFilterPolicy) Name() string { return "gorocksdb.test" }
+
 func (m *mockFilterPolicy) CreateFilter(keys [][]byte) []byte {
 	return m.createFilter(keys)
 }
+
 func (m *mockFilterPolicy) KeyMayMatch(key, filter []byte) bool {
 	return m.keyMayMatch(key, filter)
 }
+
+func (m *mockFilterPolicy) Destroy() {}

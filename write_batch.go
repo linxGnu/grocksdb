@@ -110,6 +110,31 @@ func (wb *WriteBatch) NewIterator() *WriteBatchIterator {
 	return &WriteBatchIterator{data: data[12:]}
 }
 
+// SetSavePoint records the state of the batch for future calls to RollbackToSavePoint().
+// May be called multiple times to set multiple save points.
+func (wb *WriteBatch) SetSavePoint() {
+	C.rocksdb_writebatch_set_save_point(wb.c)
+}
+
+// RollbackToSavePoint removes all entries in this batch (Put, Merge, Delete, PutLogData) since the
+// most recent call to SetSavePoint() and removes the most recent save point.
+func (wb *WriteBatch) RollbackToSavePoint() (err error) {
+	var cErr *C.char
+	C.rocksdb_writebatch_rollback_to_save_point(wb.c, &cErr)
+	err = fromCError(cErr)
+	return
+}
+
+// PopSavePoint pops the most recent save point.
+// If there is no previous call to SetSavePoint(), Status::NotFound()
+// will be returned.
+func (wb *WriteBatch) PopSavePoint() (err error) {
+	var cErr *C.char
+	C.rocksdb_writebatch_pop_save_point(wb.c, &cErr)
+	err = fromCError(cErr)
+	return
+}
+
 // Clear removes all the enqueued Put and Deletes.
 func (wb *WriteBatch) Clear() {
 	C.rocksdb_writebatch_clear(wb.c)

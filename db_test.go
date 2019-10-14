@@ -11,6 +11,10 @@ import (
 func TestOpenDb(t *testing.T) {
 	db := newTestDB(t, "TestOpenDb", nil)
 	defer db.Close()
+	ensure.DeepEqual(t, "0", db.GetProperty("rocksdb.num-immutable-mem-table"))
+	v, success := db.GetIntProperty("rocksdb.num-immutable-mem-table")
+	ensure.DeepEqual(t, uint64(0), v)
+	ensure.True(t, success)
 }
 
 func TestDBCRUD(t *testing.T) {
@@ -144,6 +148,29 @@ func newTestDB(t *testing.T, name string, applyOpts func(opts *Options)) *DB {
 	ensure.Nil(t, err)
 
 	return db
+}
+
+func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts func(opts *Options)) (db *DB, cfh []*ColumnFamilyHandle, cleanup func()) {
+	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
+	ensure.Nil(t, err)
+
+	opts := NewDefaultOptions()
+	opts.SetCreateIfMissingColumnFamilies(true)
+	opts.SetCreateIfMissing(true)
+	options := make([]*Options, len(columns))
+	for i := range options {
+		options[i] = opts
+	}
+
+	db, cfh, err = OpenDbColumnFamilies(opts, dir, columns, options)
+	ensure.Nil(t, err)
+	cleanup = func() {
+		for _, cf := range cfh {
+			cf.Destroy()
+		}
+		db.Close()
+	}
+	return db, cfh, cleanup
 }
 
 func newTestDBPathNames(t *testing.T, name string, names []string, target_sizes []uint64, applyOpts func(opts *Options)) *DB {

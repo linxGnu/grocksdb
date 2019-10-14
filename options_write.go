@@ -35,6 +35,32 @@ func (opts *WriteOptions) DisableWAL(value bool) {
 	C.rocksdb_writeoptions_disable_WAL(opts.c, C.int(btoi(value)))
 }
 
+// SetIgnoreMissingColumnFamilies if true and if user is trying to write
+// to column families that don't exist (they were dropped), ignore the
+// write (don't return an error). If there are multiple writes in a WriteBatch,
+// other writes will succeed.
+// Default: false
+func (opts *WriteOptions) SetIgnoreMissingColumnFamilies(value bool) {
+	C.rocksdb_writeoptions_set_ignore_missing_column_families(opts.c, boolToChar(value))
+}
+
+// SetNoSlowdown if true and we need to wait or sleep for the write request, fails
+// immediately with Status::Incomplete().
+// Default: false
+func (opts *WriteOptions) SetNoSlowdown(value bool) {
+	C.rocksdb_writeoptions_set_no_slowdown(opts.c, boolToChar(value))
+}
+
+// SetLowPri if true, this write request is of lower priority if compaction is
+// behind. In this case, no_slowdown = true, the request will be cancelled
+// immediately with Status::Incomplete() returned. Otherwise, it will be
+// slowed down. The slowdown value is determined by RocksDB to guarantee
+// it introduces minimum impacts to high priority writes.
+// Default: false
+func (opts *WriteOptions) SetLowPri(value bool) {
+	C.rocksdb_writeoptions_set_low_pri(opts.c, boolToChar(value))
+}
+
 // Destroy deallocates the WriteOptions object.
 func (opts *WriteOptions) Destroy() {
 	C.rocksdb_writeoptions_destroy(opts.c)
