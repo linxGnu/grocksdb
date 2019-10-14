@@ -1,10 +1,6 @@
 package grocksdb
 
 // rocksdb_create_iterators
-
-// rocksdb_compact_range_opt
-// rocksdb_compact_range_cf_opt
-
 // rocksdb_writebatch_putv
 // rocksdb_writebatch_putv_cf
 // rocksdb_writebatch_mergev
@@ -99,19 +95,6 @@ package grocksdb
 // rocksdb_filterpolicy_destroy
 // rocksdb_filterpolicy_create_bloom_full
 // rocksdb_mergeoperator_destroy
-// rocksdb_readoptions_set_iterate_lower_bound
-// rocksdb_readoptions_set_managed
-// rocksdb_readoptions_set_total_order_seek
-// rocksdb_readoptions_set_max_skippable_internal_keys
-// rocksdb_readoptions_set_background_purge_on_iterator_cleanup
-// rocksdb_readoptions_set_ignore_range_deletions
-// rocksdb_writeoptions_set_ignore_missing_column_families
-// rocksdb_writeoptions_set_no_slowdown
-// rocksdb_writeoptions_set_low_pri
-
-// rocksdb_compactoptions_set_bottommost_level_compaction
-// rocksdb_compactoptions_set_change_level
-// rocksdb_compactoptions_set_target_level
 
 // rocksdb_cache_set_capacity
 // rocksdb_create_mem_env

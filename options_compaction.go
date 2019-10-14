@@ -13,21 +13,37 @@ const (
 	CompactionStopStyleTotalSize   = UniversalCompactionStopStyle(C.rocksdb_total_size_compaction_stop_style)
 )
 
-// CompactionOptions represent all of the available options for
-// compact range.
-type CompactionOptions struct {
+// BottommostLevelCompaction for level based compaction, we can configure if we want to skip/force
+// bottommost level compaction.
+type BottommostLevelCompaction byte
+
+const (
+	// KSkip skip bottommost level compaction
+	KSkip BottommostLevelCompaction = 0
+	// KIfHaveCompactionFilter only compact bottommost level if there is a compaction filter
+	// This is the default option
+	KIfHaveCompactionFilter BottommostLevelCompaction = 1
+	// KForce always compact bottommost level
+	KForce BottommostLevelCompaction = 2
+	// KForceOptimized always compact bottommost level but in bottommost level avoid
+	// double-compacting files created in the same compaction
+	KForceOptimized BottommostLevelCompaction = 3
+)
+
+// CompactRangeOptions represent all of the available options for compact range.
+type CompactRangeOptions struct {
 	c *C.rocksdb_compactoptions_t
 }
 
-// NewCompactionOptions creates new compaction options.
-func NewCompactionOptions() *CompactionOptions {
-	return &CompactionOptions{
+// NewCompactRangeOptions creates new compact range options.
+func NewCompactRangeOptions() *CompactRangeOptions {
+	return &CompactRangeOptions{
 		c: C.rocksdb_compactoptions_create(),
 	}
 }
 
 // Destroy deallocates the CompactionOptions object.
-func (opts *CompactionOptions) Destroy() {
+func (opts *CompactRangeOptions) Destroy() {
 	C.rocksdb_compactoptions_destroy(opts.c)
 	opts.c = nil
 }
@@ -37,8 +53,25 @@ func (opts *CompactionOptions) Destroy() {
 // for the scheduled manual compaction to complete. If exclusive_manual_compaction
 // is set to true, the call will disable scheduling of automatic compaction jobs
 // and wait for existing automatic compaction jobs to finish.
-func (opts *CompactionOptions) SetExclusiveManualCompaction(value bool) {
+func (opts *CompactRangeOptions) SetExclusiveManualCompaction(value bool) {
 	C.rocksdb_compactoptions_set_exclusive_manual_compaction(opts.c, boolToChar(value))
+}
+
+// SetBottommostLevelCompaction set bottommost level compaction.
+func (opts *CompactRangeOptions) SetBottommostLevelCompaction(value BottommostLevelCompaction) {
+	C.rocksdb_compactoptions_set_bottommost_level_compaction(opts.c, C.uchar(value))
+}
+
+// SetChangeLevel if true, compacted files will be moved to the minimum level capable
+// of holding the data or given level (specified non-negative target_level).
+func (opts *CompactRangeOptions) SetChangeLevel(value bool) {
+	C.rocksdb_compactoptions_set_change_level(opts.c, boolToChar(value))
+}
+
+// SetTargetLevel if change_level is true and target_level have non-negative value, compacted
+// files will be moved to target_level.
+func (opts *CompactRangeOptions) SetTargetLevel(value int32) {
+	C.rocksdb_compactoptions_set_target_level(opts.c, C.int(value))
 }
 
 // FIFOCompactionOptions represent all of the available options for
