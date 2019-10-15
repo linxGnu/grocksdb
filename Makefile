@@ -19,11 +19,10 @@ BZIP2_SHA256 ?= a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd
 BZIP2_DOWNLOAD_BASE ?= https://web.archive.org/web/20180624184835/http://www.bzip.org
 SHA256_CMD = sha256sum
 
-default: clean zlib bz2 snappy lz4 zstd rocksdb
+default: prepare zlib bz2 snappy lz4 zstd rocksdb
 
-.PHONY: clean
-clean:
-	rm -rf libs/* ; \
+.PHONY: prepare
+prepare:
 	mkdir -p $(DEST_INCLUDE)/zlib $(DEST_INCLUDE)/bz2 $(DEST_INCLUDE)/snappy $(DEST_INCLUDE)/lz4 $(DEST_INCLUDE)/zstd
 
 .PHONY: zlib
