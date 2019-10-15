@@ -2,3 +2,15 @@
 	path = libs/rocksdb
 	url = https://github.com/facebook/rocksdb.git
 	branch = 6.3.fb
+[submodule "libs/lz4"]
+	path = libs/lz4
+	url = https://github.com/lz4/lz4.git
+[submodule "libs/zlib"]
+	path = libs/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "libs/snappy"]
+	path = libs/snappy
+	url = https://github.com/google/snappy.git
+[submodule "libs/zstd"]
+	path = libs/zstd
+	url = https://github.com/facebook/zstd.git
