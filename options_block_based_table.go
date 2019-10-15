@@ -1,7 +1,7 @@
 package grocksdb
 
 // #include "rocksdb/c.h"
-// #include "gorocksdb.h"
+// #include "grocksdb.h"
 import "C"
 
 // IndexType specifies the index type that will be used for this table.

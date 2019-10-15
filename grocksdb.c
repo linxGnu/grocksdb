@@ -1,4 +1,4 @@
-#include "gorocksdb.h"
+#include "grocksdb.h"
 #include "_cgo_export.h"
 
 /* Base */

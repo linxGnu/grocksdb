@@ -1,0 +1,4 @@
+[submodule "libs/rocksdb"]
+	path = libs/rocksdb
+	url = https://github.com/facebook/rocksdb.git
+	branch = 6.3.fb

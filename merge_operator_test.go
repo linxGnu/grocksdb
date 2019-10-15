@@ -153,7 +153,7 @@ type mockMergeOperator struct {
 	fullMerge func(key, existingValue []byte, operands [][]byte) ([]byte, bool)
 }
 
-func (m *mockMergeOperator) Name() string { return "gorocksdb.test" }
+func (m *mockMergeOperator) Name() string { return "grocksdb.test" }
 func (m *mockMergeOperator) FullMerge(key, existingValue []byte, operands [][]byte) ([]byte, bool) {
 	return m.fullMerge(key, existingValue, operands)
 }
@@ -163,7 +163,7 @@ type mockMergeMultiOperator struct {
 	partialMergeMulti func(key []byte, operands [][]byte) ([]byte, bool)
 }
 
-func (m *mockMergeMultiOperator) Name() string { return "gorocksdb.multi" }
+func (m *mockMergeMultiOperator) Name() string { return "grocksdb.multi" }
 func (m *mockMergeMultiOperator) FullMerge(key, existingValue []byte, operands [][]byte) ([]byte, bool) {
 	return m.fullMerge(key, existingValue, operands)
 }
@@ -176,7 +176,7 @@ type mockMergePartialOperator struct {
 	partialMerge func(key, leftOperand, rightOperand []byte) ([]byte, bool)
 }
 
-func (m *mockMergePartialOperator) Name() string { return "gorocksdb.partial" }
+func (m *mockMergePartialOperator) Name() string { return "grocksdb.partial" }
 func (m *mockMergePartialOperator) FullMerge(key, existingValue []byte, operands [][]byte) ([]byte, bool) {
 	return m.fullMerge(key, existingValue, operands)
 }

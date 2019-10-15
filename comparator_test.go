@@ -41,7 +41,7 @@ func TestComparator(t *testing.T) {
 
 type bytesReverseComparator struct{}
 
-func (cmp *bytesReverseComparator) Name() string { return "gorocksdb.bytes-reverse" }
+func (cmp *bytesReverseComparator) Name() string { return "grocksdb.bytes-reverse" }
 func (cmp *bytesReverseComparator) Compare(a, b []byte) int {
 	return bytes.Compare(a, b) * -1
 }
