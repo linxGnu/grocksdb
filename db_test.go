@@ -141,6 +141,7 @@ func newTestDB(t *testing.T, name string, applyOpts func(opts *Options)) *DB {
 	rateLimiter := NewRateLimiter(1024, 100*1000, 10)
 	opts.SetRateLimiter(rateLimiter)
 	opts.SetCreateIfMissing(true)
+	opts.SetCompression(ZSTDCompression)
 	if applyOpts != nil {
 		applyOpts(opts)
 	}
@@ -157,6 +158,7 @@ func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts fun
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
+	opts.SetCompression(ZSTDCompression)
 	options := make([]*Options, len(columns))
 	for i := range options {
 		options[i] = opts

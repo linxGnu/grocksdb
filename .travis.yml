@@ -16,6 +16,5 @@ install:
   - go get -u github.com/stretchr/testify
 
 script:
-- make
 - go test -v -tags static -coverprofile=coverage.out
 - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci

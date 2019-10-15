@@ -3,7 +3,8 @@ GOARCH ?= $(shell go env GOARCH)
 GOOS_GOARCH := $(GOOS)_$(GOARCH)
 GOOS_GOARCH_NATIVE := $(shell go env GOHOSTOS)_$(shell go env GOHOSTARCH)
 
-DEST=dist/$(GOOS_GOARCH)
+ROOT_DIR=${PWD}
+DEST=$(ROOT_DIR)/dist/$(GOOS_GOARCH)
 DEST_INCLUDE=$(DEST)/include
 
 MAKEFLAGS = -j4
@@ -23,6 +24,7 @@ default: prepare zlib bz2 snappy lz4 zstd rocksdb
 
 .PHONY: prepare
 prepare:
+	rm -rf $(DEST) libs/*
 	mkdir -p $(DEST_INCLUDE)/zlib $(DEST_INCLUDE)/bz2 $(DEST_INCLUDE)/snappy $(DEST_INCLUDE)/lz4 $(DEST_INCLUDE)/zstd
 
 .PHONY: zlib
@@ -35,13 +37,8 @@ zlib:
 .PHONY: bz2
 bz2:
 	pushd libs ; \
-	curl --output bzip2-$(BZIP2_VER).tar.gz -L ${BZIP2_DOWNLOAD_BASE}/$(BZIP2_VER)/bzip2-$(BZIP2_VER).tar.gz ; \
-	BZIP2_SHA256_ACTUAL=`$(SHA256_CMD) bzip2-$(BZIP2_VER).tar.gz | cut -d ' ' -f 1`; \
-	if [ "$(BZIP2_SHA256)" != "$$BZIP2_SHA256_ACTUAL" ]; then \
-		echo bzip2-$(BZIP2_VER).tar.gz checksum mismatch, expected=\"$(BZIP2_SHA256)\" actual=\"$$BZIP2_SHA256_ACTUAL\"; \
-		exit 1; \
-	fi ; \
-	tar xzf bzip2-$(BZIP2_VER).tar.gz && rm bzip2-$(BZIP2_VER).tar.gz && mv bzip2-$(BZIP2_VER) bzip2 ; \
+	curl --output bzip2-1.0.6.tar.gz -L http://distfiles.gentoo.org/distfiles/bzip2-1.0.6.tar.gz ; \
+	tar xzf bzip2-1.0.6.tar.gz && rm bzip2-1.0.6.tar.gz && mv bzip2-1.0.6 bzip2 ; \
 	cd bzip2 && $(MAKE) $(MAKEFLAGS) CFLAGS='-fPIC -O2 -g -D_FILE_OFFSET_BITS=64 ${EXTRA_CFLAGS}' AR='ar ${EXTRA_ARFLAGS}' libbz2.a ; \
 	popd ; \
 	cp libs/bzip2/libbz2.a $(DEST)/
@@ -50,7 +47,7 @@ bz2:
 .PHONY: snappy
 snappy:
 	git submodule update --remote --init --recursive -- libs/snappy
-	mkdir -p libs/snappy/build && cd libs/snappy/build && CFLAGS='${EXTRA_CFLAGS}' CXXFLAGS='${EXTRA_CXXFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && $(MAKE) $(MAKEFLAGS)
+	rm -rf libs/snappy/build && mkdir -p libs/snappy/build && cd libs/snappy/build && CFLAGS='${EXTRA_CFLAGS}' CXXFLAGS='${EXTRA_CXXFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && $(MAKE) $(MAKEFLAGS)
 	cp libs/snappy/build/libsnappy.a $(DEST)/
 	cp libs/snappy/*.h $(DEST_INCLUDE)/snappy/
 
