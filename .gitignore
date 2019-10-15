@@ -12,3 +12,7 @@
 *.out
 libs/bzip2*
 *.DS_Store*
+libs/lz4/
+libs/snappy/
+libs/zlib/
+libs/zstd/
