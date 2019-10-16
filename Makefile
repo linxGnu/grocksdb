@@ -69,11 +69,9 @@ zstd:
 
 .PHONY: bz2
 bz2:
-	git submodule update --remote --init --recursive -- libs/bz2
-	cd libs/bz2 && git checkout $(BZ2_COMMIT)
-	cd libs/bz2 && $(MAKE) $(MAKEFLAGS) CFLAGS='-fPIC -O2 -g -D_FILE_OFFSET_BITS=64 ${EXTRA_CFLAGS}' AR='ar ${EXTRA_ARFLAGS}' bzip2
-	cp libs/bz2/libbz2.a $(DEST)/
-	cp libs/bz2/*.h $(DEST_INCLUDE)/bz2/
+	cd libs/bzip2 && $(MAKE) $(MAKEFLAGS) CFLAGS='-fPIC -O2 -g -D_FILE_OFFSET_BITS=64 ${EXTRA_CFLAGS}' AR='ar ${EXTRA_ARFLAGS}' bzip2
+	cp libs/bzip2/libbz2.a $(DEST)/
+	cp libs/bzip2/*.h $(DEST_INCLUDE)/bz2/
 
 .PHONY: rocksdb
 rocksdb:

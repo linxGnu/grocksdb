@@ -10,5 +10,5 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-libs/bzip2*
+*.o
 *.DS_Store*
