@@ -406,6 +406,21 @@ func (db *DB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHan
 	return
 }
 
+// GetPinnedCF returns the data associated with the key from the database, specific column family.
+func (db *DB) GetPinnedCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	cHandle := C.rocksdb_get_pinned_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = NewNativePinnableSliceHandle(cHandle)
+	}
+
+	return
+}
+
 // MultiGet returns the data associated with the passed keys from the database
 func (db *DB) MultiGet(opts *ReadOptions, keys ...[]byte) (Slices, error) {
 	// will destroy `cKeys` before return
@@ -589,6 +604,16 @@ func (db *DB) Write(opts *WriteOptions, batch *WriteBatch) (err error) {
 	var cErr *C.char
 
 	C.rocksdb_write(db.c, opts.c, batch.c, &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// WriteWI writes a WriteBatchWI to the database
+func (db *DB) WriteWI(opts *WriteOptions, batch *WriteBatchWI) (err error) {
+	var cErr *C.char
+
+	C.rocksdb_write_writebatch_wi(db.c, opts.c, batch.c, &cErr)
 	err = fromCError(cErr)
 
 	return
