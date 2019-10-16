@@ -406,6 +406,21 @@ func (db *DB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHan
 	return
 }
 
+// GetPinnedCF returns the data associated with the key from the database, specific column family.
+func (db *DB) GetPinnedCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	cHandle := C.rocksdb_get_pinned_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = NewNativePinnableSliceHandle(cHandle)
+	}
+
+	return
+}
+
 // MultiGet returns the data associated with the passed keys from the database
 func (db *DB) MultiGet(opts *ReadOptions, keys ...[]byte) (Slices, error) {
 	// will destroy `cKeys` before return
@@ -589,6 +604,16 @@ func (db *DB) Write(opts *WriteOptions, batch *WriteBatch) (err error) {
 	var cErr *C.char
 
 	C.rocksdb_write(db.c, opts.c, batch.c, &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// WriteWI writes a WriteBatchWI to the database
+func (db *DB) WriteWI(opts *WriteOptions, batch *WriteBatchWI) (err error) {
+	var cErr *C.char
+
+	C.rocksdb_write_writebatch_wi(db.c, opts.c, batch.c, &cErr)
 	err = fromCError(cErr)
 
 	return
@@ -873,6 +898,8 @@ type LiveFileMetadata struct {
 	Size        int64
 	SmallestKey []byte
 	LargestKey  []byte
+	Entries     uint64 // number of entries
+	Deletions   uint64 // number of deletions
 }
 
 // GetLiveFilesMetaData returns a list of all table files with their
@@ -894,6 +921,11 @@ func (db *DB) GetLiveFilesMetaData() []LiveFileMetadata {
 
 		key = C.rocksdb_livefiles_largestkey(lf, i, &cSize)
 		liveFile.LargestKey = C.GoBytes(unsafe.Pointer(key), C.int(cSize))
+
+		liveFile.Entries = uint64(C.rocksdb_livefiles_entries(lf, i))
+
+		liveFile.Deletions = uint64(C.rocksdb_livefiles_deletions(lf, i))
+
 		liveFiles[int(i)] = liveFile
 	}
 
@@ -1084,6 +1116,22 @@ func (db *DB) NewCheckpoint() (cp *Checkpoint, err error) {
 	if err = fromCError(cErr); err == nil {
 		cp = NewNativeCheckpoint(cCheckpoint)
 	}
+	return
+}
+
+// TryCatchUpWithPrimary to make the secondary
+// instance catch up with primary (WAL tailing is NOT supported now) whenever
+// the user feels necessary. Column families created by the primary after the
+// secondary instance starts are currently ignored by the secondary instance.
+// Column families opened by secondary and dropped by the primary will be
+// dropped by secondary as well. However the user of the secondary instance
+// can still access the data of such dropped column family as long as they
+// do not destroy the corresponding column family handle.
+// WAL tailing is not supported at present, but will arrive soon.
+func (db *DB) TryCatchUpWithPrimary() (err error) {
+	var cErr *C.char
+	C.rocksdb_try_catch_up_with_primary(db.c, &cErr)
+	err = fromCError(cErr)
 	return
 }
 
