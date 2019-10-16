@@ -2,6 +2,9 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import (
+	"bytes"
+)
 
 // A Comparator object provides a total order across slices that are
 // used as keys in an sstable or a database.
@@ -14,19 +17,32 @@ type Comparator interface {
 
 	// The name of the comparator.
 	Name() string
+
+	// Return native comparator.
+	Native() *C.rocksdb_comparator_t
+
+	// Destroy comparator.
+	Destroy()
 }
 
 // NewNativeComparator creates a Comparator object.
 func NewNativeComparator(c *C.rocksdb_comparator_t) Comparator {
-	return nativeComparator{c}
+	return &nativeComparator{c}
 }
 
 type nativeComparator struct {
 	c *C.rocksdb_comparator_t
 }
 
-func (c nativeComparator) Compare(a, b []byte) int { return 0 }
-func (c nativeComparator) Name() string            { return "" }
+func (c *nativeComparator) Compare(a, b []byte) int { return 0 }
+func (c *nativeComparator) Name() string            { return "" }
+func (c *nativeComparator) Native() *C.rocksdb_comparator_t {
+	return c.c
+}
+func (c *nativeComparator) Destroy() {
+	C.rocksdb_comparator_destroy(c.c)
+	c.c = nil
+}
 
 // Hold references to comperators.
 var comperators = NewCOWList()
@@ -51,3 +67,13 @@ func gorocksdb_comparator_compare(idx int, cKeyA *C.char, cKeyALen C.size_t, cKe
 func gorocksdb_comparator_name(idx int) *C.char {
 	return comperators.Get(idx).(comperatorWrapper).name
 }
+
+// for testing purpose only
+type testBytesReverseComparator struct{}
+
+func (cmp *testBytesReverseComparator) Name() string { return "grocksdb.bytes-reverse" }
+func (cmp *testBytesReverseComparator) Compare(a, b []byte) int {
+	return bytes.Compare(a, b) * -1
+}
+func (cmp *testBytesReverseComparator) Native() *C.rocksdb_comparator_t { return nil }
+func (cmp *testBytesReverseComparator) Destroy()                        {}

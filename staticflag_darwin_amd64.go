@@ -1,4 +1,4 @@
-// +build static
+// +build static_rocksdb
 
 package grocksdb
 

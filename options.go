@@ -139,7 +139,7 @@ func (opts *Options) SetCompactionFilter(value CompactionFilter) {
 // SetComparator sets the comparator which define the order of keys in the table.
 // Default: a comparator that uses lexicographic byte-wise ordering
 func (opts *Options) SetComparator(value Comparator) {
-	if nc, ok := value.(nativeComparator); ok {
+	if nc, ok := value.(*nativeComparator); ok {
 		opts.ccmp = nc.c
 	} else {
 		idx := registerComperator(value)

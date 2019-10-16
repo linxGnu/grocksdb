@@ -20,6 +20,12 @@ func NewSSTFileWriter(opts *EnvOptions, dbOpts *Options) *SSTFileWriter {
 	return &SSTFileWriter{c: c}
 }
 
+// NewSSTFileWriter creates an SSTFileWriter object with comparator.
+func NewSSTFileWriterWithComparator(opts *EnvOptions, dbOpts *Options, cmp Comparator) *SSTFileWriter {
+	c := C.rocksdb_sstfilewriter_create_with_comparator(opts.c, dbOpts.c, cmp.Native())
+	return &SSTFileWriter{c: c}
+}
+
 // Open prepares SstFileWriter to write into file located at "path".
 func (w *SSTFileWriter) Open(path string) (err error) {
 	var (
@@ -42,6 +48,41 @@ func (w *SSTFileWriter) Add(key, value []byte) (err error) {
 	var cErr *C.char
 	C.rocksdb_sstfilewriter_add(w.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
 	err = fromCError(cErr)
+	return
+}
+
+// Put key, value to currently opened file.
+func (w *SSTFileWriter) Put(key, value []byte) (err error) {
+	cKey := byteToChar(key)
+	cValue := byteToChar(value)
+	var cErr *C.char
+	C.rocksdb_sstfilewriter_put(w.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
+	err = fromCError(cErr)
+	return
+}
+
+// Merge key, value to currently opened file.
+func (w *SSTFileWriter) Merge(key, value []byte) (err error) {
+	cKey := byteToChar(key)
+	cValue := byteToChar(value)
+	var cErr *C.char
+	C.rocksdb_sstfilewriter_merge(w.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
+	err = fromCError(cErr)
+	return
+}
+
+// Delete key from currently opened file.
+func (w *SSTFileWriter) Delete(key []byte) (err error) {
+	cKey := byteToChar(key)
+	var cErr *C.char
+	C.rocksdb_sstfilewriter_delete(w.c, cKey, C.size_t(len(key)), &cErr)
+	err = fromCError(cErr)
+	return
+}
+
+// FileSize returns size of currently opened file.
+func (w *SSTFileWriter) FileSize() (size uint64) {
+	C.rocksdb_sstfilewriter_file_size(w.c, (*C.uint64_t)(&size))
 	return
 }
 
