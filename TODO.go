@@ -34,13 +34,6 @@ package grocksdb
 // rocksdb_writebatch_wi_create_iterator_with_base
 // rocksdb_writebatch_wi_create_iterator_with_base_cf
 
-// rocksdb_create_mem_env
-// rocksdb_env_join_all_threads
-// rocksdb_env_lower_thread_pool_io_priority
-// rocksdb_env_lower_high_priority_thread_pool_io_priority
-// rocksdb_env_lower_thread_pool_cpu_priority
-// rocksdb_env_lower_high_priority_thread_pool_cpu_priority
-
 // rocksdb_sstfilewriter_create_with_comparator
 // rocksdb_sstfilewriter_put
 // rocksdb_sstfilewriter_merge
