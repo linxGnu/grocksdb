@@ -14,3 +14,6 @@
 [submodule "libs/zstd"]
 	path = libs/zstd
 	url = https://github.com/facebook/zstd.git
+[submodule "libs/bz2"]
+	path = libs/bz2
+	url = http://sourceware.org/git/bzip2.git

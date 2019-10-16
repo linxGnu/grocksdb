@@ -15,16 +15,12 @@ MACHINE ?= $(shell uname -m)
 ARFLAGS = ${EXTRA_ARFLAGS} rs
 STRIPFLAGS = -S -x
 
-BZIP2_VER ?= 1.0.6
-BZIP2_SHA256 ?= a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd
-BZIP2_DOWNLOAD_BASE ?= https://web.archive.org/web/20180624184835/http://www.bzip.org
-SHA256_CMD = sha256sum
-
 # Dependencies and Rocksdb
 ZLIB_COMMIT = cacf7f1d4e3d44d871b605da3b647f07d718623f
 SNAPPY_COMMIT = e9e11b84e629c3e06fbaa4f0a86de02ceb9d6992
 LZ4_COMMIT = e8baeca51ef2003d6c9ec21c32f1563fef1065b9
 ZSTD_COMMIT = 8b6d96827c24dd09109830272f413254833317d9
+BZ2_COMMIT = 6a8690fc8d26c815e798c588f796eabe9d684cf0
 ROCKSDB_COMMIT = d47cdbc1888440a75ecf43646fd1ddab8ebae9be
 
 deps: prepare zlib snappy bz2 lz4 zstd
@@ -73,13 +69,11 @@ zstd:
 
 .PHONY: bz2
 bz2:
-	pushd libs ; \
-	rm -rf bzip2 && curl --output bzip2-1.0.6.tar.gz -L http://distfiles.gentoo.org/distfiles/bzip2-1.0.6.tar.gz && \
-	tar xzf bzip2-1.0.6.tar.gz && rm bzip2-1.0.6.tar.gz && mv bzip2-1.0.6 bzip2; \
-	popd ; \
-	cd libs/bzip2 && $(MAKE) $(MAKEFLAGS) CFLAGS='-fPIC -O2 -g -D_FILE_OFFSET_BITS=64 ${EXTRA_CFLAGS}' AR='ar ${EXTRA_ARFLAGS}' bzip2
-	cp libs/bzip2/libbz2.a $(DEST)/
-	cp libs/bzip2/*.h $(DEST_INCLUDE)/bz2/
+	git submodule update --remote --init --recursive -- libs/bz2
+	cd libs/bz2 && git checkout $(BZ2_COMMIT)
+	cd libs/bz2 && $(MAKE) $(MAKEFLAGS) CFLAGS='-fPIC -O2 -g -D_FILE_OFFSET_BITS=64 ${EXTRA_CFLAGS}' AR='ar ${EXTRA_ARFLAGS}' bzip2
+	cp libs/bz2/libbz2.a $(DEST)/
+	cp libs/bz2/*.h $(DEST_INCLUDE)/bz2/
 
 .PHONY: rocksdb
 rocksdb:
