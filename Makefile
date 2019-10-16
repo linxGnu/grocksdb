@@ -67,7 +67,7 @@ lz4:
 zstd:
 	git submodule update --remote --init --recursive -- libs/zstd
 	cd libs/zstd && git checkout $(ZSTD_COMMIT)
-	cd libs/zstd/lib && $(MAKE) clean && DESTDIR=. PREFIX= $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' default
+	cd libs/zstd/lib && $(MAKE) clean && DESTDIR=. PREFIX= $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' install
 	cp libs/zstd/lib/libzstd.a $(DEST)/
 	cp libs/zstd/lib/include/*.h $(DEST_INCLUDE)/zstd/
 
