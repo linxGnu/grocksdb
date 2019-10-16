@@ -27,4 +27,3 @@ After that, you can install gorocksdb using the following command:
 Almost C API, excepts:
 - [ ] putv/mergev/deletev/delete_rangev
 - [ ] compaction_filter_factory/compaction_filter_context
-- [ ] writebatch_with_index

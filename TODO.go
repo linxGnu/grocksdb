@@ -5,10 +5,6 @@ package grocksdb
 // rocksdb_sstfilewriter_merge
 // rocksdb_sstfilewriter_delete
 // rocksdb_sstfilewriter_file_size
-// rocksdb_try_catch_up_with_primary
-
-// rocksdb_livefiles_entries
-// rocksdb_livefiles_deletions
 
 // rocksdb_transactiondb_create_column_family
 // rocksdb_transactiondb_open_column_families
