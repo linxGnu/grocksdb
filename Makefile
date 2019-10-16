@@ -29,7 +29,7 @@ ROCKSDB_COMMIT = d47cdbc1888440a75ecf43646fd1ddab8ebae9be
 
 deps: prepare zlib snappy lz4 zstd
 
-default: deps rocksdb
+default_target: deps rocksdb
 
 .PHONY: prepare
 prepare:
@@ -40,8 +40,8 @@ prepare:
 zlib:
 	git submodule update --remote --init --recursive -- libs/zlib
 	cd libs/zlib && git checkout $(ZLIB_COMMIT)
-	cd libs/zlib && CFLAGS='-fPIC ${EXTRA_CFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' ./configure --static && \
-	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS)
+	cd libs/zlib && CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' ./configure --static && \
+	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) all install
 	cp libs/zlib/libz.a $(DEST)/
 	cp libs/zlib/*.h $(DEST_INCLUDE)/zlib/
 
@@ -50,8 +50,8 @@ snappy:
 	git submodule update --remote --init --recursive -- libs/snappy
 	cd libs/snappy && git checkout $(SNAPPY_COMMIT)
 	cd libs/snappy && rm -rf build && mkdir -p build && cd build && \
-	CFLAGS='${EXTRA_CFLAGS}' CXXFLAGS='${EXTRA_CXXFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && \
-	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS)
+	CFLAGS='-O2 ${EXTRA_CFLAGS}' CXXFLAGS='-O2 ${EXTRA_CXXFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && \
+	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) snappy install
 	cp libs/snappy/build/libsnappy.a $(DEST)/
 	cp libs/snappy/*.h $(DEST_INCLUDE)/snappy/
 
@@ -59,7 +59,7 @@ snappy:
 lz4:
 	git submodule update --remote --init --recursive -- libs/lz4
 	cd libs/lz4 && git checkout $(LZ4_COMMIT)
-	cd libs/lz4 && $(MAKE) clean && $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' allmost
+	cd libs/lz4 && $(MAKE) clean && $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' lz4 lz4-release install
 	cp libs/lz4/lib/liblz4.a $(DEST)/
 	cp libs/lz4/lib/*.h $(DEST_INCLUDE)/lz4/
 
@@ -67,7 +67,7 @@ lz4:
 zstd:
 	git submodule update --remote --init --recursive -- libs/zstd
 	cd libs/zstd && git checkout $(ZSTD_COMMIT)
-	cd libs/zstd/lib && $(MAKE) clean && DESTDIR=. PREFIX= $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' install
+	cd libs/zstd/lib && $(MAKE) clean && DESTDIR=. PREFIX= $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' all install
 	cp libs/zstd/lib/libzstd.a $(DEST)/
 	cp libs/zstd/lib/include/*.h $(DEST_INCLUDE)/zstd/
 
@@ -75,7 +75,8 @@ zstd:
 rocksdb:
 	git submodule update --remote --init --recursive -- libs/rocksdb
 	cd libs/rocksdb && git checkout $(ROCKSDB_COMMIT) && $(MAKE) clean && \
-	CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' CXXFLAGS='-fPIC -O2 ${EXTRA_CXXFLAGS} -Wno-error=shadow' $(MAKE) $(MAKE_FLAGS) static_lib
+	CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' CXXFLAGS='-fPIC -O2 ${EXTRA_CXXFLAGS} -Wno-error=shadow' \
+	USE_RTTI=1 $(MAKE) $(MAKE_FLAGS) static_lib
 	cd libs/rocksdb && strip $(STRIPFLAGS) librocksdb.a
 	cp libs/rocksdb/librocksdb.a $(DEST)/
 	cp -R libs/rocksdb/include/rocksdb $(DEST_INCLUDE)/

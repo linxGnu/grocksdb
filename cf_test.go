@@ -62,7 +62,7 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
-	opts.SetCompression(Bz2Compression)
+	opts.SetCompression(NoCompression)
 	db, cfh, err := OpenDbColumnFamilies(opts, dir, givenNames, []*Options{opts, opts})
 	ensure.Nil(t, err)
 	defer db.Close()

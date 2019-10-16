@@ -12,5 +12,5 @@ package grocksdb
 // #cgo CXXFLAGS: -I ${SRCDIR}/dist/darwin_amd64/include/snappy
 // #cgo CXXFLAGS: -I ${SRCDIR}/dist/darwin_amd64/include/zlib
 // #cgo CXXFLAGS: -I ${SRCDIR}/dist/darwin_amd64/include/zstd
-// #cgo LDFLAGS: -L ${SRCDIR}/dist/darwin_amd64 -lz -llz4 -lzstd -lsnappy -lrocksdb -lm -ldl -lstdc++
+// #cgo LDFLAGS: -L ${SRCDIR}/dist/darwin_amd64 -lrocksdb -lstdc++ -lm -ldl -lzstd -llz4 -lsnappy -lz
 import "C"
