@@ -27,21 +27,21 @@ LZ4_COMMIT = e8baeca51ef2003d6c9ec21c32f1563fef1065b9
 ZSTD_COMMIT = 8b6d96827c24dd09109830272f413254833317d9
 ROCKSDB_COMMIT = d47cdbc1888440a75ecf43646fd1ddab8ebae9be
 
-deps: prepare zlib snappy lz4 zstd
+deps: prepare zlib snappy bz2 lz4 zstd
 
 default_target: deps rocksdb
 
 .PHONY: prepare
 prepare:
 	rm -rf $(DEST)
-	mkdir -p $(DEST_INCLUDE)/zlib $(DEST_INCLUDE)/snappy $(DEST_INCLUDE)/lz4 $(DEST_INCLUDE)/zstd
+	mkdir -p $(DEST_INCLUDE)/zlib $(DEST_INCLUDE)/snappy $(DEST_INCLUDE)/lz4 $(DEST_INCLUDE)/zstd $(DEST_INCLUDE)/bz2
 
 .PHONY: zlib
 zlib:
 	git submodule update --remote --init --recursive -- libs/zlib
 	cd libs/zlib && git checkout $(ZLIB_COMMIT)
 	cd libs/zlib && CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' ./configure --static && \
-	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) all install
+	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) all
 	cp libs/zlib/libz.a $(DEST)/
 	cp libs/zlib/*.h $(DEST_INCLUDE)/zlib/
 
@@ -51,7 +51,7 @@ snappy:
 	cd libs/snappy && git checkout $(SNAPPY_COMMIT)
 	cd libs/snappy && rm -rf build && mkdir -p build && cd build && \
 	CFLAGS='-O2 ${EXTRA_CFLAGS}' CXXFLAGS='-O2 ${EXTRA_CXXFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && \
-	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) snappy install
+	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) snappy
 	cp libs/snappy/build/libsnappy.a $(DEST)/
 	cp libs/snappy/*.h $(DEST_INCLUDE)/snappy/
 
@@ -59,7 +59,7 @@ snappy:
 lz4:
 	git submodule update --remote --init --recursive -- libs/lz4
 	cd libs/lz4 && git checkout $(LZ4_COMMIT)
-	cd libs/lz4 && $(MAKE) clean && $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' lz4 lz4-release install
+	cd libs/lz4 && $(MAKE) clean && $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' lz4 lz4-release
 	cp libs/lz4/lib/liblz4.a $(DEST)/
 	cp libs/lz4/lib/*.h $(DEST_INCLUDE)/lz4/
 
@@ -70,6 +70,16 @@ zstd:
 	cd libs/zstd/lib && $(MAKE) clean && DESTDIR=. PREFIX= $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' all install
 	cp libs/zstd/lib/libzstd.a $(DEST)/
 	cp libs/zstd/lib/include/*.h $(DEST_INCLUDE)/zstd/
+
+.PHONY: bz2
+bz2:
+	pushd libs ; \
+	rm -rf bzip2 && curl --output bzip2-1.0.6.tar.gz -L http://distfiles.gentoo.org/distfiles/bzip2-1.0.6.tar.gz && \
+	tar xzf bzip2-1.0.6.tar.gz && rm bzip2-1.0.6.tar.gz && mv bzip2-1.0.6 bzip2; \
+	popd ; \
+	cd libs/bzip2 && $(MAKE) $(MAKEFLAGS) CFLAGS='-fPIC -O2 -g -D_FILE_OFFSET_BITS=64 ${EXTRA_CFLAGS}' AR='ar ${EXTRA_ARFLAGS}' bzip2
+	cp libs/bzip2/libbz2.a $(DEST)/
+	cp libs/bzip2/*.h $(DEST_INCLUDE)/bz2/
 
 .PHONY: rocksdb
 rocksdb:
