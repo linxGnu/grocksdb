@@ -5,9 +5,11 @@ grocksdb.OpenDb opens and creates databases.
 
 	bbto := grocksdb.NewDefaultBlockBasedTableOptions()
 	bbto.SetBlockCache(grocksdb.NewLRUCache(3 << 30))
+
 	opts := grocksdb.NewDefaultOptions()
 	opts.SetBlockBasedTableFactory(bbto)
 	opts.SetCreateIfMissing(true)
+
 	db, err := grocksdb.OpenDb(opts, "/path/to/db")
 
 The DB struct returned by OpenDb provides DB.Get, DB.Put, DB.Merge and DB.Delete to modify
@@ -15,6 +17,7 @@ and query the database.
 
 	ro := grocksdb.NewDefaultReadOptions()
 	wo := grocksdb.NewDefaultWriteOptions()
+
 	// if ro and wo are not used again, be sure to Close them.
 	err = db.Put(wo, []byte("foo"), []byte("bar"))
 	...
@@ -29,8 +32,10 @@ ReadOptions you use when creating the Iterator.
 
 	ro := grocksdb.NewDefaultReadOptions()
 	ro.SetFillCache(false)
+
 	it := db.NewIterator(ro)
 	defer it.Close()
+
 	it.Seek([]byte("foo"))
 	for it = it; it.Valid(); it.Next() {
 		key := it.Key()
@@ -49,8 +54,10 @@ DB.Write.
 	wb := grocksdb.NewWriteBatch()
 	// defer wb.Close or use wb.Clear and reuse.
 	wb.Delete([]byte("foo"))
+
 	wb.Put([]byte("foo"), []byte("bar"))
 	wb.Put([]byte("bar"), []byte("foo"))
+
 	err := db.Write(wo, wb)
 
 If your working dataset does not fit in memory, you'll want to add a bloom
