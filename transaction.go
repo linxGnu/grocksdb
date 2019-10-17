@@ -140,6 +140,7 @@ func (transaction *Transaction) PutCF(cf *ColumnFamilyHandle, key, value []byte)
 	return
 }
 
+// Merge key, value to the transaction.
 func (transaction *Transaction) Merge(key, value []byte) (err error) {
 	var (
 		cErr   *C.char
@@ -155,6 +156,7 @@ func (transaction *Transaction) Merge(key, value []byte) (err error) {
 	return
 }
 
+// MergeCF key, value to the transaction on specific column family.
 func (transaction *Transaction) MergeCF(cf *ColumnFamilyHandle, key, value []byte) (err error) {
 	var (
 		cErr   *C.char
@@ -211,7 +213,7 @@ func (transaction *Transaction) NewIterator(opts *ReadOptions) *Iterator {
 		unsafe.Pointer(C.rocksdb_transaction_create_iterator(transaction.c, opts.c)))
 }
 
-// NewIterator returns an iterator that will iterate on all keys in the specific
+// NewIteratorCF returns an iterator that will iterate on all keys in the specific
 // column family including both keys in the DB and uncommitted keys in this
 // transaction.
 //

@@ -1,5 +1,5 @@
 /*
-package grocksdb provides the ability to create and access RocksDB databases.
+Package grocksdb provides the ability to create and access RocksDB databases.
 
 grocksdb.OpenDb opens and creates databases.
 

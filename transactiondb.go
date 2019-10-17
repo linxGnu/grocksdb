@@ -182,7 +182,7 @@ func (db *TransactionDB) Put(opts *WriteOptions, key, value []byte) (err error) 
 	return
 }
 
-// Put writes data associated with a key to the database on specific column family.
+// PutCF writes data associated with a key to the database on specific column family.
 func (db *TransactionDB) PutCF(opts *WriteOptions, cf *ColumnFamilyHandle, key, value []byte) (err error) {
 	var (
 		cErr   *C.char
@@ -243,7 +243,7 @@ func (db *TransactionDB) Delete(opts *WriteOptions, key []byte) (err error) {
 	return
 }
 
-// Delete removes the data associated with the key from the database on specific column family.
+// DeleteCF removes the data associated with the key from the database on specific column family.
 func (db *TransactionDB) DeleteCF(opts *WriteOptions, cf *ColumnFamilyHandle, key []byte) (err error) {
 	var (
 		cErr *C.char
@@ -311,7 +311,7 @@ func (db *TransactionDB) NewIteratorCF(opts *ReadOptions, cf *ColumnFamilyHandle
 }
 
 // Close closes the database.
-func (transactionDB *TransactionDB) Close() {
-	C.rocksdb_transactiondb_close(transactionDB.c)
-	transactionDB.c = nil
+func (db *TransactionDB) Close() {
+	C.rocksdb_transactiondb_close(db.c)
+	db.c = nil
 }

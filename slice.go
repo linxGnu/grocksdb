@@ -12,8 +12,10 @@ type Slice struct {
 	freed bool
 }
 
+// Slices is collection of Slice.
 type Slices []*Slice
 
+// Destroy free slices.
 func (slices Slices) Destroy() {
 	for _, s := range slices {
 		s.Free()

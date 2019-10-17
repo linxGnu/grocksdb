@@ -29,7 +29,7 @@ func (opts *CuckooTableOptions) SetHashRatio(value float64) {
 	C.rocksdb_cuckoo_options_set_hash_ratio(opts.c, C.double(value))
 }
 
-// SetMaxSearchDepthaA property used by builder to determine the depth to go to
+// SetMaxSearchDepth property used by builder to determine the depth to go to
 // to search for a path to displace elements in case of
 // collision. See Builder.MakeSpaceForKey method. Higher
 // values result in more efficient hash tables with fewer

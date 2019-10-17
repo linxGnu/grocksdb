@@ -25,6 +25,7 @@ func (h *ColumnFamilyHandle) Destroy() {
 	C.rocksdb_column_family_handle_destroy(h.c)
 }
 
+// ColumnFamilyHandles represents collection of multiple column family handle.
 type ColumnFamilyHandles []*ColumnFamilyHandle
 
 func (cfs ColumnFamilyHandles) toCSlice() columnFamilySlice {

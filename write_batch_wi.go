@@ -37,7 +37,7 @@ func (wb *WriteBatchWI) PutCF(cf *ColumnFamilyHandle, key, value []byte) {
 	C.rocksdb_writebatch_wi_put_cf(wb.c, cf.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)))
 }
 
-// Append a blob of arbitrary size to the records in this batch.
+// PutLogData appends a blob of arbitrary size to the records in this batch.
 func (wb *WriteBatchWI) PutLogData(blob []byte) {
 	cBlob := byteToChar(blob)
 	C.rocksdb_writebatch_wi_put_log_data(wb.c, cBlob, C.size_t(len(blob)))

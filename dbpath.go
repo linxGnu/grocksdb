@@ -12,9 +12,9 @@ type DBPath struct {
 
 // NewDBPath creates a DBPath object
 // with the given path and target_size.
-func NewDBPath(path string, target_size uint64) (dbPath *DBPath) {
+func NewDBPath(path string, targetSize uint64) (dbPath *DBPath) {
 	cpath := C.CString(path)
-	dbPath = NewNativeDBPath(C.rocksdb_dbpath_create(cpath, C.uint64_t(target_size)))
+	dbPath = NewNativeDBPath(C.rocksdb_dbpath_create(cpath, C.uint64_t(targetSize)))
 	C.free(unsafe.Pointer(cpath))
 	return
 }
@@ -31,10 +31,10 @@ func (dbpath *DBPath) Destroy() {
 
 // NewDBPathsFromData creates a slice with allocated DBPath objects
 // from paths and target_sizes.
-func NewDBPathsFromData(paths []string, target_sizes []uint64) []*DBPath {
+func NewDBPathsFromData(paths []string, targetSizes []uint64) []*DBPath {
 	dbpaths := make([]*DBPath, len(paths))
 	for i, path := range paths {
-		targetSize := target_sizes[i]
+		targetSize := targetSizes[i]
 		dbpaths[i] = NewDBPath(path, targetSize)
 	}
 

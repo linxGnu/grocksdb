@@ -114,22 +114,22 @@ func (db *OptimisticTransactionDB) TransactionBegin(
 }
 
 // Close closes the database.
-func (transactionDB *OptimisticTransactionDB) Close() {
-	C.rocksdb_optimistictransactiondb_close(transactionDB.c)
-	transactionDB.c = nil
+func (db *OptimisticTransactionDB) Close() {
+	C.rocksdb_optimistictransactiondb_close(db.c)
+	db.c = nil
 }
 
 // GetBaseDB returns base-database.
-func (transactionDB *OptimisticTransactionDB) GetBaseDB() *DB {
+func (db *OptimisticTransactionDB) GetBaseDB() *DB {
 	return &DB{
-		c:    C.rocksdb_optimistictransactiondb_get_base_db(transactionDB.c),
-		name: transactionDB.name,
-		opts: transactionDB.opts,
+		c:    C.rocksdb_optimistictransactiondb_get_base_db(db.c),
+		name: db.name,
+		opts: db.opts,
 	}
 }
 
 // CloseBaseDB closes base-database.
-func (transactionDB *OptimisticTransactionDB) CloseBaseDB(db *DB) {
-	C.rocksdb_optimistictransactiondb_close_base_db(db.c)
-	db.c = nil
+func (db *OptimisticTransactionDB) CloseBaseDB(base *DB) {
+	C.rocksdb_optimistictransactiondb_close_base_db(base.c)
+	base.c = nil
 }

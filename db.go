@@ -656,6 +656,17 @@ func (db *DB) NewIterators(opts *ReadOptions, cfs []*ColumnFamilyHandle) (iters 
 	return
 }
 
+// GetUpdatesSince if the sequence number is non existent, it returns an iterator
+// at the first available seq_no after the requested seq_no.
+//
+// Must set WAL_ttl_seconds or WAL_size_limit_MB to large values to
+// use this api, else the WAL files will get
+// cleared aggressively and the iterator might keep getting invalid before
+// an update is read.
+//
+// Note: this API is not yet consistent with WritePrepared transactions.
+// Sets iter to an iterator that is positioned at a write-batch containing
+// seq_number.
 func (db *DB) GetUpdatesSince(seqNumber uint64) (iter *WalIterator, err error) {
 	var cErr *C.char
 
@@ -667,6 +678,7 @@ func (db *DB) GetUpdatesSince(seqNumber uint64) (iter *WalIterator, err error) {
 	return
 }
 
+// GetLatestSequenceNumber returns sequence number of the most recent transaction.
 func (db *DB) GetLatestSequenceNumber() uint64 {
 	return uint64(C.rocksdb_get_latest_sequence_number(db.c))
 }
@@ -834,14 +846,13 @@ func (db *DB) GetApproximateSizesCF(cf *ColumnFamilyHandle, ranges []Range) []ui
 
 // SetOptions dynamically changes options through the SetOptions API.
 func (db *DB) SetOptions(keys, values []string) (err error) {
-	num_keys := len(keys)
-
-	if num_keys == 0 {
+	numKeys := len(keys)
+	if numKeys == 0 {
 		return nil
 	}
 
-	cKeys := make([]*C.char, num_keys)
-	cValues := make([]*C.char, num_keys)
+	cKeys := make([]*C.char, numKeys)
+	cValues := make([]*C.char, numKeys)
 	for i := range keys {
 		cKeys[i] = C.CString(keys[i])
 		cValues[i] = C.CString(values[i])
@@ -851,7 +862,7 @@ func (db *DB) SetOptions(keys, values []string) (err error) {
 
 	C.rocksdb_set_options(
 		db.c,
-		C.int(num_keys),
+		C.int(numKeys),
 		&cKeys[0],
 		&cValues[0],
 		&cErr,
@@ -863,14 +874,13 @@ func (db *DB) SetOptions(keys, values []string) (err error) {
 
 // SetOptionsCF dynamically changes options through the SetOptions API for specific Column Family.
 func (db *DB) SetOptionsCF(cf *ColumnFamilyHandle, keys, values []string) (err error) {
-	num_keys := len(keys)
-
-	if num_keys == 0 {
+	numKeys := len(keys)
+	if numKeys == 0 {
 		return nil
 	}
 
-	cKeys := make([]*C.char, num_keys)
-	cValues := make([]*C.char, num_keys)
+	cKeys := make([]*C.char, numKeys)
+	cValues := make([]*C.char, numKeys)
 	for i := range keys {
 		cKeys[i] = C.CString(keys[i])
 		cValues[i] = C.CString(values[i])
@@ -881,7 +891,7 @@ func (db *DB) SetOptionsCF(cf *ColumnFamilyHandle, keys, values []string) (err e
 	C.rocksdb_set_options_cf(
 		db.c,
 		cf.c,
-		C.int(num_keys),
+		C.int(numKeys),
 		&cKeys[0],
 		&cValues[0],
 		&cErr,
@@ -949,7 +959,7 @@ func (db *DB) CompactRangeCF(cf *ColumnFamilyHandle, r Range) {
 	C.rocksdb_compact_range_cf(db.c, cf.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)))
 }
 
-// CompactRange runs a manual compaction on the Range of keys given. This is
+// CompactRangeOpt runs a manual compaction on the Range of keys given with provided options. This is
 // not likely to be needed for typical usage.
 func (db *DB) CompactRangeOpt(r Range, opt *CompactRangeOptions) {
 	cStart := byteToChar(r.Start)
@@ -957,8 +967,8 @@ func (db *DB) CompactRangeOpt(r Range, opt *CompactRangeOptions) {
 	C.rocksdb_compact_range_opt(db.c, opt.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)))
 }
 
-// CompactRangeCF runs a manual compaction on the Range of keys given on the
-// given column family. This is not likely to be needed for typical usage.
+// CompactRangeCFOpt runs a manual compaction on the Range of keys given on the
+// given column family with provided options. This is not likely to be needed for typical usage.
 func (db *DB) CompactRangeCFOpt(cf *ColumnFamilyHandle, r Range, opt *CompactRangeOptions) {
 	cStart := byteToChar(r.Start)
 	cLimit := byteToChar(r.Limit)
