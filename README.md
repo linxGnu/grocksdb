@@ -19,8 +19,11 @@ convention of how/when to free c-mem, thus break the rule of [tecbot/gorocksdb](
 
 `grocksdb` contains built static version of `Rocksdb`. You have to do nothing on your machine. Just install it like other go libraries:
 
-```
+```bash
 go get -u github.com/linxGnu/grocksdb
+
+# Build your project with `static_rocksdb` tags:
+go build -tags static_rocksdb
 ```
 
 ### Static lib (Linux, Mac OS)
@@ -28,7 +31,8 @@ go get -u github.com/linxGnu/grocksdb
 If you don't trust my built-ready static version, you could build your own:
 
 #### For CentOS/Mac OS:
-```
+
+```bash
 # Below scripts could be found in root of repo.
 
 # Centos
@@ -53,7 +57,7 @@ sh build_macos.sh
 
 Make sure to install libraries for linking before making targets.
 
-```
+```bash
 # build static libs
 make deps
 make rocksdb
