@@ -5,6 +5,7 @@ GOOS_GOARCH_NATIVE := $(shell go env GOHOSTOS)_$(shell go env GOHOSTARCH)
 
 ROOT_DIR=${PWD}
 DEST=$(ROOT_DIR)/dist/$(GOOS_GOARCH)
+DEST_LIB=$(DEST)/lib
 DEST_INCLUDE=$(DEST)/include
 
 MAKE_FLAGS = -j8
@@ -30,7 +31,7 @@ default_target: deps rocksdb
 .PHONY: prepare
 prepare:
 	rm -rf $(DEST)
-	mkdir -p $(DEST_INCLUDE)/zlib $(DEST_INCLUDE)/snappy $(DEST_INCLUDE)/lz4 $(DEST_INCLUDE)/zstd $(DEST_INCLUDE)/bz2
+	mkdir -p $(DEST_LIB) $(DEST_INCLUDE)
 
 .PHONY: zlib
 zlib:
@@ -38,8 +39,8 @@ zlib:
 	cd libs/zlib && git checkout $(ZLIB_COMMIT)
 	cd libs/zlib && CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' ./configure --static && \
 	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) all
-	cp libs/zlib/libz.a $(DEST)/
-	cp libs/zlib/*.h $(DEST_INCLUDE)/zlib/
+	cp libs/zlib/libz.a $(DEST_LIB)/
+	cp libs/zlib/*.h $(DEST_INCLUDE)/
 
 .PHONY: snappy
 snappy:
@@ -48,30 +49,30 @@ snappy:
 	cd libs/snappy && rm -rf build && mkdir -p build && cd build && \
 	CFLAGS='-O2 ${EXTRA_CFLAGS}' CXXFLAGS='-O2 ${EXTRA_CXXFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && \
 	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) snappy
-	cp libs/snappy/build/libsnappy.a $(DEST)/
-	cp libs/snappy/*.h $(DEST_INCLUDE)/snappy/
+	cp libs/snappy/build/libsnappy.a $(DEST_LIB)/
+	cp libs/snappy/*.h $(DEST_INCLUDE)/
 
 .PHONY: lz4
 lz4:
 	git submodule update --remote --init --recursive -- libs/lz4
 	cd libs/lz4 && git checkout $(LZ4_COMMIT)
 	cd libs/lz4 && $(MAKE) clean && $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' lz4 lz4-release
-	cp libs/lz4/lib/liblz4.a $(DEST)/
-	cp libs/lz4/lib/*.h $(DEST_INCLUDE)/lz4/
+	cp libs/lz4/lib/liblz4.a $(DEST_LIB)/
+	cp libs/lz4/lib/*.h $(DEST_INCLUDE)/
 
 .PHONY: zstd
 zstd:
 	git submodule update --remote --init --recursive -- libs/zstd
 	cd libs/zstd && git checkout $(ZSTD_COMMIT)
 	cd libs/zstd/lib && $(MAKE) clean && DESTDIR=. PREFIX= $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' all install
-	cp libs/zstd/lib/libzstd.a $(DEST)/
-	cp libs/zstd/lib/include/*.h $(DEST_INCLUDE)/zstd/
+	cp libs/zstd/lib/libzstd.a $(DEST_LIB)/
+	cp libs/zstd/lib/include/*.h $(DEST_INCLUDE)/
 
 .PHONY: bz2
 bz2:
 	cd libs/bzip2 && $(MAKE) $(MAKEFLAGS) CFLAGS='-fPIC -O2 -g -D_FILE_OFFSET_BITS=64 ${EXTRA_CFLAGS}' AR='ar ${EXTRA_ARFLAGS}' bzip2
-	cp libs/bzip2/libbz2.a $(DEST)/
-	cp libs/bzip2/*.h $(DEST_INCLUDE)/bz2/
+	cp libs/bzip2/libbz2.a $(DEST_LIB)/
+	cp libs/bzip2/*.h $(DEST_INCLUDE)/
 
 .PHONY: rocksdb
 rocksdb:
@@ -80,5 +81,5 @@ rocksdb:
 	CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' CXXFLAGS='-fPIC -O2 ${EXTRA_CXXFLAGS} -Wno-error=shadow' \
 	USE_RTTI=1 $(MAKE) $(MAKE_FLAGS) static_lib
 	cd libs/rocksdb && strip $(STRIPFLAGS) librocksdb.a
-	cp libs/rocksdb/librocksdb.a $(DEST)/
+	cp libs/rocksdb/librocksdb.a $(DEST_LIB)/
 	cp -R libs/rocksdb/include/rocksdb $(DEST_INCLUDE)/

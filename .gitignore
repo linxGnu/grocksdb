@@ -12,3 +12,5 @@
 *.out
 *.o
 *.DS_Store*
+libs/bzip2/bzip2
+libs/bzip2/bzip2.a
