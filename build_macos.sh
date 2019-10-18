@@ -4,8 +4,7 @@
 brew install bzip2 lz4 snappy zlib
 
 # build rocksdb
-make deps
-make rocksdb
+make all
 
 # remove deps
 brew remove bzip2 lz4 snappy zlib

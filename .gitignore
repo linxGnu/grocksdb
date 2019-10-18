@@ -14,3 +14,4 @@
 *.DS_Store*
 libs/bzip2/bzip2
 libs/bzip2/bzip2.a
+libs/bzip2/libbz2.a

@@ -25,8 +25,7 @@ rm -rf zstd-1.4.3 zstd-1.4.3.tar.gz
 
 # build rocksdb
 PATH=$PATH:/opt/cmake/bin
-make deps
-make rocksdb
+make all
 
 # remove deps
 yum remove -y snappy-devel zlib-devel bzip2-devel lz4-devel

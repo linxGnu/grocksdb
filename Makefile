@@ -24,9 +24,7 @@ ZSTD_COMMIT = 8b6d96827c24dd09109830272f413254833317d9
 BZ2_COMMIT = 6a8690fc8d26c815e798c588f796eabe9d684cf0
 ROCKSDB_COMMIT = d47cdbc1888440a75ecf43646fd1ddab8ebae9be
 
-deps: prepare zlib snappy bz2 lz4 zstd
-
-default_target: deps rocksdb
+all: prepare zlib snappy bz2 lz4 zstd rocksdb
 
 .PHONY: prepare
 prepare:
@@ -37,7 +35,7 @@ prepare:
 zlib:
 	git submodule update --remote --init --recursive -- libs/zlib
 	cd libs/zlib && git checkout $(ZLIB_COMMIT)
-	cd libs/zlib && CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' ./configure --static && \
+	cd libs/zlib && CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' ./configure --static && \
 	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) all
 	cp libs/zlib/libz.a $(DEST_LIB)/
 	cp libs/zlib/*.h $(DEST_INCLUDE)/
@@ -47,7 +45,7 @@ snappy:
 	git submodule update --remote --init --recursive -- libs/snappy
 	cd libs/snappy && git checkout $(SNAPPY_COMMIT)
 	cd libs/snappy && rm -rf build && mkdir -p build && cd build && \
-	CFLAGS='-O2 ${EXTRA_CFLAGS}' CXXFLAGS='-O2 ${EXTRA_CXXFLAGS}' LDFLAGS='${EXTRA_LDFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && \
+	CFLAGS='-O2 ${EXTRA_CFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && \
 	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) snappy
 	cp libs/snappy/build/libsnappy.a $(DEST_LIB)/
 	cp libs/snappy/*.h $(DEST_INCLUDE)/
@@ -78,8 +76,7 @@ bz2:
 rocksdb:
 	git submodule update --remote --init --recursive -- libs/rocksdb
 	cd libs/rocksdb && git checkout $(ROCKSDB_COMMIT) && $(MAKE) clean && \
-	CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' CXXFLAGS='-fPIC -O2 ${EXTRA_CXXFLAGS} -Wno-error=shadow' \
-	USE_RTTI=1 $(MAKE) $(MAKE_FLAGS) static_lib
+	CXXFLAGS='-fPIC -O2 -Wno-error=shadow ${EXTRA_CXXFLAGS}' $(MAKE) $(MAKE_FLAGS) static_lib
 	cd libs/rocksdb && strip $(STRIPFLAGS) librocksdb.a
 	cp libs/rocksdb/librocksdb.a $(DEST_LIB)/
 	cp -R libs/rocksdb/include/rocksdb $(DEST_INCLUDE)/
