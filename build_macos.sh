@@ -1,13 +1,13 @@
 #!/bin/sh
 
-# install deps for linking
-brew install bzip2 lz4 snappy zlib
+# install snappy for linking
+brew install snappy
 
 # build rocksdb
-make all
+make
 
-# remove deps
-brew remove bzip2 lz4 snappy zlib
+# remove snappy
+brew remove snappy
 
 # test
 go test -v -tags static_rocksdb
