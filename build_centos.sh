@@ -6,11 +6,11 @@ yum update -y
 # install tool
 yum install -y gcc gcc-c++ git pkg-config make which
 
-# install deps (for linking) and temporary build tool
-yum install -y snappy-devel cmake
+# install temporary build tool
+yum install -y cmake
 
 # build rocksdb
 make
 
-# remove deps
-yum remove -y snappy-devel cmake
+# remove temporary build tool
+yum remove -y cmake

@@ -48,7 +48,7 @@ snappy:
 	cd libs/snappy && git checkout $(SNAPPY_COMMIT)
 	cd libs/snappy && rm -rf build && mkdir -p build && cd build && \
 	CFLAGS='-O2 ${EXTRA_CFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && \
-	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) snappy
+	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) install
 	cp libs/snappy/build/libsnappy.a $(DEST_LIB)/
 	cp libs/snappy/*.h $(DEST_INCLUDE)/
 

@@ -30,16 +30,10 @@ go build -tags static_rocksdb
 
 If you don't trust my built-ready static version, you could build your own:
 
-#### For CentOS/Mac OS:
+#### For CentOS:
 
 ```bash
-# Below scripts could be found in root of repo.
-
-# Centos
 sh build_centos.sh
-
-# Mac OS
-sh build_macos.sh
 ```
 
 #### Others:
@@ -59,8 +53,7 @@ Make sure to install libraries for linking before making targets.
 
 ```bash
 # build static libs
-make deps
-make rocksdb
+make
 
 # On success, you could remove above linked libraries safely
 ```
