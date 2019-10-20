@@ -8,6 +8,3 @@ make
 
 # remove snappy
 brew remove snappy
-
-# test
-go test -v -tags static_rocksdb
