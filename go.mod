@@ -1,7 +1,5 @@
 module github.com/linxGnu/grocksdb
 
-go 1.13
-
 require (
 	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
