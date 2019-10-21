@@ -20,6 +20,13 @@ ZSTD_COMMIT = ed65210c9b6635e21e67e60138f86d04a071681f
 BZ2_COMMIT = 6a8690fc8d26c815e798c588f796eabe9d684cf0
 ROCKSDB_COMMIT = d47cdbc1888440a75ecf43646fd1ddab8ebae9be
 
+ROCKSDB_EXTRA_CXXFLAGS := 
+ifeq ($(GOOS), darwin)
+	ROCKSDB_EXTRA_CXXFLAGS += -fPIC -O2 -w -I$(DEST_INCLUDE) -DZLIB -DBZIP2 -DSNAPPY -DLZ4 -DZSTD
+else
+	ROCKSDB_EXTRA_CXXFLAGS += -fPIC -O2 -Wno-error=shadow -I$(DEST_INCLUDE) -DZLIB -DBZIP2 -DSNAPPY -DLZ4 -DZSTD
+endif
+
 default: prepare zlib snappy bz2 lz4 zstd rocksdb
 
 .PHONY: prepare
@@ -35,8 +42,6 @@ zlib:
 	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) all
 	cp libs/zlib/libz.a $(DEST_LIB)/
 	cp libs/zlib/*.h $(DEST_INCLUDE)/
-	cp libs/zlib/libz.a /usr/local/lib/
-	cp libs/zlib/*.h /usr/local/include/
 
 .PHONY: snappy
 snappy:
@@ -44,8 +49,9 @@ snappy:
 	cd libs/snappy && git checkout $(SNAPPY_COMMIT)
 	cd libs/snappy && rm -rf build && mkdir -p build && cd build && \
 	CFLAGS='-O2 ${EXTRA_CFLAGS}' cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && \
-	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) install
+	$(MAKE) clean && $(MAKE) $(MAKE_FLAGS) snappy
 	cp libs/snappy/build/libsnappy.a $(DEST_LIB)/
+	cp libs/snappy/build/*.h $(DEST_INCLUDE)/
 	cp libs/snappy/*.h $(DEST_INCLUDE)/
 
 .PHONY: lz4
@@ -55,8 +61,6 @@ lz4:
 	cd libs/lz4 && $(MAKE) clean && $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' lz4 lz4-release
 	cp libs/lz4/lib/liblz4.a $(DEST_LIB)/
 	cp libs/lz4/lib/*.h $(DEST_INCLUDE)/
-	cp libs/lz4/lib/liblz4.a /usr/local/lib/
-	cp libs/lz4/lib/*.h /usr/local/include/
 
 .PHONY: zstd
 zstd:
@@ -65,22 +69,22 @@ zstd:
 	cd libs/zstd/lib && $(MAKE) clean && DESTDIR=. PREFIX= $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' default install
 	cp libs/zstd/lib/libzstd.a $(DEST_LIB)/
 	cp libs/zstd/lib/include/*.h $(DEST_INCLUDE)/
-	cp libs/zstd/lib/libzstd.a /usr/local/lib/
-	cp libs/zstd/lib/include/*.h /usr/local/include/
 
 .PHONY: bz2
 bz2:
 	cd libs/bzip2 && $(MAKE) $(MAKEFLAGS) CFLAGS='-fPIC -O2 -g -D_FILE_OFFSET_BITS=64 ${EXTRA_CFLAGS}' AR='ar ${EXTRA_ARFLAGS}' bzip2
 	cp libs/bzip2/libbz2.a $(DEST_LIB)/
 	cp libs/bzip2/*.h $(DEST_INCLUDE)/
-	cp libs/bzip2/libbz2.a /usr/local/lib/
-	cp libs/bzip2/*.h /usr/local/include/
 
 .PHONY: rocksdb
 rocksdb:
 	git submodule update --remote --init --recursive -- libs/rocksdb
 	cd libs/rocksdb && git checkout $(ROCKSDB_COMMIT) && $(MAKE) clean && \
-	CXXFLAGS='-fPIC -O2 -Wno-error=shadow ${EXTRA_CXXFLAGS}' $(MAKE) $(MAKE_FLAGS) static_lib
+	$(MAKE) $(MAKE_FLAGS) EXTRA_CXXFLAGS='$(ROCKSDB_EXTRA_CXXFLAGS)' EXTRA_LDFLAGS='-L$(DEST_LIB)' static_lib
 	cd libs/rocksdb && strip $(STRIPFLAGS) librocksdb.a
 	cp libs/rocksdb/librocksdb.a $(DEST_LIB)/
 	cp -R libs/rocksdb/include/rocksdb $(DEST_INCLUDE)/
+
+.PHONY: test
+test:
+	go test -v -count=1 -tags builtin_static
