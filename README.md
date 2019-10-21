@@ -55,6 +55,15 @@ Then, build your project with tags (same as above):
 go build -tags builtin_static
 ```
 
+### Existed Static lib
+
+In case, already have static-lib version of rocksdb, you could build your project with:
+
+```
+# don't use builtin static
+go build -tags static
+```
+
 ### Shared lib
 
 You'll need to build [RocksDB](https://github.com/facebook/rocksdb) v6.3.6+ on your machine.
