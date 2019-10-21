@@ -9,5 +9,5 @@ install:
   - go get -u github.com/mattn/goveralls
 
 script:
-- GO111MODULE="on" go test -v -tags static_rocksdb -coverprofile=coverage.out
-- $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci
+  - GO111MODULE="on" go test -v -tags builtin_static -coverprofile=coverage.out
+  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci
