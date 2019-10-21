@@ -17,7 +17,11 @@ convention of how/when to free c-mem, thus break the rule of [tecbot/gorocksdb](
 
 ### Default - Builtin Static (Linux, Mac OS)
 
-`grocksdb` contains built static version of `Rocksdb` - gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39). You have to do nothing on your machine. Just install it like other go libraries:
+`grocksdb` contains built static version of `Rocksdb` with:
+- gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39)
+- Apple clang version 11.0.0 (clang-1100.0.33.8). 
+
+You have to do nothing on your machine. Just install it like other go libraries:
 
 ```bash
 go get -u github.com/linxGnu/grocksdb
@@ -28,34 +32,27 @@ go build -tags builtin_static
 
 ### Static lib (Linux, Mac OS)
 
-If you don't trust my built-ready static version, you could build your own:
-
-#### For CentOS:
-
-```bash
-sh build_centos.sh
-```
-
-#### Others:
+If you don't trust my builtin/want to build with your compiler/env:
 
 ##### Prerequisite
 - cmake 3.11+
 - make
-- For linking purpose:
-  - libsnappy-dev/snappy-devel
-  - zlib1g-dev/zlib-devel
-  - libbz2-dev/bzip2-devel
-  - liblz4-dev/lz4-devel
 
 ##### Build
 
 Make sure to install libraries for linking before making targets.
 
 ```bash
+# You could find `Makefile` at root of repository
+
 # build static libs
 make
+```
 
-# On success, you could remove above linked libraries safely
+Then, build your project with tags (same as above):
+
+```
+go build -tags builtin_static
 ```
 
 ### Shared lib
