@@ -16,9 +16,9 @@ STRIPFLAGS = -S -x
 ZLIB_COMMIT = cacf7f1d4e3d44d871b605da3b647f07d718623f
 SNAPPY_COMMIT = e9e11b84e629c3e06fbaa4f0a86de02ceb9d6992
 LZ4_COMMIT = e8baeca51ef2003d6c9ec21c32f1563fef1065b9
-ZSTD_COMMIT = ed65210c9b6635e21e67e60138f86d04a071681f
+ZSTD_COMMIT = a3d655d2255481333e09ecca9855f1b37f757c52
 BZ2_COMMIT = 6a8690fc8d26c815e798c588f796eabe9d684cf0
-ROCKSDB_COMMIT = d47cdbc1888440a75ecf43646fd1ddab8ebae9be
+ROCKSDB_COMMIT = e3169e3ea8762d2f34880742106858a23c8dc8b7
 
 ROCKSDB_EXTRA_CXXFLAGS := 
 ifeq ($(GOOS), darwin)
@@ -58,7 +58,7 @@ snappy:
 lz4:
 	git submodule update --remote --init --recursive -- libs/lz4
 	cd libs/lz4 && git checkout $(LZ4_COMMIT)
-	cd libs/lz4 && $(MAKE) clean && $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' lz4 lz4-release
+	cd libs/lz4 && $(MAKE) clean && $(MAKE) $(MAKE_FLAGS) CFLAGS='-fPIC -O2 ${EXTRA_CFLAGS}' lz4-release
 	cp libs/lz4/lib/liblz4.a $(DEST_LIB)/
 	cp libs/lz4/lib/*.h $(DEST_INCLUDE)/
 

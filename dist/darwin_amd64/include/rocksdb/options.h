@@ -275,6 +275,8 @@ struct ColumnFamilyOptions : public AdvancedColumnFamilyOptions {
   // this option helps reducing the cpu usage of long-running compactions. The
   // feature is disabled when max_subcompactions is greater than one.
   //
+  // NOTE: This feautre is currently incompatible with RangeDeletes.
+  //
   // Default: 0
   //
   // Dynamically changeable through SetOptions() API
@@ -760,6 +762,8 @@ struct DBOptions {
   // for this mode if using block-based table.
   //
   // Default: false
+  // This flag has no affect on the behavior of compaction and plan to delete
+  // in the future.
   bool new_table_reader_for_compaction_inputs = false;
 
   // If non-zero, we perform bigger reads when doing compaction. If you're
@@ -1085,6 +1089,13 @@ struct DBOptions {
   // If set to true, takes precedence over
   // ReadOptions::background_purge_on_iterator_cleanup.
   bool avoid_unnecessary_blocking_io = false;
+
+  // The number of bytes to prefetch when reading the log. This is mostly useful
+  // for reading a remotely located log, as it can save the number of
+  // round-trips. If 0, then the prefetching is disabled.
+  //
+  // Default: 0
+  size_t log_readahead_size = 0;
 };
 
 // Options to control the behavior of a database (passed to DB::Open)
@@ -1487,6 +1498,22 @@ struct TraceOptions {
   uint64_t sampling_frequency = 1;
   // Note: The filtering happens before sampling.
   uint64_t filter = kTraceFilterNone;
+};
+
+// ImportColumnFamilyOptions is used by ImportColumnFamily()
+struct ImportColumnFamilyOptions {
+  // Can be set to true to move the files instead of copying them.
+  bool move_files = false;
+};
+
+// Options used with DB::GetApproximateSizes()
+struct SizeApproximationOptions {
+  // Defines whether the returned size should include the recently written
+  // data in the mem-tables. If set to false, include_files must be true.
+  bool include_memtabtles = false;
+  // Defines whether the returned size should include data serialized to disk.
+  // If set to false, include_memtabtles must be true.
+  bool include_files = true;
 };
 
 }  // namespace rocksdb

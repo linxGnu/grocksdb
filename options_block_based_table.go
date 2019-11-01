@@ -10,12 +10,33 @@ type IndexType uint
 const (
 	// KBinarySearchIndexType a space efficient index block that is optimized for
 	// binary-search-based index.
-	KBinarySearchIndexType = 0
+	KBinarySearchIndexType IndexType = 0x00
+
 	// KHashSearchIndexType the hash index, if enabled, will do the hash lookup when
 	// `Options.prefix_extractor` is provided.
-	KHashSearchIndexType = 1
+	KHashSearchIndexType IndexType = 0x01
+
 	// KTwoLevelIndexSearchIndexType a two-level index implementation. Both levels are binary search indexes.
-	KTwoLevelIndexSearchIndexType = 2
+	KTwoLevelIndexSearchIndexType IndexType = 0x02
+
+	// KBinarySearchWithFirstKey like KBinarySearchIndexType, but index also contains
+	// first key of each block.
+	//
+	// This allows iterators to defer reading the block until it's actually
+	// needed. May significantly reduce read amplification of short range scans.
+	// Without it, iterator seek usually reads one block from each level-0 file
+	// and from each level, which may be expensive.
+	// Works best in combination with:
+	//  - IndexShorteningMode::kNoShortening,
+	//  - custom FlushBlockPolicy to cut blocks at some meaningful boundaries,
+	//    e.g. when prefix changes.
+	// Makes the index significantly bigger (2x or more), especially when keys
+	// are long.
+	//
+	// IO errors are not handled correctly in this mode right now: if an error
+	// happens when lazily reading a block in value(), value() returns empty
+	// slice, and you need to call Valid()/status() afterwards.
+	KBinarySearchWithFirstKey IndexType = 0x03
 )
 
 // BlockBasedTableOptions represents block-based table options.
@@ -229,7 +250,8 @@ func (opts *BlockBasedTableOptions) SetHashIndexAllowCollision(value bool) {
 // cache index and filter blocks with high priority. If set to true, depending on implementation of
 // block cache, index and filter blocks may be less likely to be evicted
 // than data blocks.
-// Default: false.
+//
+// Default: true.
 func (opts *BlockBasedTableOptions) SetCacheIndexAndFilterBlocksWithHighPriority(value bool) {
 	C.rocksdb_block_based_options_set_cache_index_and_filter_blocks_with_high_priority(opts.c, boolToChar(value))
 }
@@ -239,6 +261,7 @@ func (opts *BlockBasedTableOptions) SetCacheIndexAndFilterBlocksWithHighPriority
 // the cache, but a reference is held in the "table reader" object so the
 // blocks are pinned and only evicted from cache when the table reader is
 // freed. This is not limited to l0 in LSM tree.
+//
 // Default: true.
 func (opts *BlockBasedTableOptions) SetPinTopLevelIndexAndFilter(value bool) {
 	C.rocksdb_block_based_options_set_pin_top_level_index_and_filter(opts.c, boolToChar(value))
