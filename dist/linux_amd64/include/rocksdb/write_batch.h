@@ -271,7 +271,7 @@ class WriteBatch : public WriteBatchBase {
     virtual bool Continue();
 
    protected:
-    friend class WriteBatch;
+    friend class WriteBatchInternal;
     virtual bool WriteAfterCommit() const { return true; }
     virtual bool WriteBeforePrepare() const { return false; }
   };
@@ -284,7 +284,7 @@ class WriteBatch : public WriteBatchBase {
   size_t GetDataSize() const { return rep_.size(); }
 
   // Returns the number of updates in the batch
-  int Count() const;
+  uint32_t Count() const;
 
   // Returns true if PutCF will be called during Iterate
   bool HasPut() const;
