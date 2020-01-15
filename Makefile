@@ -23,9 +23,9 @@ JEMALLOC_COMMIT = ea6b3e973b477b8061e0076bb257dbd7f3faa756
 
 ROCKSDB_EXTRA_CXXFLAGS := 
 ifeq ($(GOOS), darwin)
-	ROCKSDB_EXTRA_CXXFLAGS += -fPIC -O3 -w -I$(DEST_INCLUDE)
+	ROCKSDB_EXTRA_CXXFLAGS += -fPIC -O3 -w
 else
-	ROCKSDB_EXTRA_CXXFLAGS += -fPIC -O3 -Wno-error=shadow -I$(DEST_INCLUDE)
+	ROCKSDB_EXTRA_CXXFLAGS += -fPIC -O3 -Wno-error=shadow
 endif
 
 default: prepare jemalloc zlib snappy bz2 lz4 zstd rocksdb
@@ -87,8 +87,8 @@ bz2:
 rocksdb:
 	git submodule update --remote --init --recursive -- libs/rocksdb
 	cd libs/rocksdb && git checkout $(ROCKSDB_COMMIT) && mkdir -p build && cd build && cmake -DCMAKE_LIBRARY_PATH=${DEST}/lib -DCMAKE_INCLUDE_PATH=${DEST}/include \
-	-DWITH_BZ2=1  -DCMAKE_BUILD_TYPE=Release -DWITH_JEMALLOC=1 -DWITH_SNAPPY=1 -DWITH_LZ4=1 -DWITH_ZLIB=1 -DWITH_ZSTD=1 .. && \
-	EXTRA_CXXFLAGS='$(ROCKSDB_EXTRA_CXXFLAGS)' EXTRA_LDFLAGS='-L$(DEST_LIB)' $(MAKE) $(MAKE_FLAGS) rocksdb
+	-DCMAKE_CXX_FLAGS='$(ROCKSDB_EXTRA_CXXFLAGS)' -DWITH_BZ2=1 -DCMAKE_BUILD_TYPE=Release -DWITH_JEMALLOC=1 -DWITH_SNAPPY=1 -DWITH_LZ4=1 -DWITH_ZLIB=1 -DWITH_ZSTD=1 .. && \
+	$(MAKE) $(MAKE_FLAGS) rocksdb
 	cd libs/rocksdb/build && strip $(STRIPFLAGS) librocksdb.a
 	cp libs/rocksdb/build/librocksdb.a $(DEST_LIB)/
 	cp -R libs/rocksdb/include/rocksdb $(DEST_INCLUDE)/
