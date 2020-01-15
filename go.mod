@@ -6,3 +6,5 @@ require (
 	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
 	github.com/stretchr/testify v1.4.0
 )
+
+go 1.13

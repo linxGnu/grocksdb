@@ -13,3 +13,6 @@
 [submodule "libs/zstd"]
 	path = libs/zstd
 	url = https://github.com/facebook/zstd.git
+[submodule "libs/jemalloc"]
+	path = libs/jemalloc
+	url = https://github.com/jemalloc/jemalloc.git
