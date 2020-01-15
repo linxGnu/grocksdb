@@ -20,7 +20,7 @@
 /* #undef HAVE_GFLAGS */
 
 /* Define to 1 if you have Google Test. */
-/* #undef HAVE_GTEST */
+#define HAVE_GTEST 1
 
 /* Define to 1 if you have the `lzo2' library (-llzo2). */
 /* #undef HAVE_LIBLZO2 */
