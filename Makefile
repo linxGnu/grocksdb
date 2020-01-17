@@ -39,7 +39,7 @@ prepare:
 jemalloc:
 	git submodule update --remote --init --recursive -- libs/jemalloc
 	cd libs/jemalloc && git checkout $(JEMALLOC_COMMIT)
-	cd libs/jemalloc && sh autogen.sh && CFLAGS='-fPIC -O3 ${EXTRA_CFLAGS}' ./configure --prefix=$(DEST) --enable-prof && make build_lib_static && make install_lib_static install_include
+	cd libs/jemalloc && sh autogen.sh && CFLAGS='-fPIC -O3 ${EXTRA_CFLAGS}' ./configure --prefix=$(DEST) --enable-prof && $(MAKE) $(MAKE_FLAGS) build_lib_static && $(MAKE) $(MAKE_FLAGS) install_lib_static install_include
 
 .PHONY: zlib
 zlib:
@@ -87,8 +87,8 @@ bz2:
 rocksdb:
 	git submodule update --remote --init --recursive -- libs/rocksdb
 	cd libs/rocksdb && git checkout $(ROCKSDB_COMMIT) && mkdir -p build && cd build && cmake -DCMAKE_LIBRARY_PATH=${DEST}/lib -DCMAKE_INCLUDE_PATH=${DEST}/include \
-	-DCMAKE_CXX_FLAGS='$(ROCKSDB_EXTRA_CXXFLAGS)' -DWITH_BZ2=1 -DCMAKE_BUILD_TYPE=Release -DWITH_JEMALLOC=1 -DWITH_SNAPPY=1 -DWITH_LZ4=1 -DWITH_ZLIB=1 -DWITH_ZSTD=1 .. && \
-	$(MAKE) $(MAKE_FLAGS) rocksdb
+	-DCMAKE_CXX_FLAGS='$(ROCKSDB_EXTRA_CXXFLAGS)' -DWITH_JEMALLOC=1 -DWITH_BZ2=1 -DCMAKE_BUILD_TYPE=Release -DWITH_SNAPPY=1 -DWITH_LZ4=1 -DWITH_ZLIB=1 -DWITH_ZSTD=1 .. && \
+	DEBUG_LEVEL=0 $(MAKE) $(MAKE_FLAGS) rocksdb
 	cd libs/rocksdb/build && strip $(STRIPFLAGS) librocksdb.a
 	cp libs/rocksdb/build/librocksdb.a $(DEST_LIB)/
 	cp -R libs/rocksdb/include/rocksdb $(DEST_INCLUDE)/
