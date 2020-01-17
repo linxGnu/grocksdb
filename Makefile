@@ -19,7 +19,6 @@ LZ4_COMMIT = 0f749838bf29bc0d1df428e23cf3dbb76ec4e9fc
 ZSTD_COMMIT = 10f0e6993f9d2f682da6d04aa2385b7d53cbb4ee
 BZ2_COMMIT = 6a8690fc8d26c815e798c588f796eabe9d684cf0
 ROCKSDB_COMMIT = f48aa1c3084700bc72b73ee36f027e428f0dda86
-JEMALLOC_COMMIT = ea6b3e973b477b8061e0076bb257dbd7f3faa756
 
 ROCKSDB_EXTRA_CXXFLAGS := 
 ifeq ($(GOOS), darwin)
@@ -28,18 +27,12 @@ else
 	ROCKSDB_EXTRA_CXXFLAGS += -fPIC -O3 -Wno-error=shadow
 endif
 
-default: prepare jemalloc zlib snappy bz2 lz4 zstd rocksdb
+default: prepare zlib snappy bz2 lz4 zstd rocksdb
 
 .PHONY: prepare
 prepare:
 	rm -rf $(DEST)
 	mkdir -p $(DEST_LIB) $(DEST_INCLUDE)
-
-.PHONY: jemalloc
-jemalloc:
-	git submodule update --remote --init --recursive -- libs/jemalloc
-	cd libs/jemalloc && git checkout $(JEMALLOC_COMMIT)
-	cd libs/jemalloc && sh autogen.sh && CFLAGS='-fPIC -O3 ${EXTRA_CFLAGS}' ./configure --prefix=$(DEST) --enable-prof && $(MAKE) $(MAKE_FLAGS) build_lib_static && $(MAKE) $(MAKE_FLAGS) install_lib_static install_include
 
 .PHONY: zlib
 zlib:
@@ -87,7 +80,7 @@ bz2:
 rocksdb:
 	git submodule update --remote --init --recursive -- libs/rocksdb
 	cd libs/rocksdb && git checkout $(ROCKSDB_COMMIT) && mkdir -p build && cd build && cmake -DCMAKE_LIBRARY_PATH=${DEST}/lib -DCMAKE_INCLUDE_PATH=${DEST}/include \
-	-DCMAKE_CXX_FLAGS='$(ROCKSDB_EXTRA_CXXFLAGS)' -DWITH_JEMALLOC=1 -DWITH_BZ2=1 -DCMAKE_BUILD_TYPE=Release -DWITH_SNAPPY=1 -DWITH_LZ4=1 -DWITH_ZLIB=1 -DWITH_ZSTD=1 .. && \
+	-DCMAKE_CXX_FLAGS='$(ROCKSDB_EXTRA_CXXFLAGS)' -DWITH_BZ2=1 -DCMAKE_BUILD_TYPE=Release -DWITH_SNAPPY=1 -DWITH_LZ4=1 -DWITH_ZLIB=1 -DWITH_ZSTD=1 .. && \
 	DEBUG_LEVEL=0 $(MAKE) $(MAKE_FLAGS) rocksdb
 	cd libs/rocksdb/build && strip $(STRIPFLAGS) librocksdb.a
 	cp libs/rocksdb/build/librocksdb.a $(DEST_LIB)/
