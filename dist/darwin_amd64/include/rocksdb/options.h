@@ -269,17 +269,7 @@ struct ColumnFamilyOptions : public AdvancedColumnFamilyOptions {
   // Dynamically changeable through SetOptions() API
   uint64_t max_bytes_for_level_base = 256 * 1048576;
 
-  // If non-zero, compactions will periodically refresh the snapshot list. The
-  // delay for the first refresh is snap_refresh_nanos nano seconds and
-  // exponentially increases afterwards. When having many short-lived snapshots,
-  // this option helps reducing the cpu usage of long-running compactions. The
-  // feature is disabled when max_subcompactions is greater than one.
-  //
-  // NOTE: This feautre is currently incompatible with RangeDeletes.
-  //
-  // Default: 0
-  //
-  // Dynamically changeable through SetOptions() API
+  // Deprecated.
   uint64_t snap_refresh_nanos = 0;
 
   // Disable automatic compactions. Manual compactions can still
@@ -1089,10 +1079,10 @@ struct DBOptions {
   // independently if the process crashes later and tries to recover.
   bool atomic_flush = false;
 
-  // If true, ColumnFamilyHandle's and Iterator's destructors won't delete
-  // obsolete files directly and will instead schedule a background job
-  // to do it. Use it if you're destroying iterators or ColumnFamilyHandle-s
-  // from latency-sensitive threads.
+  // If true, working thread may avoid doing unnecessary and long-latency
+  // operation (such as deleting obsolete files directly or deleting memtable)
+  // and will instead schedule a background job to do it.
+  // Use it if you're latency-sensitive.
   // If set to true, takes precedence over
   // ReadOptions::background_purge_on_iterator_cleanup.
   bool avoid_unnecessary_blocking_io = false;

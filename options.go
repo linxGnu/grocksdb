@@ -1252,20 +1252,6 @@ func (opts *Options) SetUint64addMergeOperator() {
 	C.rocksdb_options_set_uint64add_merge_operator(opts.c)
 }
 
-// SetSnapRefreshNanos if non-zero, compactions will periodically refresh
-// the snapshot list. The delay for the first refresh is snap_refresh_nanos
-// nano seconds and exponentially increases afterwards. When having
-// many short-lived snapshots, this option helps reducing the cpu usage of
-// long-running compactions. The feature is disabled when
-// max_subcompactions is greater than one.
-//
-// Default: 0
-//
-// Dynamically changeable through SetOptions() API
-func (opts *Options) SetSnapRefreshNanos(value uint64) {
-	C.rocksdb_options_set_snap_refresh_nanos(opts.c, C.uint64_t(value))
-}
-
 // SetSkipStatsUpdateOnDBOpen if true, then DB::Open() will not update
 // the statistics used to optimize compaction decision by loading table
 // properties from many files. Turning off this feature will improve
