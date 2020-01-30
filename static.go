@@ -1,8 +1,6 @@
-// +build static
+// +build static !builtin_static
 
 package grocksdb
 
-// #cgo CFLAGS: -static
-// #cgo CXXFLAGS: -static
-// #cgo LDFLAGS: -lrocksdb -pthread -lstdc++ -ldl -lm -lzstd -llz4 -lz -lsnappy -lgflags
+// #cgo LDFLAGS: -lrocksdb -pthread -lstdc++ -ldl -lm -lzstd -llz4 -lz -lsnappy
 import "C"
