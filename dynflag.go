@@ -2,5 +2,5 @@
 
 package grocksdb
 
-// #cgo LDFLAGS: -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy -ldl
+// #cgo LDFLAGS: -lrocksdb -lstdc++ -lm -lz -lsnappy -ldl
 import "C"
