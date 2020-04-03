@@ -134,29 +134,49 @@ func TestColumnFamilyPutGetDelete(t *testing.T) {
 	givenKey1 := []byte("hello1")
 	givenVal1 := []byte("world1")
 
-	ensure.Nil(t, db.PutCF(wo, cfh[0], givenKey0, givenVal0))
-	actualVal0, err := db.GetCF(ro, cfh[0], givenKey0)
-	defer actualVal0.Free()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, actualVal0.Data(), givenVal0)
+	{
+		ensure.Nil(t, db.PutCF(wo, cfh[0], givenKey0, givenVal0))
+		actualVal0, err := db.GetCF(ro, cfh[0], givenKey0)
+		defer actualVal0.Free()
+		ensure.Nil(t, err)
+		ensure.DeepEqual(t, actualVal0.Data(), givenVal0)
 
-	ensure.Nil(t, db.PutCF(wo, cfh[1], givenKey1, givenVal1))
-	actualVal1, err := db.GetCF(ro, cfh[1], givenKey1)
-	defer actualVal1.Free()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, actualVal1.Data(), givenVal1)
+		ensure.Nil(t, db.PutCF(wo, cfh[1], givenKey1, givenVal1))
+		actualVal1, err := db.GetCF(ro, cfh[1], givenKey1)
+		defer actualVal1.Free()
+		ensure.Nil(t, err)
+		ensure.DeepEqual(t, actualVal1.Data(), givenVal1)
 
-	actualVal, err := db.GetCF(ro, cfh[0], givenKey1)
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, actualVal.Size(), 0)
-	actualVal, err = db.GetCF(ro, cfh[1], givenKey0)
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, actualVal.Size(), 0)
+		actualVal, err := db.GetCF(ro, cfh[0], givenKey1)
+		ensure.Nil(t, err)
+		ensure.DeepEqual(t, actualVal.Size(), 0)
+		actualVal, err = db.GetCF(ro, cfh[1], givenKey0)
+		ensure.Nil(t, err)
+		ensure.DeepEqual(t, actualVal.Size(), 0)
 
-	ensure.Nil(t, db.DeleteCF(wo, cfh[0], givenKey0))
-	actualVal, err = db.GetCF(ro, cfh[0], givenKey0)
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, actualVal.Size(), 0)
+		ensure.Nil(t, db.DeleteCF(wo, cfh[0], givenKey0))
+		actualVal, err = db.GetCF(ro, cfh[0], givenKey0)
+		ensure.Nil(t, err)
+		ensure.DeepEqual(t, actualVal.Size(), 0)
+	}
+
+	{
+		ensure.Nil(t, db.PutCF(wo, cfh[0], givenKey0, givenVal0))
+		actualVal0, err := db.GetCF(ro, cfh[0], givenKey0)
+		defer actualVal0.Free()
+		ensure.Nil(t, err)
+		ensure.DeepEqual(t, actualVal0.Data(), givenVal0)
+
+		ensure.Nil(t, db.DeleteRangeCF(wo, cfh[0], givenKey0, givenKey1))
+		actualVal, err := db.GetCF(ro, cfh[0], givenKey0)
+		ensure.Nil(t, err)
+		ensure.DeepEqual(t, actualVal.Size(), 0)
+
+		actualVal1, err := db.GetCF(ro, cfh[1], givenKey1)
+		defer actualVal1.Free()
+		ensure.Nil(t, err)
+		ensure.DeepEqual(t, actualVal1.Data(), givenVal1)
+	}
 }
 
 func newTestDBCF(t *testing.T, name string) (db *DB, cfh []*ColumnFamilyHandle, cleanup func()) {

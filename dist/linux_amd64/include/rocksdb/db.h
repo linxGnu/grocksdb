@@ -57,6 +57,7 @@ class TraceWriter;
 #ifdef ROCKSDB_LITE
 class CompactionJobInfo;
 #endif
+class FileSystem;
 
 extern const std::string kDefaultColumnFamilyName;
 extern const std::string kPersistentStatsColumnFamilyName;
@@ -715,6 +716,10 @@ class DB {
     //      timestamp of oldest unreleased snapshot.
     static const std::string kOldestSnapshotTime;
 
+    //  "rocksdb.oldest-snapshot-sequence" - returns number representing
+    //      sequence number of oldest unreleased snapshot.
+    static const std::string kOldestSnapshotSequence;
+
     //  "rocksdb.num-live-versions" - returns number of live versions. `Version`
     //      is an internal data structure. See version_set.h for details. More
     //      live versions often mean more SST files are held from being deleted,
@@ -1066,6 +1071,8 @@ class DB {
 
   // Get Env object from the DB
   virtual Env* GetEnv() const = 0;
+
+  virtual FileSystem* GetFileSystem() const;
 
   // Get DB Options that we use.  During the process of opening the
   // column family, the options provided when calling DB::Open() or

@@ -1040,6 +1040,22 @@ func (opts *Options) SetRateLimiter(rateLimiter *RateLimiter) {
 	C.rocksdb_options_set_ratelimiter(opts.c, rateLimiter.c)
 }
 
+// SetAtomicFlush if true, RocksDB supports flushing multiple column families and committing
+// their results atomically to MANIFEST. Note that it is not
+// necessary to set atomic_flush to true if WAL is always enabled since WAL
+// allows the database to be restored to the last persistent state in WAL.
+// This option is useful when there are column families with writes NOT
+// protected by WAL.
+// For manual flush, application has to specify which column families to
+// flush atomically in DB::Flush.
+// For auto-triggered flush, RocksDB atomically flushes ALL column families.
+//
+// Currently, any WAL-enabled writes after atomic flush may be replayed
+// independently if the process crashes later and tries to recover.
+func (opts *Options) SetAtomicFlush(value bool) {
+	C.rocksdb_options_set_atomic_flush(opts.c, boolToChar(value))
+}
+
 // SetMaxSequentialSkipInIterations specifies whether an iteration->Next()
 // sequentially skips over keys with the same user-key or not.
 //

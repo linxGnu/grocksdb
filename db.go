@@ -570,6 +570,20 @@ func (db *DB) DeleteCF(opts *WriteOptions, cf *ColumnFamilyHandle, key []byte) (
 	return
 }
 
+// DeleteRangeCF deletes keys that are between [startKey, endKey)
+func (db *DB) DeleteRangeCF(opts *WriteOptions, cf *ColumnFamilyHandle, startKey []byte, endKey []byte) (err error) {
+	var (
+		cErr      *C.char
+		cStartKey = byteToChar(startKey)
+		cEndKey   = byteToChar(endKey)
+	)
+
+	C.rocksdb_delete_range_cf(db.c, opts.c, cf.c, cStartKey, C.size_t(len(startKey)), cEndKey, C.size_t(len(endKey)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
 // Merge merges the data associated with the key with the actual data in the database.
 func (db *DB) Merge(opts *WriteOptions, key []byte, value []byte) (err error) {
 	var (
