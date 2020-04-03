@@ -39,6 +39,16 @@ const (
 	KBinarySearchWithFirstKey IndexType = 0x03
 )
 
+// DataBlockIndexType specifies index type that will be used for the data block.
+type DataBlockIndexType uint
+
+const (
+	// KDataBlockIndexTypeBinarySearch is traditional block type
+	KDataBlockIndexTypeBinarySearch DataBlockIndexType = 0
+	// KDataBlockIndexTypeBinarySearchAndHash additional hash index
+	KDataBlockIndexTypeBinarySearchAndHash DataBlockIndexType = 1
+)
+
 // BlockBasedTableOptions represents block-based table options.
 type BlockBasedTableOptions struct {
 	c *C.rocksdb_block_based_table_options_t
@@ -176,6 +186,19 @@ func (opts *BlockBasedTableOptions) SetWholeKeyFiltering(value bool) {
 // Default: kBinarySearch
 func (opts *BlockBasedTableOptions) SetIndexType(value IndexType) {
 	C.rocksdb_block_based_options_set_index_type(opts.c, C.int(value))
+}
+
+// SetDataBlockIndexType sets data block index type
+func (opts *BlockBasedTableOptions) SetDataBlockIndexType(value DataBlockIndexType) {
+	C.rocksdb_block_based_options_set_data_block_index_type(opts.c, C.int(value))
+}
+
+// SetDataBlockHashRatio is valid only when data_block_hash_index_type is
+// KDataBlockIndexTypeBinarySearchAndHash.
+//
+// Default value: 0.75
+func (opts *BlockBasedTableOptions) SetDataBlockHashRatio(value float64) {
+	C.rocksdb_block_based_options_set_data_block_hash_ratio(opts.c, C.double(value))
 }
 
 // SetIndexBlockRestartInterval same as block_restart_interval but used for the index block.
