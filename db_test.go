@@ -159,6 +159,7 @@ func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts fun
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
 	opts.SetCompression(ZSTDCompression)
+	opts.SetSkipCheckingSSTFileSizesOnDBOpen(true)
 	options := make([]*Options, len(columns))
 	for i := range options {
 		options[i] = opts
