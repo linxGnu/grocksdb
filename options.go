@@ -1056,6 +1056,14 @@ func (opts *Options) SetAtomicFlush(value bool) {
 	C.rocksdb_options_set_atomic_flush(opts.c, boolToChar(value))
 }
 
+// SetRowCache set global cache for table-level rows.
+//
+// Default: null (disabled)
+// Not supported in ROCKSDB_LITE mode!
+func (opts *Options) SetRowCache(cache *Cache) {
+	C.rocksdb_options_set_row_cache(opts.c, cache.c)
+}
+
 // SetMaxSequentialSkipInIterations specifies whether an iteration->Next()
 // sequentially skips over keys with the same user-key or not.
 //
@@ -1276,6 +1284,13 @@ func (opts *Options) SetUint64addMergeOperator() {
 // Default: false
 func (opts *Options) SetSkipStatsUpdateOnDBOpen(value bool) {
 	C.rocksdb_options_set_skip_stats_update_on_db_open(opts.c, boolToChar(value))
+}
+
+// SetSkipCheckingSSTFileSizesOnDBOpen skips checking sst file sizes on db openning
+//
+// Default: false
+func (opts *Options) SetSkipCheckingSSTFileSizesOnDBOpen(value bool) {
+	C.rocksdb_options_set_skip_checking_sst_file_sizes_on_db_open(opts.c, boolToChar(value))
 }
 
 // SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
