@@ -1472,6 +1472,23 @@ func (opts *Options) SetCuckooTableFactory(cuckooOpts *CuckooTableOptions) {
 	C.rocksdb_options_set_cuckoo_table_factory(opts.c, cuckooOpts.c)
 }
 
+// SetDumpMallocStats if true, then print malloc stats together with rocksdb.stats
+// when printing to LOG.
+func (opts *Options) SetDumpMallocStats(value bool) {
+	C.rocksdb_options_set_dump_malloc_stats(opts.c, boolToChar(value))
+}
+
+// SetMemtableWholeKeyFiltering enable whole key bloom filter in memtable. Note this will only take effect
+// if memtable_prefix_bloom_size_ratio is not 0. Enabling whole key filtering
+// can potentially reduce CPU usage for point-look-ups.
+//
+// Default: false (disable)
+//
+// Dynamically changeable through SetOptions() API
+func (opts *Options) SetMemtableWholeKeyFiltering(value bool) {
+	C.rocksdb_options_set_memtable_whole_key_filtering(opts.c, boolToChar(value))
+}
+
 // Destroy deallocates the Options object.
 func (opts *Options) Destroy() {
 	C.rocksdb_options_destroy(opts.c)

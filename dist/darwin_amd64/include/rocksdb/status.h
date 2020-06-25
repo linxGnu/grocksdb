@@ -16,7 +16,17 @@
 
 #pragma once
 
+#ifdef ROCKSDB_ASSERT_STATUS_CHECKED
+#include <stdio.h>
+#include <stdlib.h>
+#endif
+
 #include <string>
+
+#ifdef ROCKSDB_ASSERT_STATUS_CHECKED
+#include "port/stack_trace.h"
+#endif
+
 #include "rocksdb/slice.h"
 
 namespace ROCKSDB_NAMESPACE {
@@ -25,7 +35,16 @@ class Status {
  public:
   // Create a success status.
   Status() : code_(kOk), subcode_(kNone), sev_(kNoError), state_(nullptr) {}
-  ~Status() { delete[] state_; }
+  ~Status() {
+#ifdef ROCKSDB_ASSERT_STATUS_CHECKED
+    if (!checked_) {
+      fprintf(stderr, "Failed to check Status\n");
+      port::PrintStack();
+      abort();
+    }
+#endif  // ROCKSDB_ASSERT_STATUS_CHECKED
+    delete[] state_;
+  }
 
   // Copy the specified status.
   Status(const Status& s);
@@ -78,6 +97,8 @@ class Status {
     kPathNotFound = 9,
     KMergeOperandsInsufficientCapacity = 10,
     kManualCompactionPaused = 11,
+    kOverwritten = 12,
+    kTxnNotPrepared = 13,
     kMaxSubCode
   };
 
@@ -100,6 +121,12 @@ class Status {
 
   // Return a success status.
   static Status OK() { return Status(); }
+
+  // Successful, though an existing something was overwritten
+  // Note: using variants of OK status for program logic is discouraged,
+  // but it can be useful for communicating statistical information without
+  // changing public APIs.
+  static Status OkOverwritten() { return Status(kOk, kOverwritten); }
 
   // Return error status of an appropriate type.
   static Status NotFound(const Slice& msg, const Slice& msg2 = Slice()) {
@@ -217,8 +244,21 @@ class Status {
     return Status(kIOError, kPathNotFound, msg, msg2);
   }
 
+  static Status TxnNotPrepared() {
+    return Status(kInvalidArgument, kTxnNotPrepared);
+  }
+  static Status TxnNotPrepared(const Slice& msg, const Slice& msg2 = Slice()) {
+    return Status(kInvalidArgument, kTxnNotPrepared, msg, msg2);
+  }
+
   // Returns true iff the status indicates success.
   bool ok() const { return code() == kOk; }
+
+  // Returns true iff the status indicates success *with* something
+  // overwritten
+  bool IsOkOverwritten() const {
+    return code() == kOk && subcode() == kOverwritten;
+  }
 
   // Returns true iff the status indicates a NotFound error.
   bool IsNotFound() const { return code() == kNotFound; }
@@ -302,6 +342,11 @@ class Status {
     return (code() == kIncomplete) && (subcode() == kManualCompactionPaused);
   }
 
+  // Returns true iff the status indicates a TxnNotPrepared error.
+  bool IsTxnNotPrepared() const {
+    return (code() == kInvalidArgument) && (subcode() == kTxnNotPrepared);
+  }
+
   // Return a string representation of this status suitable for printing.
   // Returns the string "OK" for success.
   std::string ToString() const;
@@ -336,8 +381,6 @@ inline Status::Status(const Status& s, Severity sev)
   state_ = (s.state_ == nullptr) ? nullptr : CopyState(s.state_);
 }
 inline Status& Status::operator=(const Status& s) {
-  // The following condition catches both aliasing (when this == &s),
-  // and the common case where both s and *this are ok.
   if (this != &s) {
     code_ = s.code_;
     subcode_ = s.subcode_;
