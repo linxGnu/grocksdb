@@ -23,12 +23,12 @@ cd $BUILD_PATH && wget https://github.com/lz4/lz4/archive/v1.9.2.tar.gz && tar x
     cmake $CMAKE_REQUIRED_PARAMS -DLZ4_BUILD_LEGACY_LZ4C=OFF -DBUILD_SHARED_LIBS=OFF -DLZ4_POSITION_INDEPENDENT_LIB=ON && make -j16 install && \
     cd $BUILD_PATH && rm -rf *
 
-cd $BUILD_PATH && wget https://github.com/facebook/zstd/releases/download/v1.4.4/zstd-1.4.4.tar.gz && tar xzf zstd-1.4.4.tar.gz && cd zstd-1.4.4/build/cmake && mkdir -p build_place && cd build_place && \
+cd $BUILD_PATH && wget https://github.com/facebook/zstd/releases/download/v1.4.5/zstd-1.4.5.tar.gz && tar xzf zstd-1.4.5.tar.gz && cd zstd-1.4.5/build/cmake && mkdir -p build_place && cd build_place && \
     cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DZSTD_BUILD_PROGRAMS=OFF -DZSTD_BUILD_CONTRIB=OFF -DZSTD_BUILD_STATIC=ON -DZSTD_BUILD_SHARED=OFF -DZSTD_BUILD_TESTS=OFF \
     $CMAKE_REQUIRED_PARAMS -DZSTD_ZLIB_SUPPORT=ON -DZSTD_LZMA_SUPPORT=OFF -DCMAKE_BUILD_TYPE=Release .. && make -j16 install && \
     cd $BUILD_PATH && rm -rf *
 
-cd $BUILD_PATH && wget https://github.com/facebook/rocksdb/archive/v6.8.1.tar.gz && tar xzf v6.8.1.tar.gz && cd rocksdb-6.8.1/ && \
+cd $BUILD_PATH && wget https://github.com/facebook/rocksdb/archive/v6.10.2.tar.gz && tar xzf v6.10.2.tar.gz && cd rocksdb-6.10.2/ && \
     mkdir -p build_place && cd build_place && cmake -DCMAKE_BUILD_TYPE=Release $CMAKE_REQUIRED_PARAMS -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX -DWITH_TESTS=OFF -DWITH_GFLAGS=OFF \
     -DWITH_BENCHMARK_TOOLS=OFF -DWITH_TOOLS=OFF -DWITH_MD_LIBRARY=OFF -DWITH_RUNTIME_DEBUG=OFF -DROCKSDB_BUILD_SHARED=OFF -DWITH_SNAPPY=ON -DWITH_LZ4=ON -DWITH_ZLIB=ON \
     -DWITH_ZSTD=ON -DWITH_BZ2=OFF -WITH_GFLAGS=OFF .. && make -j16 install/strip && \
