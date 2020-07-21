@@ -492,17 +492,6 @@ func (opts *Options) SetBottommostCompression(value CompressionType) {
 	C.rocksdb_options_set_bottommost_compression(opts.c, C.int(value))
 }
 
-// TODO(linxGnu):
-// extern ROCKSDB_LIBRARY_API void
-// rocksdb_options_set_compression_options_zstd_max_train_bytes(rocksdb_options_t*,
-//                                                              int);
-// extern ROCKSDB_LIBRARY_API void
-// rocksdb_options_set_bottommost_compression_options(rocksdb_options_t*, int, int,
-//                                                    int, int, unsigned char);
-// extern ROCKSDB_LIBRARY_API void
-// rocksdb_options_set_bottommost_compression_options_zstd_max_train_bytes(
-//     rocksdb_options_t*, int, unsigned char);
-
 // SetCompressionPerLevel sets different compression algorithm per level.
 //
 // Different levels can have different compression policies. There
@@ -519,6 +508,33 @@ func (opts *Options) SetCompressionPerLevel(value []CompressionType) {
 	}
 
 	C.rocksdb_options_set_compression_per_level(opts.c, &cLevels[0], C.size_t(len(value)))
+}
+
+// SetCompressionOptionsZstdMaxTrainBytes sets maximum size of training data passed
+// to zstd's dictionary trainer. Using zstd's dictionary trainer can achieve even
+// better compression ratio improvements than using `max_dict_bytes` alone.
+//
+// The training data will be used to generate a dictionary of max_dict_bytes.
+//
+// Default: 0.
+func (opts *Options) SetCompressionOptionsZstdMaxTrainBytes(value int) {
+	C.rocksdb_options_set_compression_options_zstd_max_train_bytes(opts.c, C.int(value))
+}
+
+// SetBottommostCompressionOptions sets different options for compression algorithms, for bottommost.
+//
+// `enabled` true to use these compression options.
+func (opts *Options) SetBottommostCompressionOptions(value *CompressionOptions, enabled bool) {
+	C.rocksdb_options_set_bottommost_compression_options(opts.c, C.int(value.WindowBits), C.int(value.Level), C.int(value.Strategy), C.int(value.MaxDictBytes), boolToChar(enabled))
+}
+
+// SetBottommostCompressionOptionsZstdMaxTrainBytes sets maximum size of training data passed
+// to zstd's dictionary trainer for bottommost level. Using zstd's dictionary trainer can achieve even
+// better compression ratio improvements than using `max_dict_bytes` alone.
+//
+// `enabled` true to use these compression options.
+func (opts *Options) SetBottommostCompressionOptionsZstdMaxTrainBytes(value int, enabled bool) {
+	C.rocksdb_options_set_bottommost_compression_options_zstd_max_train_bytes(opts.c, C.int(value), boolToChar(enabled))
 }
 
 // SetMinLevelToCompress sets the start level to use compression.
