@@ -68,10 +68,37 @@ func (wb *WriteBatch) Delete(key []byte) {
 	C.rocksdb_writebatch_delete(wb.c, cKey, C.size_t(len(key)))
 }
 
+// SingleDelete removes the database entry for "key". Requires that the key exists
+// and was not overwritten. Returns OK on success, and a non-OK status
+// on error.  It is not an error if "key" did not exist in the database.
+//
+// If a key is overwritten (by calling Put() multiple times), then the result
+// of calling SingleDelete() on this key is undefined.  SingleDelete() only
+// behaves correctly if there has been only one Put() for this key since the
+// previous call to SingleDelete() for this key.
+//
+// This feature is currently an experimental performance optimization
+// for a very specific workload.  It is up to the caller to ensure that
+// SingleDelete is only used for a key that is not deleted using Delete() or
+// written using Merge().  Mixing SingleDelete operations with Deletes and
+// Merges can result in undefined behavior.
+//
+// Note: consider setting options.sync = true.
+func (wb *WriteBatch) SingleDelete(key []byte) {
+	cKey := byteToChar(key)
+	C.rocksdb_writebatch_singledelete(wb.c, cKey, C.size_t(len(key)))
+}
+
 // DeleteCF queues a deletion of the data at key in a column family.
 func (wb *WriteBatch) DeleteCF(cf *ColumnFamilyHandle, key []byte) {
 	cKey := byteToChar(key)
 	C.rocksdb_writebatch_delete_cf(wb.c, cf.c, cKey, C.size_t(len(key)))
+}
+
+// SingleDeleteCF same as SingleDelete but specific column family
+func (wb *WriteBatch) SingleDeleteCF(cf *ColumnFamilyHandle, key []byte) {
+	cKey := byteToChar(key)
+	C.rocksdb_writebatch_singledelete_cf(wb.c, cf.c, cKey, C.size_t(len(key)))
 }
 
 // DeleteRange deletes keys that are between [startKey, endKey)
