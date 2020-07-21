@@ -1159,6 +1159,11 @@ func (db *DB) TryCatchUpWithPrimary() (err error) {
 	return
 }
 
+// CancelAllBackgroundWork requests stopping background work, if wait is true wait until it's done
+func (db *DB) CancelAllBackgroundWork(wait bool) {
+	C.rocksdb_cancel_all_background_work(db.c, boolToChar(wait))
+}
+
 // Close closes the database.
 func (db *DB) Close() {
 	C.rocksdb_close(db.c)
