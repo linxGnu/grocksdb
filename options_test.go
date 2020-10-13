@@ -108,6 +108,48 @@ func TestOptions(t *testing.T) {
 	opts.SetAdviseRandomOnOpen(true)
 	require.EqualValues(t, true, opts.AdviseRandomOnOpen())
 
+	opts.SetAccessHintOnCompactionStart(SequentialCompactionAccessPattern)
+	require.EqualValues(t, SequentialCompactionAccessPattern, opts.GetAccessHintOnCompactionStart())
+
+	opts.SetDbWriteBufferSize(1 << 30)
+	require.EqualValues(t, 1<<30, opts.GetDbWriteBufferSize())
+
+	opts.SetUseAdaptiveMutex(true)
+	require.EqualValues(t, true, opts.UseAdaptiveMutex())
+
+	opts.SetBytesPerSync(68 << 10)
+	require.EqualValues(t, 68<<10, opts.GetBytesPerSync())
+
+	opts.SetWALBytesPerSync(69 << 10)
+	require.EqualValues(t, 69<<10, opts.GetWALBytesPerSync())
+
+	opts.SetWritableFileMaxBufferSize(9 << 20)
+	require.EqualValues(t, 9<<20, opts.GetWritableFileMaxBufferSize())
+
+	opts.SetAllowConcurrentMemtableWrites(true)
+	require.EqualValues(t, true, opts.AllowConcurrentMemtableWrites())
+
+	opts.SetEnableWriteThreadAdaptiveYield(true)
+	require.EqualValues(t, true, opts.EnabledWriteThreadAdaptiveYield())
+
+	opts.SetMaxSequentialSkipInIterations(199)
+	require.EqualValues(t, 199, opts.GetMaxSequentialSkipInIterations())
+
+	opts.SetDisableAutoCompactions(true)
+	require.EqualValues(t, true, opts.DisabledAutoCompactions())
+
+	opts.SetOptimizeFiltersForHits(true)
+	require.EqualValues(t, true, opts.OptimizeFiltersForHits())
+
+	opts.SetDeleteObsoleteFilesPeriodMicros(1234)
+	require.EqualValues(t, 1234, opts.GetDeleteObsoleteFilesPeriodMicros())
+
+	opts.SetMemTablePrefixBloomSizeRatio(0.3)
+	require.EqualValues(t, 0.3, opts.GetMemTablePrefixBloomSizeRatio())
+
+	opts.SetMaxCompactionBytes(111222)
+	require.EqualValues(t, 111222, opts.GetMaxCompactionBytes())
+
 	// cloning
 	cl := opts.Clone()
 	require.EqualValues(t, 5, cl.GetTableCacheNumshardbits())

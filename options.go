@@ -353,6 +353,14 @@ func (opts *Options) SetAllowConcurrentMemtableWrites(allow bool) {
 	C.rocksdb_options_set_allow_concurrent_memtable_write(opts.c, boolToChar(allow))
 }
 
+// AllowConcurrentMemtableWrites whether to allow concurrent memtable writes. Conccurent writes are
+// not supported by all memtable factories (currently only SkipList memtables).
+// As of rocksdb 5.0.2 you must call `SetAllowConcurrentMemtableWrites(false)`
+// if you use `OptimizeForPointLookup`.
+func (opts *Options) AllowConcurrentMemtableWrites() bool {
+	return charToBool(C.rocksdb_options_get_allow_concurrent_memtable_write(opts.c))
+}
+
 // OptimizeLevelStyleCompaction optimize the DB for leveld compaction.
 //
 // Default values for some parameters in ColumnFamilyOptions are not
@@ -772,6 +780,13 @@ func (opts *Options) SetMaxCompactionBytes(value uint64) {
 	C.rocksdb_options_set_max_compaction_bytes(opts.c, C.uint64_t(value))
 }
 
+// GetMaxCompactionBytes returns the maximum number of bytes in all compacted files.
+// We try to limit number of bytes in one compaction to be lower than this
+// threshold. But it's not guaranteed.
+func (opts *Options) GetMaxCompactionBytes() uint64 {
+	return uint64(C.rocksdb_options_get_max_compaction_bytes(opts.c))
+}
+
 // SetSoftPendingCompactionBytesLimit sets the threshold at which
 // all writes will be slowed down to at least delayed_write_rate if estimated
 // bytes needed to be compaction exceed this threshold.
@@ -869,6 +884,12 @@ func (opts *Options) SetWalDir(value string) {
 // Default: 6 hours
 func (opts *Options) SetDeleteObsoleteFilesPeriodMicros(value uint64) {
 	C.rocksdb_options_set_delete_obsolete_files_period_micros(opts.c, C.uint64_t(value))
+}
+
+// GetDeleteObsoleteFilesPeriodMicros returns the periodicity
+// when obsolete files get deleted.
+func (opts *Options) GetDeleteObsoleteFilesPeriodMicros() uint64 {
+	return uint64(C.rocksdb_options_get_delete_obsolete_files_period_micros(opts.c))
 }
 
 // SetMaxBackgroundCompactions sets the maximum number of
@@ -1061,6 +1082,11 @@ func (opts *Options) GetArenaBlockSize() uint64 {
 // Default: false
 func (opts *Options) SetDisableAutoCompactions(value bool) {
 	C.rocksdb_options_set_disable_auto_compactions(opts.c, C.int(btoi(value)))
+}
+
+// DisabledAutoCompactions returns if automatic compactions is disabled.
+func (opts *Options) DisabledAutoCompactions() bool {
+	return charToBool(C.rocksdb_options_get_disable_auto_compactions(opts.c))
 }
 
 // SetWALRecoveryMode sets the recovery mode
@@ -1297,6 +1323,12 @@ func (opts *Options) SetAccessHintOnCompactionStart(value CompactionAccessPatter
 	C.rocksdb_options_set_access_hint_on_compaction_start(opts.c, C.int(value))
 }
 
+// GetAccessHintOnCompactionStart returns the file access pattern
+// once a compaction is started.
+func (opts *Options) GetAccessHintOnCompactionStart() CompactionAccessPattern {
+	return CompactionAccessPattern(C.rocksdb_options_get_access_hint_on_compaction_start(opts.c))
+}
+
 // SetUseAdaptiveMutex enable/disable adaptive mutex, which spins
 // in the user space before resorting to kernel.
 //
@@ -1308,6 +1340,12 @@ func (opts *Options) SetUseAdaptiveMutex(value bool) {
 	C.rocksdb_options_set_use_adaptive_mutex(opts.c, boolToChar(value))
 }
 
+// UseAdaptiveMutex returns setting for enable/disable adaptive mutex, which spins
+// in the user space before resorting to kernel.
+func (opts *Options) UseAdaptiveMutex() bool {
+	return charToBool(C.rocksdb_options_get_use_adaptive_mutex(opts.c))
+}
+
 // SetBytesPerSync sets the bytes per sync.
 //
 // Allows OS to incrementally sync files to disk while they are being
@@ -1316,6 +1354,11 @@ func (opts *Options) SetUseAdaptiveMutex(value bool) {
 // Default: 0 (disabled)
 func (opts *Options) SetBytesPerSync(value uint64) {
 	C.rocksdb_options_set_bytes_per_sync(opts.c, C.uint64_t(value))
+}
+
+// GetBytesPerSync return setting for bytes (size) per sync.
+func (opts *Options) GetBytesPerSync() uint64 {
+	return uint64(C.rocksdb_options_get_bytes_per_sync(opts.c))
 }
 
 // SetCompactionStyle sets the compaction style.
@@ -1386,6 +1429,12 @@ func (opts *Options) SetRowCache(cache *Cache) {
 // Default: 8
 func (opts *Options) SetMaxSequentialSkipInIterations(value uint64) {
 	C.rocksdb_options_set_max_sequential_skip_in_iterations(opts.c, C.uint64_t(value))
+}
+
+// GetMaxSequentialSkipInIterations returns the number of keys (with the same userkey)
+// that will be sequentially skipped before a reseek is issued.
+func (opts *Options) GetMaxSequentialSkipInIterations() uint64 {
+	return uint64(C.rocksdb_options_get_max_sequential_skip_in_iterations(opts.c))
 }
 
 // SetInplaceUpdateSupport enable/disable thread-safe inplace updates.
@@ -1561,6 +1610,11 @@ func (opts *Options) SetMemTablePrefixBloomSizeRatio(value float64) {
 	C.rocksdb_options_set_memtable_prefix_bloom_size_ratio(opts.c, C.double(value))
 }
 
+// GetMemTablePrefixBloomSizeRatio returns memtable_prefix_bloom_size_ratio.
+func (opts *Options) GetMemTablePrefixBloomSizeRatio() float64 {
+	return float64(C.rocksdb_options_get_memtable_prefix_bloom_size_ratio(opts.c))
+}
+
 // SetOptimizeFiltersForHits sets optimize_filters_for_hits
 // This flag specifies that the implementation should optimize the filters
 // mainly for cases where keys are found rather than also optimize for keys
@@ -1578,6 +1632,11 @@ func (opts *Options) SetMemTablePrefixBloomSizeRatio(value float64) {
 // Default: false
 func (opts *Options) SetOptimizeFiltersForHits(value bool) {
 	C.rocksdb_options_set_optimize_filters_for_hits(opts.c, C.int(btoi(value)))
+}
+
+// OptimizeFiltersForHits gets setting for optimize_filters_for_hits.
+func (opts *Options) OptimizeFiltersForHits() bool {
+	return charToBool(C.rocksdb_options_get_optimize_filters_for_hits(opts.c))
 }
 
 // CompactionReadaheadSize if non-zero, we perform bigger reads when doing
@@ -1777,6 +1836,11 @@ func (opts *Options) SetWALBytesPerSync(value uint64) {
 	C.rocksdb_options_set_wal_bytes_per_sync(opts.c, C.uint64_t(value))
 }
 
+// GetWALBytesPerSync same as bytes_per_sync, but applies to WAL files.
+func (opts *Options) GetWALBytesPerSync() uint64 {
+	return uint64(C.rocksdb_options_get_wal_bytes_per_sync(opts.c))
+}
+
 // SetWritableFileMaxBufferSize is the maximum buffer size that is
 // used by WritableFileWriter.
 // On Windows, we need to maintain an aligned buffer for writes.
@@ -1791,6 +1855,16 @@ func (opts *Options) SetWritableFileMaxBufferSize(value uint64) {
 	C.rocksdb_options_set_writable_file_max_buffer_size(opts.c, C.uint64_t(value))
 }
 
+// GetWritableFileMaxBufferSize returns the maximum buffer size that is
+// used by WritableFileWriter.
+// On Windows, we need to maintain an aligned buffer for writes.
+// We allow the buffer to grow until it's size hits the limit in buffered
+// IO and fix the buffer size when using direct IO to ensure alignment of
+// write requests if the logical sector size is unusual
+func (opts *Options) GetWritableFileMaxBufferSize() uint64 {
+	return uint64(C.rocksdb_options_get_writable_file_max_buffer_size(opts.c))
+}
+
 // SetEnableWriteThreadAdaptiveYield if true, threads synchronizing with
 // the write batch group leader will wait for up to write_thread_max_yield_usec
 // before blocking on a mutex. This can substantially improve throughput
@@ -1800,6 +1874,15 @@ func (opts *Options) SetWritableFileMaxBufferSize(value uint64) {
 // Default: true
 func (opts *Options) SetEnableWriteThreadAdaptiveYield(value bool) {
 	C.rocksdb_options_set_enable_write_thread_adaptive_yield(opts.c, boolToChar(value))
+}
+
+// EnabledWriteThreadAdaptiveYield if true, threads synchronizing with
+// the write batch group leader will wait for up to write_thread_max_yield_usec
+// before blocking on a mutex. This can substantially improve throughput
+// for concurrent workloads, regardless of whether allow_concurrent_memtable_write
+// is enabled.
+func (opts *Options) EnabledWriteThreadAdaptiveYield() bool {
+	return charToBool(C.rocksdb_options_get_enable_write_thread_adaptive_yield(opts.c))
 }
 
 // SetReportBackgroundIOStats measures IO stats in compactions and flushes, if true.
