@@ -150,6 +150,9 @@ func TestOptions(t *testing.T) {
 	opts.SetMaxCompactionBytes(111222)
 	require.EqualValues(t, 111222, opts.GetMaxCompactionBytes())
 
+	opts.SetMemtableHugePageSize(223344)
+	require.EqualValues(t, 223344, opts.GetMemtableHugePageSize())
+
 	// cloning
 	cl := opts.Clone()
 	require.EqualValues(t, 5, cl.GetTableCacheNumshardbits())

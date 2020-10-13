@@ -1469,6 +1469,12 @@ func (opts *Options) SetMemtableHugePageSize(value uint64) {
 	C.rocksdb_options_set_memtable_huge_page_size(opts.c, C.size_t(value))
 }
 
+// GetMemtableHugePageSize returns the page size for huge page for
+// arena used by the memtable.
+func (opts *Options) GetMemtableHugePageSize() uint64 {
+	return uint64(C.rocksdb_options_get_memtable_huge_page_size(opts.c))
+}
+
 // SetBloomLocality sets the bloom locality.
 //
 // Control locality of bloom filter probes to improve cache miss rate.
