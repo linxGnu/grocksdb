@@ -159,6 +159,21 @@ func (b *BackupEngine) RestoreDBFromLatestBackup(dbDir, walDir string, ro *Resto
 	return
 }
 
+// RestoreDBFromBackup restores the backup (identified by its id) to dbDir. walDir
+// is where the write ahead logs are restored to and usually the same as dbDir.
+func (b *BackupEngine) RestoreDBFromBackup(dbDir, walDir string, ro *RestoreOptions, backupID uint32) (err error) {
+	cDbDir := C.CString(dbDir)
+	cWalDir := C.CString(walDir)
+
+	var cErr *C.char
+	C.rocksdb_backup_engine_restore_db_from_backup(b.c, cDbDir, cWalDir, ro.c, C.uint32_t(backupID), &cErr)
+	err = fromCError(cErr)
+
+	C.free(unsafe.Pointer(cDbDir))
+	C.free(unsafe.Pointer(cWalDir))
+	return
+}
+
 // Close close the backup engine and cleans up state
 // The backups already taken remain on storage.
 func (b *BackupEngine) Close() {

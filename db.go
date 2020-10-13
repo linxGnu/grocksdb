@@ -68,13 +68,13 @@ func OpenDbWithTTL(opts *Options, name string, ttl int) (db *DB, err error) {
 }
 
 // OpenDbForReadOnly opens a database with the specified options for readonly usage.
-func OpenDbForReadOnly(opts *Options, name string, errorIfLogFileExist bool) (db *DB, err error) {
+func OpenDbForReadOnly(opts *Options, name string, errorIfWALFileExist bool) (db *DB, err error) {
 	var (
 		cErr  *C.char
 		cName = C.CString(name)
 	)
 
-	_db := C.rocksdb_open_for_read_only(opts.c, cName, boolToChar(errorIfLogFileExist), &cErr)
+	_db := C.rocksdb_open_for_read_only(opts.c, cName, boolToChar(errorIfWALFileExist), &cErr)
 	if err = fromCError(cErr); err == nil {
 		db = &DB{
 			name: name,
@@ -174,6 +174,77 @@ func OpenDbColumnFamilies(
 	return
 }
 
+// OpenDbColumnFamiliesWithTTL opens a database with the specified column families along with their ttls.
+//
+// BEHAVIOUR:
+// TTL is accepted in seconds
+// (int32_t)Timestamp(creation) is suffixed to values in Put internally
+// Expired TTL values deleted in compaction only:(Timestamp+ttl<time_now)
+// Get/Iterator may return expired entries(compaction not run on them yet)
+// Different TTL may be used during different Opens
+// Example: Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
+//          Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
+// read_only=true opens in the usual read-only mode. Compactions will not be
+//  triggered(neither manual nor automatic), so no expired entries removed
+//
+// CONSTRAINTS:
+// Not specifying/passing or non-positive TTL behaves like TTL = infinity
+func OpenDbColumnFamiliesWithTTL(
+	opts *Options,
+	name string,
+	cfNames []string,
+	cfOpts []*Options,
+	ttls []C.int,
+) (db *DB, cfHandles []*ColumnFamilyHandle, err error) {
+	numColumnFamilies := len(cfNames)
+	if numColumnFamilies != len(cfOpts) {
+		err = ErrColumnFamilyMustMatch
+		return
+	}
+
+	cName := C.CString(name)
+	cNames := make([]*C.char, numColumnFamilies)
+	for i, s := range cfNames {
+		cNames[i] = C.CString(s)
+	}
+
+	cOpts := make([]*C.rocksdb_options_t, numColumnFamilies)
+	for i, o := range cfOpts {
+		cOpts[i] = o.c
+	}
+
+	cHandles := make([]*C.rocksdb_column_family_handle_t, numColumnFamilies)
+
+	var cErr *C.char
+	_db := C.rocksdb_open_column_families_with_ttl(
+		opts.c,
+		cName,
+		C.int(numColumnFamilies),
+		&cNames[0],
+		&cOpts[0],
+		&cHandles[0],
+		&ttls[0],
+		&cErr,
+	)
+	if err = fromCError(cErr); err == nil {
+		db = &DB{
+			name: name,
+			c:    _db,
+			opts: opts,
+		}
+		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
+		for i, c := range cHandles {
+			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+		}
+	}
+
+	C.free(unsafe.Pointer(cName))
+	for _, s := range cNames {
+		C.free(unsafe.Pointer(s))
+	}
+	return
+}
+
 // OpenDbForReadOnlyColumnFamilies opens a database with the specified column
 // families in read only mode.
 func OpenDbForReadOnlyColumnFamilies(
@@ -181,7 +252,7 @@ func OpenDbForReadOnlyColumnFamilies(
 	name string,
 	cfNames []string,
 	cfOpts []*Options,
-	errorIfLogFileExist bool,
+	errorIfWALFileExist bool,
 ) (db *DB, cfHandles []*ColumnFamilyHandle, err error) {
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
@@ -210,7 +281,7 @@ func OpenDbForReadOnlyColumnFamilies(
 		&cNames[0],
 		&cOpts[0],
 		&cHandles[0],
-		boolToChar(errorIfLogFileExist),
+		boolToChar(errorIfWALFileExist),
 		&cErr,
 	)
 	if err = fromCError(cErr); err == nil {
@@ -759,6 +830,36 @@ func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFami
 	)
 
 	cHandle := C.rocksdb_create_column_family(db.c, opts.c, cName, &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = NewNativeColumnFamilyHandle(cHandle)
+	}
+
+	C.free(unsafe.Pointer(cName))
+	return
+}
+
+// CreateColumnFamilyWithTTL create a new column family along with its ttl.
+//
+// BEHAVIOUR:
+// TTL is accepted in seconds
+// (int32_t)Timestamp(creation) is suffixed to values in Put internally
+// Expired TTL values deleted in compaction only:(Timestamp+ttl<time_now)
+// Get/Iterator may return expired entries(compaction not run on them yet)
+// Different TTL may be used during different Opens
+// Example: Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
+//          Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
+// read_only=true opens in the usual read-only mode. Compactions will not be
+//  triggered(neither manual nor automatic), so no expired entries removed
+//
+// CONSTRAINTS:
+// Not specifying/passing or non-positive TTL behaves like TTL = infinity
+func (db *DB) CreateColumnFamilyWithTTL(opts *Options, name string, ttl C.int) (handle *ColumnFamilyHandle, err error) {
+	var (
+		cErr  *C.char
+		cName = C.CString(name)
+	)
+
+	cHandle := C.rocksdb_create_column_family_with_ttl(db.c, opts.c, cName, ttl, &cErr)
 	if err = fromCError(cErr); err == nil {
 		handle = NewNativeColumnFamilyHandle(cHandle)
 	}
