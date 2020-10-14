@@ -4,14 +4,16 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/facebookgo/ensure"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMemoryUsage(t *testing.T) {
 	// create database with cache
 	cache := NewLRUCache(8 * 1024 * 1024)
+	cache.SetCapacity(90)
+
 	bbto := NewDefaultBlockBasedTableOptions()
 	bbto.SetBlockCache(cache)
 	defer cache.Destroy()
@@ -57,4 +59,8 @@ func TestMemoryUsage(t *testing.T) {
 	assert.True(t, mu2.MemTableUnflushed > mu1.MemTableUnflushed)
 	assert.True(t, mu2.CacheTotal >= mu1.CacheTotal)
 	assert.True(t, mu2.MemTableReadersTotal >= mu1.MemTableReadersTotal)
+
+	// check cached
+	require.EqualValues(t, 0, rowCache.GetPinnedUsage())
+	require.EqualValues(t, 0, rowCache.GetUsage())
 }

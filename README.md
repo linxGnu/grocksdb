@@ -82,4 +82,4 @@ See also: [doc](https://godoc.org/github.com/linxGnu/grocksdb)
 
 Almost C API, excepts:
 - [ ] putv/mergev/deletev/delete_rangev
-- [ ] compaction_filter_factory/compaction_filter_context
+- [ ] compaction_filter/compaction_filter_factory/compaction_filter_context
