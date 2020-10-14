@@ -49,3 +49,4 @@ func (st *testSliceTransform) Name() string                { return "grocksdb.te
 func (st *testSliceTransform) Transform(src []byte) []byte { return src[0:3] }
 func (st *testSliceTransform) InDomain(src []byte) bool    { return len(src) >= 3 }
 func (st *testSliceTransform) InRange(src []byte) bool     { return len(src) == 3 }
+func (st *testSliceTransform) Destroy()                    {}

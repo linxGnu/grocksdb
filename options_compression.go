@@ -9,13 +9,13 @@ type CompressionOptions struct {
 }
 
 // NewDefaultCompressionOptions creates a default CompressionOptions object.
-func NewDefaultCompressionOptions() *CompressionOptions {
+func NewDefaultCompressionOptions() CompressionOptions {
 	return NewCompressionOptions(-14, -1, 0, 0)
 }
 
 // NewCompressionOptions creates a CompressionOptions object.
-func NewCompressionOptions(windowBits, level, strategy, maxDictBytes int) *CompressionOptions {
-	return &CompressionOptions{
+func NewCompressionOptions(windowBits, level, strategy, maxDictBytes int) CompressionOptions {
+	return CompressionOptions{
 		WindowBits:   windowBits,
 		Level:        level,
 		Strategy:     strategy,

@@ -27,6 +27,7 @@ func NewNativeDBPath(c *C.rocksdb_dbpath_t) *DBPath {
 // Destroy deallocates the DBPath object.
 func (dbpath *DBPath) Destroy() {
 	C.rocksdb_dbpath_destroy(dbpath.c)
+	dbpath.c = nil
 }
 
 // NewDBPathsFromData creates a slice with allocated DBPath objects

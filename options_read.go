@@ -41,11 +41,18 @@ func (opts *ReadOptions) UnsafeGetReadOptions() unsafe.Pointer {
 	return unsafe.Pointer(opts.c)
 }
 
-// SetVerifyChecksums speciy if all data read from underlying storage will be
+// SetVerifyChecksums specify if all data read from underlying storage will be
 // verified against corresponding checksums.
+//
 // Default: false
 func (opts *ReadOptions) SetVerifyChecksums(value bool) {
 	C.rocksdb_readoptions_set_verify_checksums(opts.c, boolToChar(value))
+}
+
+// GetVerifyChecksums returns if all data read from underlying storage will be
+// verified against corresponding checksums.
+func (opts *ReadOptions) VerifyChecksums() bool {
+	return charToBool(C.rocksdb_readoptions_get_verify_checksums(opts.c))
 }
 
 // SetPrefixSameAsStart Enforce that the iterator only iterates over the same

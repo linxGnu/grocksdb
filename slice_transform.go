@@ -16,6 +16,9 @@ type SliceTransform interface {
 
 	// Return the name of this transformation.
 	Name() string
+
+	// Destroy underlying pointer/data
+	Destroy()
 }
 
 // NewFixedPrefixTransform creates a new fixed prefix transform.
@@ -30,17 +33,21 @@ func NewNoopPrefixTransform() SliceTransform {
 
 // NewNativeSliceTransform creates a SliceTransform object.
 func NewNativeSliceTransform(c *C.rocksdb_slicetransform_t) SliceTransform {
-	return nativeSliceTransform{c}
+	return &nativeSliceTransform{c}
 }
 
 type nativeSliceTransform struct {
 	c *C.rocksdb_slicetransform_t
 }
 
-func (st nativeSliceTransform) Transform(src []byte) []byte { return nil }
-func (st nativeSliceTransform) InDomain(src []byte) bool    { return false }
-func (st nativeSliceTransform) InRange(src []byte) bool     { return false }
-func (st nativeSliceTransform) Name() string                { return "" }
+func (st *nativeSliceTransform) Transform(src []byte) []byte { return nil }
+func (st *nativeSliceTransform) InDomain(src []byte) bool    { return false }
+func (st *nativeSliceTransform) InRange(src []byte) bool     { return false }
+func (st *nativeSliceTransform) Name() string                { return "" }
+func (st *nativeSliceTransform) Destroy() {
+	C.rocksdb_slicetransform_destroy(st.c)
+	st.c = nil
+}
 
 // Hold references to slice transforms.
 var sliceTransforms = NewCOWList()

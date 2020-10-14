@@ -1268,6 +1268,7 @@ func (db *DB) CancelAllBackgroundWork(wait bool) {
 // Close closes the database.
 func (db *DB) Close() {
 	C.rocksdb_close(db.c)
+	db.c = nil
 }
 
 // DestroyDb removes a database entirely, removing everything from the

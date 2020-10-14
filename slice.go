@@ -83,4 +83,5 @@ func (h *PinnableSliceHandle) Data() []byte {
 // Destroy calls the destructor of the underlying pinnable slice handle.
 func (h *PinnableSliceHandle) Destroy() {
 	C.rocksdb_pinnableslice_destroy(h.c)
+	h.c = nil
 }

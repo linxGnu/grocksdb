@@ -101,6 +101,7 @@ func (opts *FIFOCompactionOptions) SetMaxTableFilesSize(value uint64) {
 // Destroy deallocates the FIFOCompactionOptions object.
 func (opts *FIFOCompactionOptions) Destroy() {
 	C.rocksdb_fifo_compaction_options_destroy(opts.c)
+	opts.c = nil
 }
 
 // UniversalCompactionOptions represent all of the available options for

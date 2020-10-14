@@ -179,4 +179,8 @@ func (b *BackupEngine) RestoreDBFromBackup(dbDir, walDir string, ro *RestoreOpti
 func (b *BackupEngine) Close() {
 	C.rocksdb_backup_engine_close(b.c)
 	b.c = nil
+
+	if b.opts != nil {
+		b.opts.Destroy()
+	}
 }
