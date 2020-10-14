@@ -63,3 +63,5 @@ func (m *mockCompactionFilter) Filter(level int, key, val []byte) (bool, []byte)
 
 func (m *mockCompactionFilter) SetIgnoreSnapshots(value bool) {
 }
+
+func (m *mockCompactionFilter) Destroy() {}

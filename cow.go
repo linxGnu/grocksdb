@@ -10,16 +10,15 @@ import (
 // Reads do not block; Writes do not block reads (or vice versa), but only
 // one write can occur at once;
 type COWList struct {
-	v  *atomic.Value
-	mu *sync.Mutex
+	v  atomic.Value
+	mu sync.Mutex
 }
 
 // NewCOWList creates a new COWList.
 func NewCOWList() *COWList {
-	var list []interface{}
-	v := &atomic.Value{}
-	v.Store(list)
-	return &COWList{v: v, mu: new(sync.Mutex)}
+	l := &COWList{}
+	l.v.Store([]interface{}{})
+	return l
 }
 
 // Append appends an item to the COWList and returns the index for that item.

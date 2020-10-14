@@ -33,24 +33,32 @@ type CompactionFilter interface {
 	// always invoke filtering for any key, even if it knows it will make a snapshot
 	// not repeatable.
 	SetIgnoreSnapshots(value bool)
+
+	// Destroy underlying pointer/data.
+	Destroy()
 }
 
 // NewNativeCompactionFilter creates a CompactionFilter object.
 func NewNativeCompactionFilter(c *C.rocksdb_compactionfilter_t) CompactionFilter {
-	return nativeCompactionFilter{c}
+	return &nativeCompactionFilter{c}
 }
 
 type nativeCompactionFilter struct {
 	c *C.rocksdb_compactionfilter_t
 }
 
-func (c nativeCompactionFilter) Filter(level int, key, val []byte) (remove bool, newVal []byte) {
+func (c *nativeCompactionFilter) Filter(level int, key, val []byte) (remove bool, newVal []byte) {
 	return false, nil
 }
-func (c nativeCompactionFilter) Name() string { return "" }
+func (c *nativeCompactionFilter) Name() string { return "" }
 
-func (c nativeCompactionFilter) SetIgnoreSnapshots(value bool) {
+func (c *nativeCompactionFilter) SetIgnoreSnapshots(value bool) {
 	C.rocksdb_compactionfilter_set_ignore_snapshots(c.c, boolToChar(value))
+}
+
+func (c *nativeCompactionFilter) Destroy() {
+	C.rocksdb_compactionfilter_destroy(c.c)
+	c.c = nil
 }
 
 // Hold references to compaction filters.

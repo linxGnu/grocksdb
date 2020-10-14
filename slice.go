@@ -54,6 +54,7 @@ func (s *Slice) Exists() bool {
 func (s *Slice) Free() {
 	if !s.freed {
 		C.rocksdb_free(unsafe.Pointer(s.data))
+		s.data = nil
 		s.freed = true
 	}
 }
@@ -83,4 +84,5 @@ func (h *PinnableSliceHandle) Data() []byte {
 // Destroy calls the destructor of the underlying pinnable slice handle.
 func (h *PinnableSliceHandle) Destroy() {
 	C.rocksdb_pinnableslice_destroy(h.c)
+	h.c = nil
 }

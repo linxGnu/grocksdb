@@ -97,4 +97,5 @@ func (w *SSTFileWriter) Finish() (err error) {
 // Destroy destroys the SSTFileWriter object.
 func (w *SSTFileWriter) Destroy() {
 	C.rocksdb_sstfilewriter_destroy(w.c)
+	w.c = nil
 }

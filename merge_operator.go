@@ -72,24 +72,31 @@ type MultiMerger interface {
 	// The library will internally keep track of the operations, and apply them in the
 	// correct order once a base-value (a Put/Delete/End-of-Database) is seen.
 	PartialMergeMulti(key []byte, operands [][]byte) ([]byte, bool)
+
+	// Destroy pointer/underlying data
+	Destroy()
 }
 
 // NewNativeMergeOperator creates a MergeOperator object.
 func NewNativeMergeOperator(c *C.rocksdb_mergeoperator_t) MergeOperator {
-	return nativeMergeOperator{c}
+	return &nativeMergeOperator{c}
 }
 
 type nativeMergeOperator struct {
 	c *C.rocksdb_mergeoperator_t
 }
 
-func (mo nativeMergeOperator) FullMerge(key, existingValue []byte, operands [][]byte) ([]byte, bool) {
+func (mo *nativeMergeOperator) FullMerge(key, existingValue []byte, operands [][]byte) ([]byte, bool) {
 	return nil, false
 }
-func (mo nativeMergeOperator) PartialMerge(key, leftOperand, rightOperand []byte) ([]byte, bool) {
+func (mo *nativeMergeOperator) PartialMerge(key, leftOperand, rightOperand []byte) ([]byte, bool) {
 	return nil, false
 }
-func (mo nativeMergeOperator) Name() string { return "" }
+func (mo *nativeMergeOperator) Name() string { return "" }
+func (mo *nativeMergeOperator) Destroy() {
+	C.rocksdb_mergeoperator_destroy(mo.c)
+	mo.c = nil
+}
 
 // Hold references to merge operators.
 var mergeOperators = NewCOWList()

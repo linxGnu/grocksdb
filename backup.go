@@ -70,6 +70,7 @@ func (ro *RestoreOptions) SetKeepLogFiles(v int) {
 // Destroy destroys this RestoreOptions instance.
 func (ro *RestoreOptions) Destroy() {
 	C.rocksdb_restore_options_destroy(ro.c)
+	ro.c = nil
 }
 
 // BackupEngine is a reusable handle to a RocksDB Backup, created by
@@ -152,6 +153,21 @@ func (b *BackupEngine) RestoreDBFromLatestBackup(dbDir, walDir string, ro *Resto
 
 	var cErr *C.char
 	C.rocksdb_backup_engine_restore_db_from_latest_backup(b.c, cDbDir, cWalDir, ro.c, &cErr)
+	err = fromCError(cErr)
+
+	C.free(unsafe.Pointer(cDbDir))
+	C.free(unsafe.Pointer(cWalDir))
+	return
+}
+
+// RestoreDBFromBackup restores the backup (identified by its id) to dbDir. walDir
+// is where the write ahead logs are restored to and usually the same as dbDir.
+func (b *BackupEngine) RestoreDBFromBackup(dbDir, walDir string, ro *RestoreOptions, backupID uint32) (err error) {
+	cDbDir := C.CString(dbDir)
+	cWalDir := C.CString(walDir)
+
+	var cErr *C.char
+	C.rocksdb_backup_engine_restore_db_from_backup(b.c, cDbDir, cWalDir, ro.c, C.uint32_t(backupID), &cErr)
 	err = fromCError(cErr)
 
 	C.free(unsafe.Pointer(cDbDir))
