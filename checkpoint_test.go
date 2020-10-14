@@ -49,9 +49,12 @@ func TestCheckpoint(t *testing.T) {
 	ro := NewDefaultReadOptions()
 	for _, k := range givenKeys {
 		value, err = dbCheck.Get(ro, k)
-		defer value.Free()
 		ensure.Nil(t, err)
 		ensure.DeepEqual(t, value.Data(), givenVal)
-	}
+		value.Free()
 
+		value = dbCheck.KeyMayExists(ro, k, "")
+		ensure.DeepEqual(t, value.Data(), givenVal)
+		value.Free()
+	}
 }

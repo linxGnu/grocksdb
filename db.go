@@ -399,14 +399,62 @@ func ListColumnFamilies(opts *Options, name string) (names []string, err error) 
 	return
 }
 
-// UnsafeGetDB returns the underlying c rocksdb instance.
-func (db *DB) UnsafeGetDB() unsafe.Pointer {
-	return unsafe.Pointer(db.c)
-}
-
 // Name returns the name of the database.
 func (db *DB) Name() string {
 	return db.name
+}
+
+// KeyMayExists the value is only allocated (using malloc) and returned if it is found and
+// value_found isn't NULL. In that case the user is responsible for freeing it.
+func (db *DB) KeyMayExists(opts *ReadOptions, key []byte, timestamp string) (slice *Slice) {
+	t := []byte(timestamp)
+
+	var (
+		cValue     *C.char
+		cValLen    C.size_t
+		cKey       = byteToChar(key)
+		cFound     C.uchar
+		cTimestamp = byteToChar(t)
+	)
+
+	C.rocksdb_key_may_exist(db.c, opts.c,
+		cKey, C.size_t(len(key)),
+		&cValue, &cValLen,
+		cTimestamp, C.size_t(len(t)),
+		&cFound)
+
+	if charToBool(cFound) {
+		slice = NewSlice(cValue, cValLen)
+	}
+
+	return
+}
+
+// KeyMayExistsCF the value is only allocated (using malloc) and returned if it is found and
+// value_found isn't NULL. In that case the user is responsible for freeing it.
+func (db *DB) KeyMayExistsCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte, timestamp string) (slice *Slice) {
+	t := []byte(timestamp)
+
+	var (
+		cValue     *C.char
+		cValLen    C.size_t
+		cKey       = byteToChar(key)
+		cFound     C.uchar
+		cTimestamp = byteToChar(t)
+	)
+
+	C.rocksdb_key_may_exist_cf(db.c, opts.c,
+		cf.c,
+		cKey, C.size_t(len(key)),
+		&cValue, &cValLen,
+		cTimestamp, C.size_t(len(t)),
+		&cFound)
+
+	if charToBool(cFound) {
+		slice = NewSlice(cValue, cValLen)
+	}
+
+	return
 }
 
 // Get returns the data associated with the key from the database.

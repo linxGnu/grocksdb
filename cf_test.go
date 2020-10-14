@@ -88,6 +88,13 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 	ensure.Nil(t, err)
 	ensure.DeepEqual(t, actualVal0.Data(), givenVal0)
 
+	{
+		actualVal0 := db.KeyMayExistsCF(ro, cfh[0], givenKey0, "")
+		defer actualVal0.Free()
+		ensure.Nil(t, err)
+		ensure.DeepEqual(t, actualVal0.Data(), givenVal0)
+	}
+
 	b1 := NewWriteBatch()
 	defer b1.Destroy()
 	b1.PutCF(cfh[1], givenKey1, givenVal1)
