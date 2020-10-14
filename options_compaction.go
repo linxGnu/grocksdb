@@ -53,13 +53,27 @@ func (opts *CompactRangeOptions) Destroy() {
 // for the scheduled manual compaction to complete. If exclusive_manual_compaction
 // is set to true, the call will disable scheduling of automatic compaction jobs
 // and wait for existing automatic compaction jobs to finish.
+//
+// Default: true
 func (opts *CompactRangeOptions) SetExclusiveManualCompaction(value bool) {
 	C.rocksdb_compactoptions_set_exclusive_manual_compaction(opts.c, boolToChar(value))
 }
 
-// SetBottommostLevelCompaction set bottommost level compaction.
+// SetExclusiveManualCompaction returns if exclusive manual compaction is turned on.
+func (opts *CompactRangeOptions) GetExclusiveManualCompaction() bool {
+	return charToBool(C.rocksdb_compactoptions_get_exclusive_manual_compaction(opts.c))
+}
+
+// SetBottommostLevelCompaction sets bottommost level compaction.
+//
+// Default: KIfHaveCompactionFilter
 func (opts *CompactRangeOptions) SetBottommostLevelCompaction(value BottommostLevelCompaction) {
 	C.rocksdb_compactoptions_set_bottommost_level_compaction(opts.c, C.uchar(value))
+}
+
+// BottommostLevelCompaction returns if bottommost level compaction feature is turned on.
+func (opts *CompactRangeOptions) BottommostLevelCompaction() BottommostLevelCompaction {
+	return BottommostLevelCompaction(C.rocksdb_compactoptions_get_bottommost_level_compaction(opts.c))
 }
 
 // SetChangeLevel if true, compacted files will be moved to the minimum level capable
@@ -68,10 +82,23 @@ func (opts *CompactRangeOptions) SetChangeLevel(value bool) {
 	C.rocksdb_compactoptions_set_change_level(opts.c, boolToChar(value))
 }
 
+// ChangeLevel if true, compacted files will be moved to the minimum level capable
+// of holding the data or given level (specified non-negative target_level).
+func (opts *CompactRangeOptions) ChangeLevel() bool {
+	return charToBool(C.rocksdb_compactoptions_get_change_level(opts.c))
+}
+
 // SetTargetLevel if change_level is true and target_level have non-negative value, compacted
 // files will be moved to target_level.
+//
+// Default: -1 - dynamically
 func (opts *CompactRangeOptions) SetTargetLevel(value int32) {
 	C.rocksdb_compactoptions_set_target_level(opts.c, C.int(value))
+}
+
+// TargetLevel returns target level.
+func (opts *CompactRangeOptions) TargetLevel() int32 {
+	return int32(C.rocksdb_compactoptions_get_target_level(opts.c))
 }
 
 // FIFOCompactionOptions represent all of the available options for
@@ -93,6 +120,7 @@ func NewNativeFIFOCompactionOptions(c *C.rocksdb_fifo_compaction_options_t) *FIF
 // SetMaxTableFilesSize sets the max table file size.
 // Once the total sum of table files reaches this, we will delete the oldest
 // table file
+//
 // Default: 1GB
 func (opts *FIFOCompactionOptions) SetMaxTableFilesSize(value uint64) {
 	C.rocksdb_fifo_compaction_options_set_max_table_files_size(opts.c, C.uint64_t(value))
@@ -125,18 +153,21 @@ func NewNativeUniversalCompactionOptions(c *C.rocksdb_universal_compaction_optio
 // SetSizeRatio sets the percentage flexibility while comparing file size.
 // If the candidate file(s) size is 1% smaller than the next file's size,
 // then include next file into this candidate set.
+//
 // Default: 1
 func (opts *UniversalCompactionOptions) SetSizeRatio(value uint) {
 	C.rocksdb_universal_compaction_options_set_size_ratio(opts.c, C.int(value))
 }
 
 // SetMinMergeWidth sets the minimum number of files in a single compaction run.
+//
 // Default: 2
 func (opts *UniversalCompactionOptions) SetMinMergeWidth(value uint) {
 	C.rocksdb_universal_compaction_options_set_min_merge_width(opts.c, C.int(value))
 }
 
 // SetMaxMergeWidth sets the maximum number of files in a single compaction run.
+//
 // Default: UINT_MAX
 func (opts *UniversalCompactionOptions) SetMaxMergeWidth(value uint) {
 	C.rocksdb_universal_compaction_options_set_max_merge_width(opts.c, C.int(value))
@@ -151,6 +182,7 @@ func (opts *UniversalCompactionOptions) SetMaxMergeWidth(value uint) {
 // a size amplification of 0%. Rocksdb uses the following heuristic
 // to calculate size amplification: it assumes that all files excluding
 // the earliest file contribute to the size amplification.
+//
 // Default: 200, which means that a 100 byte database could require upto
 // 300 bytes of storage.
 func (opts *UniversalCompactionOptions) SetMaxSizeAmplificationPercent(value uint) {
@@ -174,12 +206,14 @@ func (opts *UniversalCompactionOptions) SetMaxSizeAmplificationPercent(value uin
 // well as  the total size of C1...Ct as total_C, the compaction output file
 // will be compressed iff
 //   total_C / total_size < this percentage
+//
 // Default: -1
 func (opts *UniversalCompactionOptions) SetCompressionSizePercent(value int) {
 	C.rocksdb_universal_compaction_options_set_compression_size_percent(opts.c, C.int(value))
 }
 
 // SetStopStyle sets the algorithm used to stop picking files into a single compaction run.
+//
 // Default: CompactionStopStyleTotalSize
 func (opts *UniversalCompactionOptions) SetStopStyle(value UniversalCompactionStopStyle) {
 	C.rocksdb_universal_compaction_options_set_stop_style(opts.c, C.int(value))

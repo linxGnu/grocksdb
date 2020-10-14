@@ -27,6 +27,7 @@ func NewNativeEnv(c *C.rocksdb_env_t) *Env {
 // SetBackgroundThreads sets the number of background worker threads
 // of a specific thread pool for this environment.
 // 'LOW' is the default pool.
+//
 // Default: 1
 func (env *Env) SetBackgroundThreads(n int) {
 	C.rocksdb_env_set_background_threads(env.c, C.int(n))
@@ -37,6 +38,20 @@ func (env *Env) SetBackgroundThreads(n int) {
 // memtable flushes.
 func (env *Env) SetHighPriorityBackgroundThreads(n int) {
 	C.rocksdb_env_set_high_priority_background_threads(env.c, C.int(n))
+}
+
+// SetLowPriorityBackgroundThreads sets the size of the low priority
+// thread pool that can be used to prevent compactions from stalling
+// memtable flushes.
+func (env *Env) SetLowPriorityBackgroundThreads(n int) {
+	C.rocksdb_env_set_low_priority_background_threads(env.c, C.int(n))
+}
+
+// SetBottomPriorityBackgroundThreads sets the size of
+// thread pool that can be used to prevent bottommost compactions
+// from stalling memtable flushes.
+func (env *Env) SetBottomPriorityBackgroundThreads(n int) {
+	C.rocksdb_env_set_bottom_priority_background_threads(env.c, C.int(n))
 }
 
 // JoinAllThreads wait for all threads started by StartThread to terminate.
