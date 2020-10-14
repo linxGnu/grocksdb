@@ -2099,6 +2099,7 @@ func (opts *Options) SetMemtableWholeKeyFiltering(value bool) {
 // Destroy deallocates the Options object.
 func (opts *Options) Destroy() {
 	C.rocksdb_options_destroy(opts.c)
+	opts.c = nil
 
 	C.rocksdb_comparator_destroy(opts.ccmp)
 	opts.ccmp = nil
@@ -2115,8 +2116,7 @@ func (opts *Options) Destroy() {
 	if opts.env != nil {
 		opts.env.Destroy()
 	}
-
-	opts.c = nil
 	opts.env = nil
+
 	opts.bbto = nil
 }
