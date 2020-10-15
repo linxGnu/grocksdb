@@ -52,9 +52,5 @@ func TestCheckpoint(t *testing.T) {
 		ensure.Nil(t, err)
 		ensure.DeepEqual(t, value.Data(), givenVal)
 		value.Free()
-
-		value = dbCheck.KeyMayExists(ro, k, "")
-		ensure.DeepEqual(t, value.Data(), givenVal)
-		value.Free()
 	}
 }

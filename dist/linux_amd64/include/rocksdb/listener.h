@@ -11,9 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 #include "rocksdb/compaction_job_stats.h"
-#include "rocksdb/compression_type.h"
 #include "rocksdb/status.h"
 #include "rocksdb/table_properties.h"
 
@@ -26,6 +24,7 @@ class DB;
 class ColumnFamilyHandle;
 class Status;
 struct CompactionJobStats;
+enum CompressionType : unsigned char;
 
 enum class TableFileCreationReason {
   kFlush,
@@ -58,10 +57,6 @@ struct TableFileCreationInfo : public TableFileCreationBriefInfo {
   TableProperties table_properties;
   // The status indicating whether the creation was successful or not.
   Status status;
-  // The checksum of the table file being created
-  std::string file_checksum;
-  // The checksum function name of checksum generator used for this table file
-  std::string file_checksum_func_name;
 };
 
 enum class CompactionReason : int {
@@ -115,9 +110,6 @@ enum class FlushReason : int {
   kAutoCompaction = 0x09,
   kManualFlush = 0x0a,
   kErrorRecovery = 0xb,
-  // When set the flush reason to kErrorRecoveryRetryFlush, SwitchMemtable
-  // will not be called to avoid many small immutable memtables.
-  kErrorRecoveryRetryFlush = 0xc,
 };
 
 enum class BackgroundErrorReason {
@@ -126,7 +118,6 @@ enum class BackgroundErrorReason {
   kWriteCallback,
   kMemTable,
   kManifestWrite,
-  kFlushNoWAL,
 };
 
 enum class WriteStallCondition {
@@ -158,49 +149,19 @@ struct TableFileDeletionInfo {
   Status status;
 };
 
-enum class FileOperationType {
-  kRead,
-  kWrite,
-  kTruncate,
-  kClose,
-  kFlush,
-  kSync,
-  kFsync,
-  kRangeSync
-};
-
 struct FileOperationInfo {
-  using Duration = std::chrono::nanoseconds;
-  using SteadyTimePoint =
-      std::chrono::time_point<std::chrono::steady_clock, Duration>;
-  using SystemTimePoint =
-      std::chrono::time_point<std::chrono::system_clock, Duration>;
-  using StartTimePoint = std::pair<SystemTimePoint, SteadyTimePoint>;
-  using FinishTimePoint = SteadyTimePoint;
+  using TimePoint = std::chrono::time_point<std::chrono::system_clock,
+                                            std::chrono::nanoseconds>;
 
-  FileOperationType type;
   const std::string& path;
   uint64_t offset;
   size_t length;
-  const Duration duration;
-  const SystemTimePoint& start_ts;
+  const TimePoint& start_timestamp;
+  const TimePoint& finish_timestamp;
   Status status;
-  FileOperationInfo(const FileOperationType _type, const std::string& _path,
-                    const StartTimePoint& _start_ts,
-                    const FinishTimePoint& _finish_ts, const Status& _status)
-      : type(_type),
-        path(_path),
-        duration(std::chrono::duration_cast<std::chrono::nanoseconds>(
-            _finish_ts - _start_ts.second)),
-        start_ts(_start_ts.first),
-        status(_status) {}
-  static StartTimePoint StartNow() {
-    return std::make_pair<SystemTimePoint, SteadyTimePoint>(
-        std::chrono::system_clock::now(), std::chrono::steady_clock::now());
-  }
-  static FinishTimePoint FinishNow() {
-    return std::chrono::steady_clock::now();
-  }
+  FileOperationInfo(const std::string& _path, const TimePoint& start,
+                    const TimePoint& finish)
+      : path(_path), start_timestamp(start), finish_timestamp(finish) {}
 };
 
 struct FlushJobInfo {
@@ -250,7 +211,6 @@ struct CompactionFileInfo {
 };
 
 struct CompactionJobInfo {
-  ~CompactionJobInfo() { status.PermitUncheckedError(); }
   // the id of the column family where the compaction happened.
   uint32_t cf_id;
   // the name of the column family where the compaction happened.
@@ -294,7 +254,8 @@ struct CompactionJobInfo {
   // Compression algorithm used for output files
   CompressionType compression;
 
-  // Statistics and other additional details on the compaction
+  // If non-null, this variable stores detailed information
+  // about this compaction.
   CompactionJobStats stats;
 };
 
@@ -499,27 +460,7 @@ class EventListener {
   // operation finishes.
   virtual void OnFileWriteFinish(const FileOperationInfo& /* info */) {}
 
-  // A callback function for RocksDB which will be called whenever a file flush
-  // operation finishes.
-  virtual void OnFileFlushFinish(const FileOperationInfo& /* info */) {}
-
-  // A callback function for RocksDB which will be called whenever a file sync
-  // operation finishes.
-  virtual void OnFileSyncFinish(const FileOperationInfo& /* info */) {}
-
-  // A callback function for RocksDB which will be called whenever a file
-  // rangeSync operation finishes.
-  virtual void OnFileRangeSyncFinish(const FileOperationInfo& /* info */) {}
-
-  // A callback function for RocksDB which will be called whenever a file
-  // truncate operation finishes.
-  virtual void OnFileTruncateFinish(const FileOperationInfo& /* info */) {}
-
-  // A callback function for RocksDB which will be called whenever a file close
-  // operation finishes.
-  virtual void OnFileCloseFinish(const FileOperationInfo& /* info */) {}
-
-  // If true, the OnFile*Finish functions will be called. If
+  // If true, the OnFileReadFinish and OnFileWriteFinish will be called. If
   // false, then they won't be called.
   virtual bool ShouldBeNotifiedOnFileIO() { return false; }
 

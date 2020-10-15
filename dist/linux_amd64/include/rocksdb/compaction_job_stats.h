@@ -35,8 +35,6 @@ struct CompactionJobStats {
   // the number of compaction output files.
   size_t num_output_files;
 
-  // true if the compaction is a full compaction (all live SST files input)
-  bool is_full_compaction;
   // true if the compaction is a manual compaction
   bool is_manual_compaction;
 

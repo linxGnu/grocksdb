@@ -84,9 +84,7 @@ class LDBCommand {
 
   bool ValidateCmdLineOptions();
 
-  virtual void PrepareOptions();
-
-  virtual void OverrideBaseOptions();
+  virtual Options PrepareOptionsForOpenDB();
 
   virtual void SetDBOptions(Options options) { options_ = options; }
 
