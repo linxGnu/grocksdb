@@ -39,7 +39,7 @@ func (opts *WriteOptions) IsSync() bool {
 //
 // Default: false
 func (opts *WriteOptions) DisableWAL(value bool) {
-	C.rocksdb_writeoptions_disable_WAL(opts.c, C.int(btoi(value)))
+	C.rocksdb_writeoptions_disable_WAL(opts.c, C.int(boolToChar(value)))
 }
 
 // IsDisableWAL returns if we turned on DisableWAL flag for writing.

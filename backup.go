@@ -7,78 +7,19 @@ import (
 	"unsafe"
 )
 
-// BackupEngineInfo represents the information about the backups
-// in a backup engine instance. Use this to get the state of the
-// backup like number of backups and their ids and timestamps etc.
-type BackupEngineInfo struct {
-	c *C.rocksdb_backup_engine_info_t
-}
-
-// GetCount gets the number backsup available.
-func (b *BackupEngineInfo) GetCount() int {
-	return int(C.rocksdb_backup_engine_info_count(b.c))
-}
-
-// GetTimestamp gets the timestamp at which the backup index was taken.
-func (b *BackupEngineInfo) GetTimestamp(index int) int64 {
-	return int64(C.rocksdb_backup_engine_info_timestamp(b.c, C.int(index)))
-}
-
-// GetBackupID gets an id that uniquely identifies a backup
-// regardless of its position.
-func (b *BackupEngineInfo) GetBackupID(index int) int64 {
-	return int64(C.rocksdb_backup_engine_info_backup_id(b.c, C.int(index)))
-}
-
-// GetSize get the size of the backup in bytes.
-func (b *BackupEngineInfo) GetSize(index int) int64 {
-	return int64(C.rocksdb_backup_engine_info_size(b.c, C.int(index)))
-}
-
-// GetNumFiles gets the number of files in the backup index.
-func (b *BackupEngineInfo) GetNumFiles(index int) int32 {
-	return int32(C.rocksdb_backup_engine_info_number_files(b.c, C.int(index)))
-}
-
-// Destroy destroys the backup engine info instance.
-func (b *BackupEngineInfo) Destroy() {
-	C.rocksdb_backup_engine_info_destroy(b.c)
-	b.c = nil
-}
-
-// RestoreOptions captures the options to be used during
-// restoration of a backup.
-type RestoreOptions struct {
-	c *C.rocksdb_restore_options_t
-}
-
-// NewRestoreOptions creates a RestoreOptions instance.
-func NewRestoreOptions() *RestoreOptions {
-	return &RestoreOptions{
-		c: C.rocksdb_restore_options_create(),
-	}
-}
-
-// SetKeepLogFiles is used to set or unset the keep_log_files option
-// If true, restore won't overwrite the existing log files in wal_dir. It will
-// also move all log files from archive directory to wal_dir.
-// By default, this is false.
-func (ro *RestoreOptions) SetKeepLogFiles(v int) {
-	C.rocksdb_restore_options_set_keep_log_files(ro.c, C.int(v))
-}
-
-// Destroy destroys this RestoreOptions instance.
-func (ro *RestoreOptions) Destroy() {
-	C.rocksdb_restore_options_destroy(ro.c)
-	ro.c = nil
+// BackupInfo represents the information about a backup.
+type BackupInfo struct {
+	ID        uint32
+	Timestamp int64
+	Size      uint64
+	NumFiles  uint32
 }
 
 // BackupEngine is a reusable handle to a RocksDB Backup, created by
 // OpenBackupEngine.
 type BackupEngine struct {
-	c    *C.rocksdb_backup_engine_t
-	path string
-	opts *Options
+	c  *C.rocksdb_backup_engine_t
+	db *DB
 }
 
 // OpenBackupEngine opens a backup engine with specified options.
@@ -89,9 +30,7 @@ func OpenBackupEngine(opts *Options, path string) (be *BackupEngine, err error) 
 	bEngine := C.rocksdb_backup_engine_open(opts.c, cpath, &cErr)
 	if err = fromCError(cErr); err == nil {
 		be = &BackupEngine{
-			c:    bEngine,
-			path: path,
-			opts: opts,
+			c: bEngine,
 		}
 	}
 
@@ -99,24 +38,27 @@ func OpenBackupEngine(opts *Options, path string) (be *BackupEngine, err error) 
 	return
 }
 
-// UnsafeGetBackupEngine returns the underlying c backup engine.
-func (b *BackupEngine) UnsafeGetBackupEngine() unsafe.Pointer {
-	return unsafe.Pointer(b.c)
+// CreateBackupEngine opens a backup engine from DB.
+func CreateBackupEngine(db *DB) (be *BackupEngine, err error) {
+	if be, err = OpenBackupEngine(db.opts, db.Name()); err == nil {
+		be.db = db
+	}
+	return
 }
 
 // CreateNewBackup takes a new backup from db.
-func (b *BackupEngine) CreateNewBackup(db *DB) (err error) {
+func (b *BackupEngine) CreateNewBackup() (err error) {
 	var cErr *C.char
-	C.rocksdb_backup_engine_create_new_backup(b.c, db.c, &cErr)
+	C.rocksdb_backup_engine_create_new_backup(b.c, b.db.c, &cErr)
 	err = fromCError(cErr)
 	return
 }
 
 // CreateNewBackupFlush takes a new backup from db.
 // Backup would be created after flushing.
-func (b *BackupEngine) CreateNewBackupFlush(db *DB, flushBeforeBackup bool) (err error) {
+func (b *BackupEngine) CreateNewBackupFlush(flushBeforeBackup bool) (err error) {
 	var cErr *C.char
-	C.rocksdb_backup_engine_create_new_backup_flush(b.c, db.c, boolToChar(flushBeforeBackup), &cErr)
+	C.rocksdb_backup_engine_create_new_backup_flush(b.c, b.db.c, boolToChar(flushBeforeBackup), &cErr)
 	err = fromCError(cErr)
 	return
 }
@@ -139,10 +81,21 @@ func (b *BackupEngine) VerifyBackup(backupID uint32) (err error) {
 
 // GetInfo gets an object that gives information about
 // the backups that have already been taken
-func (b *BackupEngine) GetInfo() *BackupEngineInfo {
-	return &BackupEngineInfo{
-		c: C.rocksdb_backup_engine_get_backup_info(b.c),
+func (b *BackupEngine) GetInfo() (infos []BackupInfo) {
+	info := C.rocksdb_backup_engine_get_backup_info(b.c)
+
+	n := int(C.rocksdb_backup_engine_info_count(info))
+	infos = make([]BackupInfo, n)
+	for i := range infos {
+		index := C.int(i)
+		infos[i].ID = uint32(C.rocksdb_backup_engine_info_backup_id(info, index))
+		infos[i].Timestamp = int64(C.rocksdb_backup_engine_info_timestamp(info, index))
+		infos[i].Size = uint64(C.rocksdb_backup_engine_info_size(info, index))
+		infos[i].NumFiles = uint32(C.rocksdb_backup_engine_info_number_files(info, index))
 	}
+
+	C.rocksdb_backup_engine_info_destroy(info)
+	return
 }
 
 // RestoreDBFromLatestBackup restores the latest backup to dbDir. walDir
@@ -180,4 +133,5 @@ func (b *BackupEngine) RestoreDBFromBackup(dbDir, walDir string, ro *RestoreOpti
 func (b *BackupEngine) Close() {
 	C.rocksdb_backup_engine_close(b.c)
 	b.c = nil
+	b.db = nil
 }

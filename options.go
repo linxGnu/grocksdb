@@ -870,7 +870,7 @@ func (opts *Options) SetMaxBytesForLevelMultiplierAdditional(value []int) {
 // filesystem like ext3 that can lose files after a reboot.
 // Default: false
 func (opts *Options) SetUseFsync(value bool) {
-	C.rocksdb_options_set_use_fsync(opts.c, C.int(btoi(value)))
+	C.rocksdb_options_set_use_fsync(opts.c, C.int(boolToChar(value)))
 }
 
 // UseFsync returns fsync setting.
@@ -1112,7 +1112,7 @@ func (opts *Options) GetArenaBlockSize() uint64 {
 //
 // Default: false
 func (opts *Options) SetDisableAutoCompactions(value bool) {
-	C.rocksdb_options_set_disable_auto_compactions(opts.c, C.int(btoi(value)))
+	C.rocksdb_options_set_disable_auto_compactions(opts.c, C.int(boolToChar(value)))
 }
 
 // DisabledAutoCompactions returns if automatic compactions is disabled.
@@ -1750,7 +1750,7 @@ func (opts *Options) GetMemTablePrefixBloomSizeRatio() float64 {
 //
 // Default: false
 func (opts *Options) SetOptimizeFiltersForHits(value bool) {
-	C.rocksdb_options_set_optimize_filters_for_hits(opts.c, C.int(btoi(value)))
+	C.rocksdb_options_set_optimize_filters_for_hits(opts.c, C.int(boolToChar(value)))
 }
 
 // OptimizeFiltersForHits gets setting for optimize_filters_for_hits.
@@ -2012,7 +2012,7 @@ func (opts *Options) EnabledWriteThreadAdaptiveYield() bool {
 //
 // Dynamically changeable through SetOptions() API
 func (opts *Options) SetReportBackgroundIOStats(value bool) {
-	C.rocksdb_options_set_report_bg_io_stats(opts.c, C.int(btoi(value)))
+	C.rocksdb_options_set_report_bg_io_stats(opts.c, C.int(boolToChar(value)))
 }
 
 // ReportBackgroundIOStats returns if measureing IO stats in compactions and
