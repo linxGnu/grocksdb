@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/facebookgo/ensure"
+	"github.com/stretchr/testify/require"
 )
 
 func TestColumnFamilyOpen(t *testing.T) {
@@ -104,6 +105,12 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 	ensure.Nil(t, err)
 	ensure.DeepEqual(t, actualVal.Size(), 0)
 
+	{
+		v := db.KeyMayExistsCF(ro, cfh[0], givenKey0, "")
+		defer v.Free()
+		require.True(t, v.Size() > 0)
+	}
+
 	// trigger flush
 	ensure.Nil(t, db.FlushCF(cfh[0], NewDefaultFlushOptions()))
 }
@@ -158,6 +165,11 @@ func TestColumnFamilyPutGetDelete(t *testing.T) {
 		actualVal, err = db.GetCF(ro, cfh[0], givenKey0)
 		ensure.Nil(t, err)
 		ensure.DeepEqual(t, actualVal.Size(), 0)
+
+		{
+			v := db.KeyMayExistsCF(ro, cfh[0], givenKey0, "")
+			defer v.Free()
+		}
 	}
 
 	{

@@ -10,6 +10,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <limits>
 #include <memory>
 #include <string>
@@ -21,6 +22,7 @@
 #include "rocksdb/env.h"
 #include "rocksdb/file_checksum.h"
 #include "rocksdb/listener.h"
+#include "rocksdb/sst_partitioner.h"
 #include "rocksdb/universal_compaction.h"
 #include "rocksdb/version.h"
 #include "rocksdb/write_buffer_manager.h"
@@ -50,13 +52,6 @@ class Statistics;
 class InternalKeyComparator;
 class WalFilter;
 class FileSystem;
-
-enum class CpuPriority {
-  kIdle = 0,
-  kLow = 1,
-  kNormal = 2,
-  kHigh = 3,
-};
 
 // DB contents are stored in a set of blocks, each of which holds a
 // sequence of key,value pairs.  Each block may be compressed before
@@ -315,6 +310,15 @@ struct ColumnFamilyOptions : public AdvancedColumnFamilyOptions {
   // Default: nullptr
   std::shared_ptr<ConcurrentTaskLimiter> compaction_thread_limiter = nullptr;
 
+  // If non-nullptr, use the specified factory for a function to determine the
+  // partitioning of sst files. This helps compaction to split the files
+  // on interesting boundaries (key prefixes) to make propagation of sst
+  // files less write amplifying (covering the whole key space).
+  // THE FEATURE IS STILL EXPERIMENTAL
+  //
+  // Default: nullptr
+  std::shared_ptr<SstPartitionerFactory> sst_partitioner_factory = nullptr;
+
   // Create ColumnFamilyOptions with default values for all fields
   ColumnFamilyOptions();
   // Create ColumnFamilyOptions from Options
@@ -565,6 +569,8 @@ struct DBOptions {
   // concurrently perform a compaction job by breaking it into multiple,
   // smaller ones that are run simultaneously.
   // Default: 1 (i.e. no subcompactions)
+  //
+  // Dynamically changeable through SetDBOptions() API.
   uint32_t max_subcompactions = 1;
 
   // NOT SUPPORTED ANYMORE: RocksDB automatically decides this based on the
@@ -1144,6 +1150,23 @@ struct DBOptions {
   // not be used for recovery if best_efforts_recovery is true.
   // Default: false
   bool best_efforts_recovery = false;
+
+  // It defines how many times db resume is called by a separate thread when
+  // background retryable IO Error happens. When background retryable IO
+  // Error happens, SetBGError is called to deal with the error. If the error
+  // can be auto-recovered (e.g., retryable IO Error during Flush or WAL write),
+  // then db resume is called in background to recover from the error. If this
+  // value is 0 or negative, db resume will not be called.
+  //
+  // Default: INT_MAX
+  int max_bgerror_resume_count = INT_MAX;
+
+  // If max_bgerror_resume_count is >= 2, db resume is called multiple times.
+  // This option decides how long to wait to retry the next resume if the
+  // previous resume fails and satisfy redo resume conditions.
+  //
+  // Default: 1000000 (microseconds).
+  uint64_t bgerror_resume_retry_interval = 1000000;
 };
 
 // Options to control the behavior of a database (passed to DB::Open)

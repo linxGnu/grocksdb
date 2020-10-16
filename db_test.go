@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/facebookgo/ensure"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOpenDb(t *testing.T) {
@@ -122,6 +123,12 @@ func TestDBCRUDDBPaths(t *testing.T) {
 	ensure.Nil(t, err)
 	ensure.True(t, v3.Exists())
 	ensure.DeepEqual(t, v3.Data(), givenVal3)
+
+	{
+		v4 := db.KeyMayExists(ro, givenKey, "")
+		defer v4.Free()
+		require.True(t, v4.Size() > 0)
+	}
 
 	// delete
 	ensure.Nil(t, db.Delete(wo, givenKey))
