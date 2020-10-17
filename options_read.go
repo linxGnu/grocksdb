@@ -43,7 +43,7 @@ func (opts *ReadOptions) SetVerifyChecksums(value bool) {
 	C.rocksdb_readoptions_set_verify_checksums(opts.c, boolToChar(value))
 }
 
-// GetVerifyChecksums returns if all data read from underlying storage will be
+// VerifyChecksums returns if all data read from underlying storage will be
 // verified against corresponding checksums.
 func (opts *ReadOptions) VerifyChecksums() bool {
 	return charToBool(C.rocksdb_readoptions_get_verify_checksums(opts.c))

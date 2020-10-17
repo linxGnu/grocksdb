@@ -59,7 +59,7 @@ func (opts *CompactRangeOptions) SetExclusiveManualCompaction(value bool) {
 	C.rocksdb_compactoptions_set_exclusive_manual_compaction(opts.c, boolToChar(value))
 }
 
-// SetExclusiveManualCompaction returns if exclusive manual compaction is turned on.
+// GetExclusiveManualCompaction returns if exclusive manual compaction is turned on.
 func (opts *CompactRangeOptions) GetExclusiveManualCompaction() bool {
 	return charToBool(C.rocksdb_compactoptions_get_exclusive_manual_compaction(opts.c))
 }
