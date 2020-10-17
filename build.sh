@@ -28,7 +28,7 @@ cd $BUILD_PATH && wget https://github.com/facebook/zstd/releases/download/v1.4.5
     $CMAKE_REQUIRED_PARAMS -DZSTD_ZLIB_SUPPORT=ON -DZSTD_LZMA_SUPPORT=OFF -DCMAKE_BUILD_TYPE=Release .. && make -j16 install && \
     cd $BUILD_PATH && rm -rf *
 
-cd $BUILD_PATH && wget https://github.com/facebook/rocksdb/archive/v6.12.7.tar.gz && tar xzf v6.12.7.tar.gz && cd rocksdb-6.12.7/ && \
+cd $BUILD_PATH && wget https://github.com/facebook/rocksdb/archive/v6.13.3.tar.gz && tar xzf v6.13.3.tar.gz && cd rocksdb-6.13.3/ && \
     mkdir -p build_place && cd build_place && cmake -DCMAKE_BUILD_TYPE=Release $CMAKE_REQUIRED_PARAMS -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX -DWITH_TESTS=OFF -DWITH_GFLAGS=OFF \
     -DWITH_BENCHMARK_TOOLS=OFF -DWITH_TOOLS=OFF -DWITH_MD_LIBRARY=OFF -DWITH_RUNTIME_DEBUG=OFF -DROCKSDB_BUILD_SHARED=OFF -DWITH_SNAPPY=ON -DWITH_LZ4=ON -DWITH_ZLIB=ON \
     -DWITH_ZSTD=ON -DWITH_BZ2=OFF -WITH_GFLAGS=OFF .. && make -j16 install/strip && \

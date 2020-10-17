@@ -43,11 +43,11 @@ func (opts *ReadOptions) SetVerifyChecksums(value bool) {
 	C.rocksdb_readoptions_set_verify_checksums(opts.c, boolToChar(value))
 }
 
-// // GetVerifyChecksums returns if all data read from underlying storage will be
-// // verified against corresponding checksums.
-// func (opts *ReadOptions) VerifyChecksums() bool {
-// 	return charToBool(C.rocksdb_readoptions_get_verify_checksums(opts.c))
-// }
+// VerifyChecksums returns if all data read from underlying storage will be
+// verified against corresponding checksums.
+func (opts *ReadOptions) VerifyChecksums() bool {
+	return charToBool(C.rocksdb_readoptions_get_verify_checksums(opts.c))
+}
 
 // SetFillCache specify whether the "data block"/"index block"/"filter block"
 // read for this iteration should be cached in memory?
@@ -58,12 +58,12 @@ func (opts *ReadOptions) SetFillCache(value bool) {
 	C.rocksdb_readoptions_set_fill_cache(opts.c, boolToChar(value))
 }
 
-// // FillCache returns whether the "data block"/"index block"/"filter block"
-// // read for this iteration should be cached in memory?
-// // Callers may wish to set this field to false for bulk scans.
-// func (opts *ReadOptions) FillCache() bool {
-// 	return charToBool(C.rocksdb_readoptions_get_fill_cache(opts.c))
-// }
+// FillCache returns whether the "data block"/"index block"/"filter block"
+// read for this iteration should be cached in memory?
+// Callers may wish to set this field to false for bulk scans.
+func (opts *ReadOptions) FillCache() bool {
+	return charToBool(C.rocksdb_readoptions_get_fill_cache(opts.c))
+}
 
 // SetSnapshot sets the snapshot which should be used for the read.
 // The snapshot must belong to the DB that is being read and must
@@ -113,10 +113,10 @@ func (opts *ReadOptions) SetReadTier(value ReadTier) {
 	C.rocksdb_readoptions_set_read_tier(opts.c, C.int(value))
 }
 
-// // GetReadTier returns read tier that the request should process data.
-// func (opts *ReadOptions) GetReadTier() ReadTier {
-// 	return ReadTier(C.rocksdb_readoptions_get_read_tier(opts.c))
-// }
+// GetReadTier returns read tier that the request should process data.
+func (opts *ReadOptions) GetReadTier() ReadTier {
+	return ReadTier(C.rocksdb_readoptions_get_read_tier(opts.c))
+}
 
 // SetTailing specify if we are creating a tailing iterator.
 // A special iterator that has a view of the complete database
@@ -129,10 +129,10 @@ func (opts *ReadOptions) SetTailing(value bool) {
 	C.rocksdb_readoptions_set_tailing(opts.c, boolToChar(value))
 }
 
-// // Tailing returns if creating a tailing iterator.
-// func (opts *ReadOptions) Tailing() bool {
-// 	return charToBool(C.rocksdb_readoptions_get_tailing(opts.c))
-// }
+// Tailing returns if creating a tailing iterator.
+func (opts *ReadOptions) Tailing() bool {
+	return charToBool(C.rocksdb_readoptions_get_tailing(opts.c))
+}
 
 // SetReadaheadSize specifies the value of "readahead_size".
 // If non-zero, NewIterator will create a new table reader which
@@ -144,10 +144,10 @@ func (opts *ReadOptions) SetReadaheadSize(value uint64) {
 	C.rocksdb_readoptions_set_readahead_size(opts.c, C.size_t(value))
 }
 
-// // GetReadaheadSize returns the value of "readahead_size".
-// func (opts *ReadOptions) GetReadaheadSize() uint64 {
-// 	return uint64(C.rocksdb_readoptions_get_readahead_size(opts.c))
-// }
+// GetReadaheadSize returns the value of "readahead_size".
+func (opts *ReadOptions) GetReadaheadSize() uint64 {
+	return uint64(C.rocksdb_readoptions_get_readahead_size(opts.c))
+}
 
 // SetPrefixSameAsStart forces the iterator iterate over the same
 // prefix as the seek.
@@ -162,11 +162,11 @@ func (opts *ReadOptions) SetPrefixSameAsStart(value bool) {
 	C.rocksdb_readoptions_set_prefix_same_as_start(opts.c, boolToChar(value))
 }
 
-// // PrefixSameAsStart returns if the iterator will iterate over the same prefix
-// // as the seek.
-// func (opts *ReadOptions) PrefixSameAsStart() bool {
-// 	return charToBool(C.rocksdb_readoptions_get_prefix_same_as_start(opts.c))
-// }
+// PrefixSameAsStart returns if the iterator will iterate over the same prefix
+// as the seek.
+func (opts *ReadOptions) PrefixSameAsStart() bool {
+	return charToBool(C.rocksdb_readoptions_get_prefix_same_as_start(opts.c))
+}
 
 // SetPinData specifies the value of "pin_data". If true, it keeps the blocks
 // loaded by the iterator pinned in memory as long as the iterator is not deleted,
@@ -180,15 +180,15 @@ func (opts *ReadOptions) SetPinData(value bool) {
 	C.rocksdb_readoptions_set_pin_data(opts.c, boolToChar(value))
 }
 
-// // PinData returns the value of "pin_data". If true, it keeps the blocks
-// // loaded by the iterator pinned in memory as long as the iterator is not deleted,
-// // If used when reading from tables created with
-// // BlockBasedTableOptions::use_delta_encoding = false,
-// // Iterator's property "rocksdb.iterator.is-key-pinned" is guaranteed to
-// // return 1.
-// func (opts *ReadOptions) PinData() bool {
-// 	return charToBool(C.rocksdb_readoptions_get_pin_data(opts.c))
-// }
+// PinData returns the value of "pin_data". If true, it keeps the blocks
+// loaded by the iterator pinned in memory as long as the iterator is not deleted,
+// If used when reading from tables created with
+// BlockBasedTableOptions::use_delta_encoding = false,
+// Iterator's property "rocksdb.iterator.is-key-pinned" is guaranteed to
+// return 1.
+func (opts *ReadOptions) PinData() bool {
+	return charToBool(C.rocksdb_readoptions_get_pin_data(opts.c))
+}
 
 // SetTotalOrderSeek enable a total order seek regardless of index format (e.g. hash index)
 // used in the table. Some table format (e.g. plain table) may not support
@@ -202,10 +202,10 @@ func (opts *ReadOptions) SetTotalOrderSeek(value bool) {
 	C.rocksdb_readoptions_set_total_order_seek(opts.c, boolToChar(value))
 }
 
-// // GetTotalOrderSeek returns if total order seek is enabled.
-// func (opts *ReadOptions) GetTotalOrderSeek() bool {
-// 	return charToBool(C.rocksdb_readoptions_get_total_order_seek(opts.c))
-// }
+// GetTotalOrderSeek returns if total order seek is enabled.
+func (opts *ReadOptions) GetTotalOrderSeek() bool {
+	return charToBool(C.rocksdb_readoptions_get_total_order_seek(opts.c))
+}
 
 // SetMaxSkippableInternalKeys sets a threshold for the number of keys that can be skipped
 // before failing an iterator seek as incomplete. The default value of 0 should be used to
@@ -216,12 +216,12 @@ func (opts *ReadOptions) SetMaxSkippableInternalKeys(value uint64) {
 	C.rocksdb_readoptions_set_max_skippable_internal_keys(opts.c, C.uint64_t(value))
 }
 
-// // GetMaxSkippableInternalKeys returns the threshold for the number of keys that can be skipped
-// // before failing an iterator seek as incomplete. The default value of 0 should be used to
-// // never fail a request as incomplete, even on skipping too many keys.
-// func (opts *ReadOptions) GetMaxSkippableInternalKeys() uint64 {
-// 	return uint64(C.rocksdb_readoptions_get_max_skippable_internal_keys(opts.c))
-// }
+// GetMaxSkippableInternalKeys returns the threshold for the number of keys that can be skipped
+// before failing an iterator seek as incomplete. The default value of 0 should be used to
+// never fail a request as incomplete, even on skipping too many keys.
+func (opts *ReadOptions) GetMaxSkippableInternalKeys() uint64 {
+	return uint64(C.rocksdb_readoptions_get_max_skippable_internal_keys(opts.c))
+}
 
 // SetBackgroundPurgeOnIteratorCleanup if true, when PurgeObsoleteFile is called in
 // CleanupIteratorState, we schedule a background job in the flush job queue and delete obsolete files
@@ -232,10 +232,10 @@ func (opts *ReadOptions) SetBackgroundPurgeOnIteratorCleanup(value bool) {
 	C.rocksdb_readoptions_set_background_purge_on_iterator_cleanup(opts.c, boolToChar(value))
 }
 
-// // GetBackgroundPurgeOnIteratorCleanup returns if background purge on iterator cleanup is turned on.
-// func (opts *ReadOptions) GetBackgroundPurgeOnIteratorCleanup() bool {
-// 	return charToBool(C.rocksdb_readoptions_get_background_purge_on_iterator_cleanup(opts.c))
-// }
+// GetBackgroundPurgeOnIteratorCleanup returns if background purge on iterator cleanup is turned on.
+func (opts *ReadOptions) GetBackgroundPurgeOnIteratorCleanup() bool {
+	return charToBool(C.rocksdb_readoptions_get_background_purge_on_iterator_cleanup(opts.c))
+}
 
 // SetIgnoreRangeDeletions if true, keys deleted using the DeleteRange() API will be visible to
 // readers until they are naturally deleted during compaction. This improves
@@ -246,10 +246,10 @@ func (opts *ReadOptions) SetIgnoreRangeDeletions(value bool) {
 	C.rocksdb_readoptions_set_ignore_range_deletions(opts.c, boolToChar(value))
 }
 
-// // IgnoreRangeDeletions returns if ignore range deletion is turned on.
-// func (opts *ReadOptions) IgnoreRangeDeletions() bool {
-// 	return charToBool(C.rocksdb_readoptions_get_ignore_range_deletions(opts.c))
-// }
+// IgnoreRangeDeletions returns if ignore range deletion is turned on.
+func (opts *ReadOptions) IgnoreRangeDeletions() bool {
+	return charToBool(C.rocksdb_readoptions_get_ignore_range_deletions(opts.c))
+}
 
 // Destroy deallocates the ReadOptions object.
 func (opts *ReadOptions) Destroy() {

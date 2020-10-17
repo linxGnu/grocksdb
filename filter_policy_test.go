@@ -6,16 +6,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// fatalAsError is used as a wrapper to make it possible to use ensure
-// also if C calls Go otherwise it will throw a internal lockOSThread error.
-type fatalAsError struct {
-	t *testing.T
-}
-
-func (f *fatalAsError) Fatal(a ...interface{}) {
-	f.t.Error(a...)
-}
-
 func TestFilterPolicy(t *testing.T) {
 	var (
 		givenKeys          = [][]byte{[]byte("key1"), []byte("key2"), []byte("key3")}
