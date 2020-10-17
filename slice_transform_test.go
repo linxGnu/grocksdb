@@ -3,7 +3,7 @@ package grocksdb
 import (
 	"testing"
 
-	"github.com/facebookgo/ensure"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSliceTransform(t *testing.T) {
@@ -13,9 +13,9 @@ func TestSliceTransform(t *testing.T) {
 	defer db.Close()
 
 	wo := NewDefaultWriteOptions()
-	ensure.Nil(t, db.Put(wo, []byte("foo1"), []byte("foo")))
-	ensure.Nil(t, db.Put(wo, []byte("foo2"), []byte("foo")))
-	ensure.Nil(t, db.Put(wo, []byte("bar1"), []byte("bar")))
+	require.Nil(t, db.Put(wo, []byte("foo1"), []byte("foo")))
+	require.Nil(t, db.Put(wo, []byte("foo2"), []byte("foo")))
+	require.Nil(t, db.Put(wo, []byte("bar1"), []byte("bar")))
 
 	iter := db.NewIterator(NewDefaultReadOptions())
 	defer iter.Close()
@@ -24,8 +24,8 @@ func TestSliceTransform(t *testing.T) {
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
 		numFound++
 	}
-	ensure.Nil(t, iter.Err())
-	ensure.DeepEqual(t, numFound, 2)
+	require.Nil(t, iter.Err())
+	require.EqualValues(t, numFound, 2)
 }
 
 func TestFixedPrefixTransformOpen(t *testing.T) {

@@ -5,16 +5,16 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/facebookgo/ensure"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOpenDb(t *testing.T) {
 	db := newTestDB(t, "TestOpenDb", nil)
 	defer db.Close()
-	ensure.DeepEqual(t, "0", db.GetProperty("rocksdb.num-immutable-mem-table"))
+	require.EqualValues(t, "0", db.GetProperty("rocksdb.num-immutable-mem-table"))
 	v, success := db.GetIntProperty("rocksdb.num-immutable-mem-table")
-	ensure.DeepEqual(t, uint64(0), v)
-	ensure.True(t, success)
+	require.EqualValues(t, uint64(0), v)
+	require.True(t, success)
 }
 
 func TestDBCRUD(t *testing.T) {
@@ -30,43 +30,43 @@ func TestDBCRUD(t *testing.T) {
 	)
 
 	// create
-	ensure.Nil(t, db.Put(wo, givenKey, givenVal1))
+	require.Nil(t, db.Put(wo, givenKey, givenVal1))
 
 	// retrieve
 	v1, err := db.Get(ro, givenKey)
 	defer v1.Free()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, v1.Data(), givenVal1)
+	require.Nil(t, err)
+	require.EqualValues(t, v1.Data(), givenVal1)
 
 	// retrieve bytes
 	_v1, err := db.GetBytes(ro, givenKey)
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, _v1, givenVal1)
+	require.Nil(t, err)
+	require.EqualValues(t, _v1, givenVal1)
 
 	// update
-	ensure.Nil(t, db.Put(wo, givenKey, givenVal2))
+	require.Nil(t, db.Put(wo, givenKey, givenVal2))
 	v2, err := db.Get(ro, givenKey)
 	defer v2.Free()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, v2.Data(), givenVal2)
+	require.Nil(t, err)
+	require.EqualValues(t, v2.Data(), givenVal2)
 
 	// retrieve pinned
 	v3, err := db.GetPinned(ro, givenKey)
 	defer v3.Destroy()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, v3.Data(), givenVal2)
+	require.Nil(t, err)
+	require.EqualValues(t, v3.Data(), givenVal2)
 
 	// delete
-	ensure.Nil(t, db.Delete(wo, givenKey))
+	require.Nil(t, db.Delete(wo, givenKey))
 	v4, err := db.Get(ro, givenKey)
-	ensure.Nil(t, err)
-	ensure.True(t, v4.Data() == nil)
+	require.Nil(t, err)
+	require.True(t, v4.Data() == nil)
 
 	// retrieve missing pinned
 	v5, err := db.GetPinned(ro, givenKey)
 	defer v5.Destroy()
-	ensure.Nil(t, err)
-	ensure.True(t, v5.Data() == nil)
+	require.Nil(t, err)
+	require.True(t, v5.Data() == nil)
 }
 
 func TestDBCRUDDBPaths(t *testing.T) {
@@ -93,48 +93,54 @@ func TestDBCRUDDBPaths(t *testing.T) {
 	// retrieve before create
 	noexist, err := db.Get(ro, givenKey)
 	defer noexist.Free()
-	ensure.Nil(t, err)
-	ensure.False(t, noexist.Exists())
-	ensure.DeepEqual(t, noexist.Data(), []byte(nil))
+	require.Nil(t, err)
+	require.False(t, noexist.Exists())
+	require.EqualValues(t, noexist.Data(), []byte(nil))
 
 	// create
-	ensure.Nil(t, db.Put(wo, givenKey, givenVal1))
+	require.Nil(t, db.Put(wo, givenKey, givenVal1))
 
 	// retrieve
 	v1, err := db.Get(ro, givenKey)
 	defer v1.Free()
-	ensure.Nil(t, err)
-	ensure.True(t, v1.Exists())
-	ensure.DeepEqual(t, v1.Data(), givenVal1)
+	require.Nil(t, err)
+	require.True(t, v1.Exists())
+	require.EqualValues(t, v1.Data(), givenVal1)
 
 	// update
-	ensure.Nil(t, db.Put(wo, givenKey, givenVal2))
+	require.Nil(t, db.Put(wo, givenKey, givenVal2))
 	v2, err := db.Get(ro, givenKey)
 	defer v2.Free()
-	ensure.Nil(t, err)
-	ensure.True(t, v2.Exists())
-	ensure.DeepEqual(t, v2.Data(), givenVal2)
+	require.Nil(t, err)
+	require.True(t, v2.Exists())
+	require.EqualValues(t, v2.Data(), givenVal2)
 
 	// update
-	ensure.Nil(t, db.Put(wo, givenKey, givenVal3))
+	require.Nil(t, db.Put(wo, givenKey, givenVal3))
 	v3, err := db.Get(ro, givenKey)
 	defer v3.Free()
-	ensure.Nil(t, err)
-	ensure.True(t, v3.Exists())
-	ensure.DeepEqual(t, v3.Data(), givenVal3)
+	require.Nil(t, err)
+	require.True(t, v3.Exists())
+	require.EqualValues(t, v3.Data(), givenVal3)
+
+	{
+		v4 := db.KeyMayExists(ro, givenKey, "")
+		defer v4.Free()
+		require.True(t, v4.Size() > 0)
+	}
 
 	// delete
-	ensure.Nil(t, db.Delete(wo, givenKey))
+	require.Nil(t, db.Delete(wo, givenKey))
 	v4, err := db.Get(ro, givenKey)
 	defer v4.Free()
-	ensure.Nil(t, err)
-	ensure.False(t, v4.Exists())
-	ensure.DeepEqual(t, v4.Data(), []byte(nil))
+	require.Nil(t, err)
+	require.False(t, v4.Exists())
+	require.EqualValues(t, v4.Data(), []byte(nil))
 }
 
 func newTestDB(t *testing.T, name string, applyOpts func(opts *Options)) *DB {
 	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
-	ensure.Nil(t, err)
+	require.Nil(t, err)
 
 	opts := NewDefaultOptions()
 	// test the ratelimiter
@@ -146,14 +152,14 @@ func newTestDB(t *testing.T, name string, applyOpts func(opts *Options)) *DB {
 		applyOpts(opts)
 	}
 	db, err := OpenDb(opts, dir)
-	ensure.Nil(t, err)
+	require.Nil(t, err)
 
 	return db
 }
 
 func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts func(opts *Options)) (db *DB, cfh []*ColumnFamilyHandle, cleanup func()) {
 	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
-	ensure.Nil(t, err)
+	require.Nil(t, err)
 
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
@@ -169,7 +175,7 @@ func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts fun
 	}
 
 	db, cfh, err = OpenDbColumnFamilies(opts, dir, columns, options)
-	ensure.Nil(t, err)
+	require.Nil(t, err)
 	cleanup = func() {
 		for _, cf := range cfh {
 			cf.Destroy()
@@ -180,16 +186,16 @@ func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts fun
 }
 
 func newTestDBPathNames(t *testing.T, name string, names []string, targetSizes []uint64, applyOpts func(opts *Options)) *DB {
-	ensure.DeepEqual(t, len(targetSizes), len(names))
-	ensure.NotDeepEqual(t, len(names), 0)
+	require.EqualValues(t, len(targetSizes), len(names))
+	require.True(t, len(names) > 0)
 
 	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
-	ensure.Nil(t, err)
+	require.Nil(t, err)
 
 	paths := make([]string, len(names))
 	for i, name := range names {
 		dir, err := ioutil.TempDir("", "gorocksdb-"+name)
-		ensure.Nil(t, err)
+		require.Nil(t, err)
 		paths[i] = dir
 	}
 
@@ -206,7 +212,7 @@ func newTestDBPathNames(t *testing.T, name string, names []string, targetSizes [
 		applyOpts(opts)
 	}
 	db, err := OpenDb(opts, dir)
-	ensure.Nil(t, err)
+	require.Nil(t, err)
 
 	return db
 }
@@ -227,20 +233,20 @@ func TestDBMultiGet(t *testing.T) {
 	)
 
 	// create
-	ensure.Nil(t, db.Put(wo, givenKey1, givenVal1))
-	ensure.Nil(t, db.Put(wo, givenKey2, givenVal2))
-	ensure.Nil(t, db.Put(wo, givenKey3, givenVal3))
+	require.Nil(t, db.Put(wo, givenKey1, givenVal1))
+	require.Nil(t, db.Put(wo, givenKey2, givenVal2))
+	require.Nil(t, db.Put(wo, givenKey3, givenVal3))
 
 	// retrieve
 	values, err := db.MultiGet(ro, []byte("noexist"), givenKey1, givenKey2, givenKey3)
 	defer values.Destroy()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, len(values), 4)
+	require.Nil(t, err)
+	require.EqualValues(t, len(values), 4)
 
-	ensure.DeepEqual(t, values[0].Data(), []byte(nil))
-	ensure.DeepEqual(t, values[1].Data(), givenVal1)
-	ensure.DeepEqual(t, values[2].Data(), givenVal2)
-	ensure.DeepEqual(t, values[3].Data(), givenVal3)
+	require.EqualValues(t, values[0].Data(), []byte(nil))
+	require.EqualValues(t, values[1].Data(), givenVal1)
+	require.EqualValues(t, values[2].Data(), givenVal2)
+	require.EqualValues(t, values[3].Data(), givenVal3)
 }
 
 func TestDBGetApproximateSizes(t *testing.T) {
@@ -249,15 +255,15 @@ func TestDBGetApproximateSizes(t *testing.T) {
 
 	// no ranges
 	sizes := db.GetApproximateSizes(nil)
-	ensure.DeepEqual(t, len(sizes), 0)
+	require.EqualValues(t, len(sizes), 0)
 
 	// range will nil start and limit
 	sizes = db.GetApproximateSizes([]Range{{Start: nil, Limit: nil}})
-	ensure.DeepEqual(t, sizes, []uint64{0})
+	require.EqualValues(t, sizes, []uint64{0})
 
 	// valid range
 	sizes = db.GetApproximateSizes([]Range{{Start: []byte{0x00}, Limit: []byte{0xFF}}})
-	ensure.DeepEqual(t, sizes, []uint64{0})
+	require.EqualValues(t, sizes, []uint64{0})
 }
 
 func TestDBGetApproximateSizesCF(t *testing.T) {
@@ -267,17 +273,17 @@ func TestDBGetApproximateSizesCF(t *testing.T) {
 	o := NewDefaultOptions()
 
 	cf, err := db.CreateColumnFamily(o, "other")
-	ensure.Nil(t, err)
+	require.Nil(t, err)
 
 	// no ranges
 	sizes := db.GetApproximateSizesCF(cf, nil)
-	ensure.DeepEqual(t, len(sizes), 0)
+	require.EqualValues(t, len(sizes), 0)
 
 	// range will nil start and limit
 	sizes = db.GetApproximateSizesCF(cf, []Range{{Start: nil, Limit: nil}})
-	ensure.DeepEqual(t, sizes, []uint64{0})
+	require.EqualValues(t, sizes, []uint64{0})
 
 	// valid range
 	sizes = db.GetApproximateSizesCF(cf, []Range{{Start: []byte{0x00}, Limit: []byte{0xFF}}})
-	ensure.DeepEqual(t, sizes, []uint64{0})
+	require.EqualValues(t, sizes, []uint64{0})
 }

@@ -376,13 +376,13 @@ func (opts *Options) SetAllowConcurrentMemtableWrites(allow bool) {
 	C.rocksdb_options_set_allow_concurrent_memtable_write(opts.c, boolToChar(allow))
 }
 
-// // AllowConcurrentMemtableWrites whether to allow concurrent memtable writes. Conccurent writes are
-// // not supported by all memtable factories (currently only SkipList memtables).
-// // As of rocksdb 5.0.2 you must call `SetAllowConcurrentMemtableWrites(false)`
-// // if you use `OptimizeForPointLookup`.
-// func (opts *Options) AllowConcurrentMemtableWrites() bool {
-// 	return charToBool(C.rocksdb_options_get_allow_concurrent_memtable_write(opts.c))
-// }
+// AllowConcurrentMemtableWrites whether to allow concurrent memtable writes. Conccurent writes are
+// not supported by all memtable factories (currently only SkipList memtables).
+// As of rocksdb 5.0.2 you must call `SetAllowConcurrentMemtableWrites(false)`
+// if you use `OptimizeForPointLookup`.
+func (opts *Options) AllowConcurrentMemtableWrites() bool {
+	return charToBool(C.rocksdb_options_get_allow_concurrent_memtable_write(opts.c))
+}
 
 // SetWriteBufferSize sets the amount of data to build up in memory
 // (backed by an unsorted log on disk) before converting to a sorted on-disk file.
@@ -494,10 +494,10 @@ func (opts *Options) SetCompression(value CompressionType) {
 	C.rocksdb_options_set_compression(opts.c, C.int(value))
 }
 
-// // GetCompression returns the compression algorithm.
-// func (opts *Options) GetCompression() CompressionType {
-// 	return CompressionType(C.rocksdb_options_get_compression(opts.c))
-// }
+// GetCompression returns the compression algorithm.
+func (opts *Options) GetCompression() CompressionType {
+	return CompressionType(C.rocksdb_options_get_compression(opts.c))
+}
 
 // SetCompressionOptions sets different options for compression algorithms.
 func (opts *Options) SetCompressionOptions(value CompressionOptions) {
@@ -510,11 +510,11 @@ func (opts *Options) SetBottommostCompression(value CompressionType) {
 	C.rocksdb_options_set_bottommost_compression(opts.c, C.int(value))
 }
 
-// // GetBottommostCompression returns the compression algorithm for
-// // bottommost level.
-// func (opts *Options) GetBottommostCompression() CompressionType {
-// 	return CompressionType(C.rocksdb_options_get_bottommost_compression(opts.c))
-// }
+// GetBottommostCompression returns the compression algorithm for
+// bottommost level.
+func (opts *Options) GetBottommostCompression() CompressionType {
+	return CompressionType(C.rocksdb_options_get_bottommost_compression(opts.c))
+}
 
 // SetBottommostCompressionOptions sets different options for compression algorithms, for bottommost.
 //
@@ -806,12 +806,12 @@ func (opts *Options) SetMaxCompactionBytes(value uint64) {
 	C.rocksdb_options_set_max_compaction_bytes(opts.c, C.uint64_t(value))
 }
 
-// // GetMaxCompactionBytes returns the maximum number of bytes in all compacted files.
-// // We try to limit number of bytes in one compaction to be lower than this
-// // threshold. But it's not guaranteed.
-// func (opts *Options) GetMaxCompactionBytes() uint64 {
-// 	return uint64(C.rocksdb_options_get_max_compaction_bytes(opts.c))
-// }
+// GetMaxCompactionBytes returns the maximum number of bytes in all compacted files.
+// We try to limit number of bytes in one compaction to be lower than this
+// threshold. But it's not guaranteed.
+func (opts *Options) GetMaxCompactionBytes() uint64 {
+	return uint64(C.rocksdb_options_get_max_compaction_bytes(opts.c))
+}
 
 // SetSoftPendingCompactionBytesLimit sets the threshold at which
 // all writes will be slowed down to at least delayed_write_rate if estimated
@@ -822,12 +822,12 @@ func (opts *Options) SetSoftPendingCompactionBytesLimit(value uint64) {
 	C.rocksdb_options_set_soft_pending_compaction_bytes_limit(opts.c, C.size_t(value))
 }
 
-// // GetSoftPendingCompactionBytesLimit returns the threshold at which
-// // all writes will be slowed down to at least delayed_write_rate if estimated
-// // bytes needed to be compaction exceed this threshold.
-// func (opts *Options) GetSoftPendingCompactionBytesLimit() uint64 {
-// 	return uint64(C.rocksdb_options_get_soft_pending_compaction_bytes_limit(opts.c))
-// }
+// GetSoftPendingCompactionBytesLimit returns the threshold at which
+// all writes will be slowed down to at least delayed_write_rate if estimated
+// bytes needed to be compaction exceed this threshold.
+func (opts *Options) GetSoftPendingCompactionBytesLimit() uint64 {
+	return uint64(C.rocksdb_options_get_soft_pending_compaction_bytes_limit(opts.c))
+}
 
 // SetHardPendingCompactionBytesLimit sets the bytes threshold at which
 // all writes are stopped if estimated bytes needed to be compaction exceed
@@ -838,12 +838,12 @@ func (opts *Options) SetHardPendingCompactionBytesLimit(value uint64) {
 	C.rocksdb_options_set_hard_pending_compaction_bytes_limit(opts.c, C.size_t(value))
 }
 
-// // GetHardPendingCompactionBytesLimit returns the threshold at which
-// // all writes will be slowed down to at least delayed_write_rate if estimated
-// // bytes needed to be compaction exceed this threshold.
-// func (opts *Options) GetHardPendingCompactionBytesLimit() uint64 {
-// 	return uint64(C.rocksdb_options_get_hard_pending_compaction_bytes_limit(opts.c))
-// }
+// GetHardPendingCompactionBytesLimit returns the threshold at which
+// all writes will be slowed down to at least delayed_write_rate if estimated
+// bytes needed to be compaction exceed this threshold.
+func (opts *Options) GetHardPendingCompactionBytesLimit() uint64 {
+	return uint64(C.rocksdb_options_get_hard_pending_compaction_bytes_limit(opts.c))
+}
 
 // SetMaxBytesForLevelMultiplierAdditional sets different max-size multipliers
 // for different levels.
@@ -873,10 +873,10 @@ func (opts *Options) SetUseFsync(value bool) {
 	C.rocksdb_options_set_use_fsync(opts.c, C.int(boolToChar(value)))
 }
 
-// // UseFsync returns fsync setting.
-// func (opts *Options) UseFsync() bool {
-// 	return C.rocksdb_options_get_use_fsync(opts.c) != 0
-// }
+// UseFsync returns fsync setting.
+func (opts *Options) UseFsync() bool {
+	return C.rocksdb_options_get_use_fsync(opts.c) != 0
+}
 
 // SetDbLogDir specifies the absolute info LOG dir.
 //
@@ -914,11 +914,11 @@ func (opts *Options) SetDeleteObsoleteFilesPeriodMicros(value uint64) {
 	C.rocksdb_options_set_delete_obsolete_files_period_micros(opts.c, C.uint64_t(value))
 }
 
-// // GetDeleteObsoleteFilesPeriodMicros returns the periodicity
-// // when obsolete files get deleted.
-// func (opts *Options) GetDeleteObsoleteFilesPeriodMicros() uint64 {
-// 	return uint64(C.rocksdb_options_get_delete_obsolete_files_period_micros(opts.c))
-// }
+// GetDeleteObsoleteFilesPeriodMicros returns the periodicity
+// when obsolete files get deleted.
+func (opts *Options) GetDeleteObsoleteFilesPeriodMicros() uint64 {
+	return uint64(C.rocksdb_options_get_delete_obsolete_files_period_micros(opts.c))
+}
 
 // SetMaxBackgroundCompactions sets the maximum number of
 // concurrent background compaction jobs, submitted to
@@ -934,10 +934,10 @@ func (opts *Options) SetMaxBackgroundCompactions(value int) {
 	C.rocksdb_options_set_max_background_compactions(opts.c, C.int(value))
 }
 
-// // GetMaxBackgroundCompactions returns maximum number of concurrent background compaction jobs setting.
-// func (opts *Options) GetMaxBackgroundCompactions() int {
-// 	return int(C.rocksdb_options_get_max_background_compactions(opts.c))
-// }
+// GetMaxBackgroundCompactions returns maximum number of concurrent background compaction jobs setting.
+func (opts *Options) GetMaxBackgroundCompactions() int {
+	return int(C.rocksdb_options_get_max_background_compactions(opts.c))
+}
 
 // SetMaxBackgroundFlushes sets the maximum number of
 // concurrent background memtable flush jobs, submitted to
@@ -961,11 +961,11 @@ func (opts *Options) SetMaxBackgroundFlushes(value int) {
 	C.rocksdb_options_set_max_background_flushes(opts.c, C.int(value))
 }
 
-// // GetMaxBackgroundFlushes returns the maximum number of concurrent background
-// // memtable flush jobs setting.
-// func (opts *Options) GetMaxBackgroundFlushes() int {
-// 	return int(C.rocksdb_options_get_max_background_flushes(opts.c))
-// }
+// GetMaxBackgroundFlushes returns the maximum number of concurrent background
+// memtable flush jobs setting.
+func (opts *Options) GetMaxBackgroundFlushes() int {
+	return int(C.rocksdb_options_get_max_background_flushes(opts.c))
+}
 
 // SetMaxLogFileSize sets the maximum size of the info log file.
 //
@@ -977,10 +977,10 @@ func (opts *Options) SetMaxLogFileSize(value uint64) {
 	C.rocksdb_options_set_max_log_file_size(opts.c, C.size_t(value))
 }
 
-// // GetMaxLogFileSize returns setting for maximum size of the info log file.
-// func (opts *Options) GetMaxLogFileSize() uint64 {
-// 	return uint64(C.rocksdb_options_get_max_log_file_size(opts.c))
-// }
+// GetMaxLogFileSize returns setting for maximum size of the info log file.
+func (opts *Options) GetMaxLogFileSize() uint64 {
+	return uint64(C.rocksdb_options_get_max_log_file_size(opts.c))
+}
 
 // SetLogFileTimeToRoll sets the time for the info log file to roll (in seconds).
 //
@@ -991,10 +991,10 @@ func (opts *Options) SetLogFileTimeToRoll(value uint64) {
 	C.rocksdb_options_set_log_file_time_to_roll(opts.c, C.size_t(value))
 }
 
-// // GetLogFileTimeToRoll returns the time for info log file to roll (in seconds).
-// func (opts *Options) GetLogFileTimeToRoll() uint64 {
-// 	return uint64(C.rocksdb_options_get_log_file_time_to_roll(opts.c))
-// }
+// GetLogFileTimeToRoll returns the time for info log file to roll (in seconds).
+func (opts *Options) GetLogFileTimeToRoll() uint64 {
+	return uint64(C.rocksdb_options_get_log_file_time_to_roll(opts.c))
+}
 
 // SetKeepLogFileNum sets the maximum info log files to be kept.
 // Default: 1000
@@ -1002,10 +1002,10 @@ func (opts *Options) SetKeepLogFileNum(value uint) {
 	C.rocksdb_options_set_keep_log_file_num(opts.c, C.size_t(value))
 }
 
-// // GetKeepLogFileNum return setting for maximum info log files to be kept.
-// func (opts *Options) GetKeepLogFileNum() uint {
-// 	return uint(C.rocksdb_options_get_keep_log_file_num(opts.c))
-// }
+// GetKeepLogFileNum return setting for maximum info log files to be kept.
+func (opts *Options) GetKeepLogFileNum() uint {
+	return uint(C.rocksdb_options_get_keep_log_file_num(opts.c))
+}
 
 // SetSoftRateLimit sets the soft rate limit.
 //
@@ -1018,10 +1018,10 @@ func (opts *Options) SetSoftRateLimit(value float64) {
 	C.rocksdb_options_set_soft_rate_limit(opts.c, C.double(value))
 }
 
-// // GetSoftRateLimit returns setting for soft rate limit.
-// func (opts *Options) GetSoftRateLimit() float64 {
-// 	return float64(C.rocksdb_options_get_soft_rate_limit(opts.c))
-// }
+// GetSoftRateLimit returns setting for soft rate limit.
+func (opts *Options) GetSoftRateLimit() float64 {
+	return float64(C.rocksdb_options_get_soft_rate_limit(opts.c))
+}
 
 // SetHardRateLimit sets the hard rate limit.
 //
@@ -1032,10 +1032,10 @@ func (opts *Options) SetHardRateLimit(value float64) {
 	C.rocksdb_options_set_hard_rate_limit(opts.c, C.double(value))
 }
 
-// // GetHardRateLimit returns setting for hard rate limit.
-// func (opts *Options) GetHardRateLimit() float64 {
-// 	return float64(C.rocksdb_options_get_hard_rate_limit(opts.c))
-// }
+// GetHardRateLimit returns setting for hard rate limit.
+func (opts *Options) GetHardRateLimit() float64 {
+	return float64(C.rocksdb_options_get_hard_rate_limit(opts.c))
+}
 
 // SetRateLimitDelayMaxMilliseconds sets the max time
 // a put will be stalled when hard_rate_limit is enforced.
@@ -1045,11 +1045,11 @@ func (opts *Options) SetRateLimitDelayMaxMilliseconds(value uint) {
 	C.rocksdb_options_set_rate_limit_delay_max_milliseconds(opts.c, C.uint(value))
 }
 
-// // GetRateLimitDelayMaxMilliseconds sets the max time
-// // a put will be stalled when hard_rate_limit is enforced.
-// func (opts *Options) GetRateLimitDelayMaxMilliseconds() uint {
-// 	return uint(C.rocksdb_options_get_rate_limit_delay_max_milliseconds(opts.c))
-// }
+// GetRateLimitDelayMaxMilliseconds sets the max time
+// a put will be stalled when hard_rate_limit is enforced.
+func (opts *Options) GetRateLimitDelayMaxMilliseconds() uint {
+	return uint(C.rocksdb_options_get_rate_limit_delay_max_milliseconds(opts.c))
+}
 
 // SetMaxManifestFileSize sets the maximum manifest file size until is rolled over.
 // The older manifest file be deleted.
@@ -1058,11 +1058,11 @@ func (opts *Options) SetMaxManifestFileSize(value uint64) {
 	C.rocksdb_options_set_max_manifest_file_size(opts.c, C.size_t(value))
 }
 
-// // GetMaxManifestFileSize returns the maximum manifest file size until is rolled over.
-// // The older manifest file be deleted.
-// func (opts *Options) GetMaxManifestFileSize() uint64 {
-// 	return uint64(C.rocksdb_options_get_max_manifest_file_size(opts.c))
-// }
+// GetMaxManifestFileSize returns the maximum manifest file size until is rolled over.
+// The older manifest file be deleted.
+func (opts *Options) GetMaxManifestFileSize() uint64 {
+	return uint64(C.rocksdb_options_get_max_manifest_file_size(opts.c))
+}
 
 // SetTableCacheNumshardbits sets the number of shards used for table cache.
 // Default: 4
@@ -1070,10 +1070,10 @@ func (opts *Options) SetTableCacheNumshardbits(value int) {
 	C.rocksdb_options_set_table_cache_numshardbits(opts.c, C.int(value))
 }
 
-// // GetTableCacheNumshardbits returns the number of shards used for table cache.
-// func (opts *Options) GetTableCacheNumshardbits() int {
-// 	return int(C.rocksdb_options_get_table_cache_numshardbits(opts.c))
-// }
+// GetTableCacheNumshardbits returns the number of shards used for table cache.
+func (opts *Options) GetTableCacheNumshardbits() int {
+	return int(C.rocksdb_options_get_table_cache_numshardbits(opts.c))
+}
 
 // SetTableCacheRemoveScanCountLimit sets the count limit during a scan.
 //
@@ -1101,10 +1101,10 @@ func (opts *Options) SetArenaBlockSize(value uint64) {
 	C.rocksdb_options_set_arena_block_size(opts.c, C.size_t(value))
 }
 
-// // SetArenaBlockSize returns the size of one block in arena memory allocation.
-// func (opts *Options) GetArenaBlockSize() uint64 {
-// 	return uint64(C.rocksdb_options_get_arena_block_size(opts.c))
-// }
+// GetArenaBlockSize returns the size of one block in arena memory allocation.
+func (opts *Options) GetArenaBlockSize() uint64 {
+	return uint64(C.rocksdb_options_get_arena_block_size(opts.c))
+}
 
 // SetDisableAutoCompactions enable/disable automatic compactions.
 //
@@ -1115,10 +1115,10 @@ func (opts *Options) SetDisableAutoCompactions(value bool) {
 	C.rocksdb_options_set_disable_auto_compactions(opts.c, C.int(boolToChar(value)))
 }
 
-// // DisabledAutoCompactions returns if automatic compactions is disabled.
-// func (opts *Options) DisabledAutoCompactions() bool {
-// 	return charToBool(C.rocksdb_options_get_disable_auto_compactions(opts.c))
-// }
+// DisabledAutoCompactions returns if automatic compactions is disabled.
+func (opts *Options) DisabledAutoCompactions() bool {
+	return charToBool(C.rocksdb_options_get_disable_auto_compactions(opts.c))
+}
 
 // SetWALRecoveryMode sets the recovery mode.
 // Recovery mode to control the consistency while replaying WAL.
@@ -1128,10 +1128,10 @@ func (opts *Options) SetWALRecoveryMode(mode WALRecoveryMode) {
 	C.rocksdb_options_set_wal_recovery_mode(opts.c, C.int(mode))
 }
 
-// // GetWALRecoveryMode returns the recovery mode.
-// func (opts *Options) GetWALRecoveryMode() WALRecoveryMode {
-// 	return WALRecoveryMode(C.rocksdb_options_get_wal_recovery_mode(opts.c))
-// }
+// GetWALRecoveryMode returns the recovery mode.
+func (opts *Options) GetWALRecoveryMode() WALRecoveryMode {
+	return WALRecoveryMode(C.rocksdb_options_get_wal_recovery_mode(opts.c))
+}
 
 // SetWALTtlSeconds sets the WAL ttl in seconds.
 //
@@ -1153,10 +1153,10 @@ func (opts *Options) SetWALTtlSeconds(value uint64) {
 	C.rocksdb_options_set_WAL_ttl_seconds(opts.c, C.uint64_t(value))
 }
 
-// // GetWALTtlSeconds returns WAL ttl in seconds.
-// func (opts *Options) GetWALTtlSeconds() uint64 {
-// 	return uint64(C.rocksdb_options_get_WAL_ttl_seconds(opts.c))
-// }
+// GetWALTtlSeconds returns WAL ttl in seconds.
+func (opts *Options) GetWALTtlSeconds() uint64 {
+	return uint64(C.rocksdb_options_get_WAL_ttl_seconds(opts.c))
+}
 
 // SetWalSizeLimitMb sets the WAL size limit in MB.
 //
@@ -1168,10 +1168,10 @@ func (opts *Options) SetWalSizeLimitMb(value uint64) {
 	C.rocksdb_options_set_WAL_size_limit_MB(opts.c, C.uint64_t(value))
 }
 
-// // GetWalSizeLimitMb returns the WAL size limit in MB.
-// func (opts *Options) GetWalSizeLimitMb() uint64 {
-// 	return uint64(C.rocksdb_options_get_WAL_size_limit_MB(opts.c))
-// }
+// GetWalSizeLimitMb returns the WAL size limit in MB.
+func (opts *Options) GetWalSizeLimitMb() uint64 {
+	return uint64(C.rocksdb_options_get_WAL_size_limit_MB(opts.c))
+}
 
 // SetEnablePipelinedWrite enables pipelined write.
 //
@@ -1207,11 +1207,11 @@ func (opts *Options) SetManifestPreallocationSize(value uint64) {
 	C.rocksdb_options_set_manifest_preallocation_size(opts.c, C.size_t(value))
 }
 
-// // GetManifestPreallocationSize returns the number of bytes
-// // to preallocate (via fallocate) the manifest files.
-// func (opts *Options) GetManifestPreallocationSize() uint64 {
-// 	return uint64(C.rocksdb_options_get_manifest_preallocation_size(opts.c))
-// }
+// GetManifestPreallocationSize returns the number of bytes
+// to preallocate (via fallocate) the manifest files.
+func (opts *Options) GetManifestPreallocationSize() uint64 {
+	return uint64(C.rocksdb_options_get_manifest_preallocation_size(opts.c))
+}
 
 // SetPurgeRedundantKvsWhileFlush enable/disable purging of
 // duplicate/deleted keys when a memtable is flushed to storage.
@@ -1227,10 +1227,10 @@ func (opts *Options) SetAllowMmapReads(value bool) {
 	C.rocksdb_options_set_allow_mmap_reads(opts.c, boolToChar(value))
 }
 
-// // AllowMmapReads returns setting for enable/disable mmap reads for sst tables.
-// func (opts *Options) AllowMmapReads() bool {
-// 	return charToBool(C.rocksdb_options_get_allow_mmap_reads(opts.c))
-// }
+// AllowMmapReads returns setting for enable/disable mmap reads for sst tables.
+func (opts *Options) AllowMmapReads() bool {
+	return charToBool(C.rocksdb_options_get_allow_mmap_reads(opts.c))
+}
 
 // SetAllowMmapWrites enable/disable mmap writes for writing sst tables.
 // Default: false
@@ -1238,10 +1238,10 @@ func (opts *Options) SetAllowMmapWrites(value bool) {
 	C.rocksdb_options_set_allow_mmap_writes(opts.c, boolToChar(value))
 }
 
-// // AllowMmapWrites returns setting for enable/disable mmap writes for sst tables.
-// func (opts *Options) AllowMmapWrites() bool {
-// 	return charToBool(C.rocksdb_options_get_allow_mmap_writes(opts.c))
-// }
+// AllowMmapWrites returns setting for enable/disable mmap writes for sst tables.
+func (opts *Options) AllowMmapWrites() bool {
+	return charToBool(C.rocksdb_options_get_allow_mmap_writes(opts.c))
+}
 
 // SetUseDirectReads enable/disable direct I/O mode (O_DIRECT) for reads
 // Default: false
@@ -1249,10 +1249,10 @@ func (opts *Options) SetUseDirectReads(value bool) {
 	C.rocksdb_options_set_use_direct_reads(opts.c, boolToChar(value))
 }
 
-// // UseDirectReads returns setting for enable/disable direct I/O mode (O_DIRECT) for reads
-// func (opts *Options) UseDirectReads() bool {
-// 	return charToBool(C.rocksdb_options_get_use_direct_reads(opts.c))
-// }
+// UseDirectReads returns setting for enable/disable direct I/O mode (O_DIRECT) for reads
+func (opts *Options) UseDirectReads() bool {
+	return charToBool(C.rocksdb_options_get_use_direct_reads(opts.c))
+}
 
 // SetUseDirectIOForFlushAndCompaction enable/disable direct I/O mode (O_DIRECT) for both reads and writes in background flush and compactions
 // When true, new_table_reader_for_compaction_inputs is forced to true.
@@ -1261,11 +1261,11 @@ func (opts *Options) SetUseDirectIOForFlushAndCompaction(value bool) {
 	C.rocksdb_options_set_use_direct_io_for_flush_and_compaction(opts.c, boolToChar(value))
 }
 
-// // UseDirectIOForFlushAndCompaction returns setting for enable/disable direct I/O mode (O_DIRECT)
-// // for both reads and writes in background flush and compactions
-// func (opts *Options) UseDirectIOForFlushAndCompaction() bool {
-// 	return charToBool(C.rocksdb_options_get_use_direct_io_for_flush_and_compaction(opts.c))
-// }
+// UseDirectIOForFlushAndCompaction returns setting for enable/disable direct I/O mode (O_DIRECT)
+// for both reads and writes in background flush and compactions
+func (opts *Options) UseDirectIOForFlushAndCompaction() bool {
+	return charToBool(C.rocksdb_options_get_use_direct_io_for_flush_and_compaction(opts.c))
+}
 
 // SetIsFdCloseOnExec enable/dsiable child process inherit open files.
 // Default: true
@@ -1273,10 +1273,10 @@ func (opts *Options) SetIsFdCloseOnExec(value bool) {
 	C.rocksdb_options_set_is_fd_close_on_exec(opts.c, boolToChar(value))
 }
 
-// // IsFdCloseOnExec returns setting for enable/dsiable child process inherit open files.
-// func (opts *Options) IsFdCloseOnExec() bool {
-// 	return charToBool(C.rocksdb_options_get_is_fd_close_on_exec(opts.c))
-// }
+// IsFdCloseOnExec returns setting for enable/dsiable child process inherit open files.
+func (opts *Options) IsFdCloseOnExec() bool {
+	return charToBool(C.rocksdb_options_get_is_fd_close_on_exec(opts.c))
+}
 
 // SetSkipLogErrorOnRecovery enable/disable skipping of
 // log corruption error on recovery (If client is ok with
@@ -1288,12 +1288,12 @@ func (opts *Options) SetSkipLogErrorOnRecovery(value bool) {
 	C.rocksdb_options_set_skip_log_error_on_recovery(opts.c, boolToChar(value))
 }
 
-// // SkipLogErrorOnRecovery returns setting for enable/disable skipping of
-// // log corruption error on recovery (If client is ok with
-// // losing most recent changes).
-// func (opts *Options) SkipLogErrorOnRecovery() bool {
-// 	return charToBool(C.rocksdb_options_get_skip_log_error_on_recovery(opts.c))
-// }
+// SkipLogErrorOnRecovery returns setting for enable/disable skipping of
+// log corruption error on recovery (If client is ok with
+// losing most recent changes).
+func (opts *Options) SkipLogErrorOnRecovery() bool {
+	return charToBool(C.rocksdb_options_get_skip_log_error_on_recovery(opts.c))
+}
 
 // SetStatsDumpPeriodSec sets the stats dump period in seconds.
 //
@@ -1303,22 +1303,22 @@ func (opts *Options) SetStatsDumpPeriodSec(value uint) {
 	C.rocksdb_options_set_stats_dump_period_sec(opts.c, C.uint(value))
 }
 
-// // GetStatsDumpPeriodSec returns the stats dump period in seconds.
-// func (opts *Options) GetStatsDumpPeriodSec() uint {
-// 	return uint(C.rocksdb_options_get_stats_dump_period_sec(opts.c))
-// }
+// GetStatsDumpPeriodSec returns the stats dump period in seconds.
+func (opts *Options) GetStatsDumpPeriodSec() uint {
+	return uint(C.rocksdb_options_get_stats_dump_period_sec(opts.c))
+}
 
-// // SetStatsPersistPeriodSec if not zero, dump rocksdb.stats to RocksDB every stats_persist_period_sec
-// //
-// // Default: 600
-// func (opts *Options) SetStatsPersistPeriodSec(value uint) {
-// 	C.rocksdb_options_set_stats_persist_period_sec(opts.c, C.uint(value))
-// }
+// SetStatsPersistPeriodSec if not zero, dump rocksdb.stats to RocksDB every stats_persist_period_sec
+//
+// Default: 600
+func (opts *Options) SetStatsPersistPeriodSec(value uint) {
+	C.rocksdb_options_set_stats_persist_period_sec(opts.c, C.uint(value))
+}
 
-// // GetStatsPersistPeriodSec returns number of sec that RocksDB periodically dump stats.
-// func (opts *Options) GetStatsPersistPeriodSec() uint {
-// 	return uint(C.rocksdb_options_get_stats_persist_period_sec(opts.c))
-// }
+// GetStatsPersistPeriodSec returns number of sec that RocksDB periodically dump stats.
+func (opts *Options) GetStatsPersistPeriodSec() uint {
+	return uint(C.rocksdb_options_get_stats_persist_period_sec(opts.c))
+}
 
 // SetAdviseRandomOnOpen specifies whether we will hint the underlying
 // file system that the file access pattern is random, when a sst file is opened.
@@ -1327,11 +1327,11 @@ func (opts *Options) SetAdviseRandomOnOpen(value bool) {
 	C.rocksdb_options_set_advise_random_on_open(opts.c, boolToChar(value))
 }
 
-// // AdviseRandomOnOpen returns whether we will hint the underlying
-// // file system that the file access pattern is random, when a sst file is opened.
-// func (opts *Options) AdviseRandomOnOpen() bool {
-// 	return charToBool(C.rocksdb_options_get_advise_random_on_open(opts.c))
-// }
+// AdviseRandomOnOpen returns whether we will hint the underlying
+// file system that the file access pattern is random, when a sst file is opened.
+func (opts *Options) AdviseRandomOnOpen() bool {
+	return charToBool(C.rocksdb_options_get_advise_random_on_open(opts.c))
+}
 
 // SetDbWriteBufferSize sets the amount of data to build up
 // in memtables across all column families before writing to disk.
@@ -1361,11 +1361,11 @@ func (opts *Options) SetAccessHintOnCompactionStart(value CompactionAccessPatter
 	C.rocksdb_options_set_access_hint_on_compaction_start(opts.c, C.int(value))
 }
 
-// // GetAccessHintOnCompactionStart returns the file access pattern
-// // once a compaction is started.
-// func (opts *Options) GetAccessHintOnCompactionStart() CompactionAccessPattern {
-// 	return CompactionAccessPattern(C.rocksdb_options_get_access_hint_on_compaction_start(opts.c))
-// }
+// GetAccessHintOnCompactionStart returns the file access pattern
+// once a compaction is started.
+func (opts *Options) GetAccessHintOnCompactionStart() CompactionAccessPattern {
+	return CompactionAccessPattern(C.rocksdb_options_get_access_hint_on_compaction_start(opts.c))
+}
 
 // SetUseAdaptiveMutex enable/disable adaptive mutex, which spins
 // in the user space before resorting to kernel.
@@ -1378,11 +1378,11 @@ func (opts *Options) SetUseAdaptiveMutex(value bool) {
 	C.rocksdb_options_set_use_adaptive_mutex(opts.c, boolToChar(value))
 }
 
-// // UseAdaptiveMutex returns setting for enable/disable adaptive mutex, which spins
-// // in the user space before resorting to kernel.
-// func (opts *Options) UseAdaptiveMutex() bool {
-// 	return charToBool(C.rocksdb_options_get_use_adaptive_mutex(opts.c))
-// }
+// UseAdaptiveMutex returns setting for enable/disable adaptive mutex, which spins
+// in the user space before resorting to kernel.
+func (opts *Options) UseAdaptiveMutex() bool {
+	return charToBool(C.rocksdb_options_get_use_adaptive_mutex(opts.c))
+}
 
 // SetBytesPerSync sets the bytes per sync.
 //
@@ -1394,10 +1394,10 @@ func (opts *Options) SetBytesPerSync(value uint64) {
 	C.rocksdb_options_set_bytes_per_sync(opts.c, C.uint64_t(value))
 }
 
-// // GetBytesPerSync return setting for bytes (size) per sync.
-// func (opts *Options) GetBytesPerSync() uint64 {
-// 	return uint64(C.rocksdb_options_get_bytes_per_sync(opts.c))
-// }
+// GetBytesPerSync return setting for bytes (size) per sync.
+func (opts *Options) GetBytesPerSync() uint64 {
+	return uint64(C.rocksdb_options_get_bytes_per_sync(opts.c))
+}
 
 // SetCompactionStyle sets compaction style.
 //
@@ -1406,10 +1406,10 @@ func (opts *Options) SetCompactionStyle(value CompactionStyle) {
 	C.rocksdb_options_set_compaction_style(opts.c, C.int(value))
 }
 
-// // GetCompactionStyle returns compaction style.
-// func (opts *Options) GetCompactionStyle() CompactionStyle {
-// 	return CompactionStyle(C.rocksdb_options_get_compaction_style(opts.c))
-// }
+// GetCompactionStyle returns compaction style.
+func (opts *Options) GetCompactionStyle() CompactionStyle {
+	return CompactionStyle(C.rocksdb_options_get_compaction_style(opts.c))
+}
 
 // SetUniversalCompactionOptions sets the options needed
 // to support Universal Style compactions.
@@ -1472,22 +1472,22 @@ func (opts *Options) SetAtomicFlush(value bool) {
 	C.rocksdb_options_set_atomic_flush(opts.c, boolToChar(value))
 }
 
-// // IsAtomicFlush returns setting for atomic flushing.
-// // If true, RocksDB supports flushing multiple column families and committing
-// // their results atomically to MANIFEST. Note that it is not
-// // necessary to set atomic_flush to true if WAL is always enabled since WAL
-// // allows the database to be restored to the last persistent state in WAL.
-// // This option is useful when there are column families with writes NOT
-// // protected by WAL.
-// // For manual flush, application has to specify which column families to
-// // flush atomically in DB::Flush.
-// // For auto-triggered flush, RocksDB atomically flushes ALL column families.
-// //
-// // Currently, any WAL-enabled writes after atomic flush may be replayed
-// // independently if the process crashes later and tries to recover.
-// func (opts *Options) IsAtomicFlush() bool {
-// 	return charToBool(C.rocksdb_options_get_atomic_flush(opts.c))
-// }
+// IsAtomicFlush returns setting for atomic flushing.
+// If true, RocksDB supports flushing multiple column families and committing
+// their results atomically to MANIFEST. Note that it is not
+// necessary to set atomic_flush to true if WAL is always enabled since WAL
+// allows the database to be restored to the last persistent state in WAL.
+// This option is useful when there are column families with writes NOT
+// protected by WAL.
+// For manual flush, application has to specify which column families to
+// flush atomically in DB::Flush.
+// For auto-triggered flush, RocksDB atomically flushes ALL column families.
+//
+// Currently, any WAL-enabled writes after atomic flush may be replayed
+// independently if the process crashes later and tries to recover.
+func (opts *Options) IsAtomicFlush() bool {
+	return charToBool(C.rocksdb_options_get_atomic_flush(opts.c))
+}
 
 // SetRowCache set global cache for table-level rows.
 //
@@ -1508,11 +1508,11 @@ func (opts *Options) SetMaxSequentialSkipInIterations(value uint64) {
 	C.rocksdb_options_set_max_sequential_skip_in_iterations(opts.c, C.uint64_t(value))
 }
 
-// // GetMaxSequentialSkipInIterations returns the number of keys (with the same userkey)
-// // that will be sequentially skipped before a reseek is issued.
-// func (opts *Options) GetMaxSequentialSkipInIterations() uint64 {
-// 	return uint64(C.rocksdb_options_get_max_sequential_skip_in_iterations(opts.c))
-// }
+// GetMaxSequentialSkipInIterations returns the number of keys (with the same userkey)
+// that will be sequentially skipped before a reseek is issued.
+func (opts *Options) GetMaxSequentialSkipInIterations() uint64 {
+	return uint64(C.rocksdb_options_get_max_sequential_skip_in_iterations(opts.c))
+}
 
 // SetInplaceUpdateSupport enable/disable thread-safe inplace updates.
 //
@@ -1526,11 +1526,11 @@ func (opts *Options) SetInplaceUpdateSupport(value bool) {
 	C.rocksdb_options_set_inplace_update_support(opts.c, boolToChar(value))
 }
 
-// // InplaceUpdateSupport returns setting for enable/disable
-// // thread-safe inplace updates.
-// func (opts *Options) InplaceUpdateSupport() bool {
-// 	return charToBool(C.rocksdb_options_get_inplace_update_support(opts.c))
-// }
+// InplaceUpdateSupport returns setting for enable/disable
+// thread-safe inplace updates.
+func (opts *Options) InplaceUpdateSupport() bool {
+	return charToBool(C.rocksdb_options_get_inplace_update_support(opts.c))
+}
 
 // SetInplaceUpdateNumLocks sets the number of locks used for inplace update.
 //
@@ -1539,10 +1539,10 @@ func (opts *Options) SetInplaceUpdateNumLocks(value uint) {
 	C.rocksdb_options_set_inplace_update_num_locks(opts.c, C.size_t(value))
 }
 
-// // GetInplaceUpdateNumLocks returns number of locks used for inplace upddate.
-// func (opts *Options) GetInplaceUpdateNumLocks() uint {
-// 	return uint(C.rocksdb_options_get_inplace_update_num_locks(opts.c))
-// }
+// GetInplaceUpdateNumLocks returns number of locks used for inplace upddate.
+func (opts *Options) GetInplaceUpdateNumLocks() uint {
+	return uint(C.rocksdb_options_get_inplace_update_num_locks(opts.c))
+}
 
 // SetMemtableHugePageSize sets the page size for huge page for
 // arena used by the memtable.
@@ -1559,11 +1559,11 @@ func (opts *Options) SetMemtableHugePageSize(value uint64) {
 	C.rocksdb_options_set_memtable_huge_page_size(opts.c, C.size_t(value))
 }
 
-// // GetMemtableHugePageSize returns the page size for huge page for
-// // arena used by the memtable.
-// func (opts *Options) GetMemtableHugePageSize() uint64 {
-// 	return uint64(C.rocksdb_options_get_memtable_huge_page_size(opts.c))
-// }
+// GetMemtableHugePageSize returns the page size for huge page for
+// arena used by the memtable.
+func (opts *Options) GetMemtableHugePageSize() uint64 {
+	return uint64(C.rocksdb_options_get_memtable_huge_page_size(opts.c))
+}
 
 // SetBloomLocality sets the bloom locality.
 //
@@ -1580,17 +1580,17 @@ func (opts *Options) SetBloomLocality(value uint32) {
 	C.rocksdb_options_set_bloom_locality(opts.c, C.uint32_t(value))
 }
 
-// // GetBloomLocality returns control locality of bloom filter probes to improve cache miss rate.
-// // This option only applies to memtable prefix bloom and plaintable
-// // prefix bloom. It essentially limits the max number of cache lines each
-// // bloom filter check can touch.
-// // This optimization is turned off when set to 0. The number should never
-// // be greater than number of probes. This option can boost performance
-// // for in-memory workload but should use with care since it can cause
-// // higher false positive rate.
-// func (opts *Options) GetBloomLocality() uint32 {
-// 	return uint32(C.rocksdb_options_get_bloom_locality(opts.c))
-// }
+// GetBloomLocality returns control locality of bloom filter probes to improve cache miss rate.
+// This option only applies to memtable prefix bloom and plaintable
+// prefix bloom. It essentially limits the max number of cache lines each
+// bloom filter check can touch.
+// This optimization is turned off when set to 0. The number should never
+// be greater than number of probes. This option can boost performance
+// for in-memory workload but should use with care since it can cause
+// higher false positive rate.
+func (opts *Options) GetBloomLocality() uint32 {
+	return uint32(C.rocksdb_options_get_bloom_locality(opts.c))
+}
 
 // SetMaxSuccessiveMerges sets the maximum number of
 // successive merge operations on a key in the memtable.
@@ -1605,17 +1605,17 @@ func (opts *Options) SetMaxSuccessiveMerges(value uint) {
 	C.rocksdb_options_set_max_successive_merges(opts.c, C.size_t(value))
 }
 
-// // GetMaxSuccessiveMerges returns the maximum number of
-// // successive merge operations on a key in the memtable.
-// //
-// // When a merge operation is added to the memtable and the maximum number of
-// // successive merges is reached, the value of the key will be calculated and
-// // inserted into the memtable instead of the merge operation. This will
-// // ensure that there are never more than max_successive_merges merge
-// // operations in the memtable.
-// func (opts *Options) GetMaxSuccessiveMerges() uint {
-// 	return uint(C.rocksdb_options_get_max_successive_merges(opts.c))
-// }
+// GetMaxSuccessiveMerges returns the maximum number of
+// successive merge operations on a key in the memtable.
+//
+// When a merge operation is added to the memtable and the maximum number of
+// successive merges is reached, the value of the key will be calculated and
+// inserted into the memtable instead of the merge operation. This will
+// ensure that there are never more than max_successive_merges merge
+// operations in the memtable.
+func (opts *Options) GetMaxSuccessiveMerges() uint {
+	return uint(C.rocksdb_options_get_max_successive_merges(opts.c))
+}
 
 // EnableStatistics enable statistics.
 func (opts *Options) EnableStatistics() {
@@ -1729,10 +1729,10 @@ func (opts *Options) SetMemTablePrefixBloomSizeRatio(value float64) {
 	C.rocksdb_options_set_memtable_prefix_bloom_size_ratio(opts.c, C.double(value))
 }
 
-// // GetMemTablePrefixBloomSizeRatio returns memtable_prefix_bloom_size_ratio.
-// func (opts *Options) GetMemTablePrefixBloomSizeRatio() float64 {
-// 	return float64(C.rocksdb_options_get_memtable_prefix_bloom_size_ratio(opts.c))
-// }
+// GetMemTablePrefixBloomSizeRatio returns memtable_prefix_bloom_size_ratio.
+func (opts *Options) GetMemTablePrefixBloomSizeRatio() float64 {
+	return float64(C.rocksdb_options_get_memtable_prefix_bloom_size_ratio(opts.c))
+}
 
 // SetOptimizeFiltersForHits sets optimize_filters_for_hits
 // This flag specifies that the implementation should optimize the filters
@@ -1753,10 +1753,10 @@ func (opts *Options) SetOptimizeFiltersForHits(value bool) {
 	C.rocksdb_options_set_optimize_filters_for_hits(opts.c, C.int(boolToChar(value)))
 }
 
-// // OptimizeFiltersForHits gets setting for optimize_filters_for_hits.
-// func (opts *Options) OptimizeFiltersForHits() bool {
-// 	return charToBool(C.rocksdb_options_get_optimize_filters_for_hits(opts.c))
-// }
+// OptimizeFiltersForHits gets setting for optimize_filters_for_hits.
+func (opts *Options) OptimizeFiltersForHits() bool {
+	return charToBool(C.rocksdb_options_get_optimize_filters_for_hits(opts.c))
+}
 
 // CompactionReadaheadSize if non-zero, we perform bigger reads when doing
 // compaction. If you're running RocksDB on spinning disks, you should set
@@ -1926,10 +1926,10 @@ func (opts *Options) SetMaxBackgroundJobs(value int) {
 	C.rocksdb_options_set_max_background_jobs(opts.c, C.int(value))
 }
 
-// // GetMaxBackgroundJobs returns maximum number of concurrent background jobs setting.
-// func (opts *Options) GetMaxBackgroundJobs() int {
-// 	return int(C.rocksdb_options_get_max_background_jobs(opts.c))
-// }
+// GetMaxBackgroundJobs returns maximum number of concurrent background jobs setting.
+func (opts *Options) GetMaxBackgroundJobs() int {
+	return int(C.rocksdb_options_get_max_background_jobs(opts.c))
+}
 
 // SetRecycleLogFileNum if non-zero, we will reuse previously written
 // log files for new logs, overwriting the old data. The value
@@ -1942,10 +1942,10 @@ func (opts *Options) SetRecycleLogFileNum(value uint) {
 	C.rocksdb_options_set_recycle_log_file_num(opts.c, C.size_t(value))
 }
 
-// // GetRecycleLogFileNum returns setting for number of recycling log files.
-// func (opts *Options) GetRecycleLogFileNum() uint {
-// 	return uint(C.rocksdb_options_get_recycle_log_file_num(opts.c))
-// }
+// GetRecycleLogFileNum returns setting for number of recycling log files.
+func (opts *Options) GetRecycleLogFileNum() uint {
+	return uint(C.rocksdb_options_get_recycle_log_file_num(opts.c))
+}
 
 // SetWALBytesPerSync same as bytes_per_sync, but applies to WAL files.
 //
@@ -1956,10 +1956,10 @@ func (opts *Options) SetWALBytesPerSync(value uint64) {
 	C.rocksdb_options_set_wal_bytes_per_sync(opts.c, C.uint64_t(value))
 }
 
-// // GetWALBytesPerSync same as bytes_per_sync, but applies to WAL files.
-// func (opts *Options) GetWALBytesPerSync() uint64 {
-// 	return uint64(C.rocksdb_options_get_wal_bytes_per_sync(opts.c))
-// }
+// GetWALBytesPerSync same as bytes_per_sync, but applies to WAL files.
+func (opts *Options) GetWALBytesPerSync() uint64 {
+	return uint64(C.rocksdb_options_get_wal_bytes_per_sync(opts.c))
+}
 
 // SetWritableFileMaxBufferSize is the maximum buffer size that is
 // used by WritableFileWriter.
@@ -1975,15 +1975,15 @@ func (opts *Options) SetWritableFileMaxBufferSize(value uint64) {
 	C.rocksdb_options_set_writable_file_max_buffer_size(opts.c, C.uint64_t(value))
 }
 
-// // GetWritableFileMaxBufferSize returns the maximum buffer size that is
-// // used by WritableFileWriter.
-// // On Windows, we need to maintain an aligned buffer for writes.
-// // We allow the buffer to grow until it's size hits the limit in buffered
-// // IO and fix the buffer size when using direct IO to ensure alignment of
-// // write requests if the logical sector size is unusual
-// func (opts *Options) GetWritableFileMaxBufferSize() uint64 {
-// 	return uint64(C.rocksdb_options_get_writable_file_max_buffer_size(opts.c))
-// }
+// GetWritableFileMaxBufferSize returns the maximum buffer size that is
+// used by WritableFileWriter.
+// On Windows, we need to maintain an aligned buffer for writes.
+// We allow the buffer to grow until it's size hits the limit in buffered
+// IO and fix the buffer size when using direct IO to ensure alignment of
+// write requests if the logical sector size is unusual
+func (opts *Options) GetWritableFileMaxBufferSize() uint64 {
+	return uint64(C.rocksdb_options_get_writable_file_max_buffer_size(opts.c))
+}
 
 // SetEnableWriteThreadAdaptiveYield if true, threads synchronizing with
 // the write batch group leader will wait for up to write_thread_max_yield_usec
@@ -1996,14 +1996,14 @@ func (opts *Options) SetEnableWriteThreadAdaptiveYield(value bool) {
 	C.rocksdb_options_set_enable_write_thread_adaptive_yield(opts.c, boolToChar(value))
 }
 
-// // EnabledWriteThreadAdaptiveYield if true, threads synchronizing with
-// // the write batch group leader will wait for up to write_thread_max_yield_usec
-// // before blocking on a mutex. This can substantially improve throughput
-// // for concurrent workloads, regardless of whether allow_concurrent_memtable_write
-// // is enabled.
-// func (opts *Options) EnabledWriteThreadAdaptiveYield() bool {
-// 	return charToBool(C.rocksdb_options_get_enable_write_thread_adaptive_yield(opts.c))
-// }
+// EnabledWriteThreadAdaptiveYield if true, threads synchronizing with
+// the write batch group leader will wait for up to write_thread_max_yield_usec
+// before blocking on a mutex. This can substantially improve throughput
+// for concurrent workloads, regardless of whether allow_concurrent_memtable_write
+// is enabled.
+func (opts *Options) EnabledWriteThreadAdaptiveYield() bool {
+	return charToBool(C.rocksdb_options_get_enable_write_thread_adaptive_yield(opts.c))
+}
 
 // SetReportBackgroundIOStats measures IO stats in compactions and
 // flushes, if true.
@@ -2015,11 +2015,11 @@ func (opts *Options) SetReportBackgroundIOStats(value bool) {
 	C.rocksdb_options_set_report_bg_io_stats(opts.c, C.int(boolToChar(value)))
 }
 
-// // ReportBackgroundIOStats returns if measureing IO stats in compactions and
-// // flushes is turned on.
-// func (opts *Options) ReportBackgroundIOStats() bool {
-// 	return charToBool(C.rocksdb_options_get_report_bg_io_stats(opts.c))
-// }
+// ReportBackgroundIOStats returns if measureing IO stats in compactions and
+// flushes is turned on.
+func (opts *Options) ReportBackgroundIOStats() bool {
+	return charToBool(C.rocksdb_options_get_report_bg_io_stats(opts.c))
+}
 
 // SetUnorderedWrite sets unordered_write to true trades higher write throughput with
 // relaxing the immutability guarantee of snapshots. This violates the
@@ -2062,10 +2062,10 @@ func (opts *Options) SetBaseBackgroundCompactions(value int) {
 	C.rocksdb_options_set_base_background_compactions(opts.c, C.int(value))
 }
 
-// // GetBaseBackgroundCompactions gets base background compactions setting.
-// func (opts *Options) GetBaseBackgroundCompactions() int {
-// 	return int(C.rocksdb_options_get_base_background_compactions(opts.c))
-// }
+// GetBaseBackgroundCompactions gets base background compactions setting.
+func (opts *Options) GetBaseBackgroundCompactions() int {
+	return int(C.rocksdb_options_get_base_background_compactions(opts.c))
+}
 
 // SetCuckooTableFactory sets to use cuckoo table factory.
 //
