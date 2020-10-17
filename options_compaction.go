@@ -59,10 +59,10 @@ func (opts *CompactRangeOptions) SetExclusiveManualCompaction(value bool) {
 	C.rocksdb_compactoptions_set_exclusive_manual_compaction(opts.c, boolToChar(value))
 }
 
-// // SetExclusiveManualCompaction returns if exclusive manual compaction is turned on.
-// func (opts *CompactRangeOptions) GetExclusiveManualCompaction() bool {
-// 	return charToBool(C.rocksdb_compactoptions_get_exclusive_manual_compaction(opts.c))
-// }
+// SetExclusiveManualCompaction returns if exclusive manual compaction is turned on.
+func (opts *CompactRangeOptions) GetExclusiveManualCompaction() bool {
+	return charToBool(C.rocksdb_compactoptions_get_exclusive_manual_compaction(opts.c))
+}
 
 // SetBottommostLevelCompaction sets bottommost level compaction.
 //
@@ -71,10 +71,10 @@ func (opts *CompactRangeOptions) SetBottommostLevelCompaction(value BottommostLe
 	C.rocksdb_compactoptions_set_bottommost_level_compaction(opts.c, C.uchar(value))
 }
 
-// // BottommostLevelCompaction returns if bottommost level compaction feature is turned on.
-// func (opts *CompactRangeOptions) BottommostLevelCompaction() BottommostLevelCompaction {
-// 	return BottommostLevelCompaction(C.rocksdb_compactoptions_get_bottommost_level_compaction(opts.c))
-// }
+// BottommostLevelCompaction returns if bottommost level compaction feature is turned on.
+func (opts *CompactRangeOptions) BottommostLevelCompaction() BottommostLevelCompaction {
+	return BottommostLevelCompaction(C.rocksdb_compactoptions_get_bottommost_level_compaction(opts.c))
+}
 
 // SetChangeLevel if true, compacted files will be moved to the minimum level capable
 // of holding the data or given level (specified non-negative target_level).
@@ -82,11 +82,11 @@ func (opts *CompactRangeOptions) SetChangeLevel(value bool) {
 	C.rocksdb_compactoptions_set_change_level(opts.c, boolToChar(value))
 }
 
-// // ChangeLevel if true, compacted files will be moved to the minimum level capable
-// // of holding the data or given level (specified non-negative target_level).
-// func (opts *CompactRangeOptions) ChangeLevel() bool {
-// 	return charToBool(C.rocksdb_compactoptions_get_change_level(opts.c))
-// }
+// ChangeLevel if true, compacted files will be moved to the minimum level capable
+// of holding the data or given level (specified non-negative target_level).
+func (opts *CompactRangeOptions) ChangeLevel() bool {
+	return charToBool(C.rocksdb_compactoptions_get_change_level(opts.c))
+}
 
 // SetTargetLevel if change_level is true and target_level have non-negative value, compacted
 // files will be moved to target_level.
@@ -96,10 +96,10 @@ func (opts *CompactRangeOptions) SetTargetLevel(value int32) {
 	C.rocksdb_compactoptions_set_target_level(opts.c, C.int(value))
 }
 
-// // TargetLevel returns target level.
-// func (opts *CompactRangeOptions) TargetLevel() int32 {
-// 	return int32(C.rocksdb_compactoptions_get_target_level(opts.c))
-// }
+// TargetLevel returns target level.
+func (opts *CompactRangeOptions) TargetLevel() int32 {
+	return int32(C.rocksdb_compactoptions_get_target_level(opts.c))
+}
 
 // FIFOCompactionOptions represent all of the available options for
 // FIFO compaction.
