@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/facebookgo/ensure"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCOWList(t *testing.T) {
@@ -13,9 +13,9 @@ func TestCOWList(t *testing.T) {
 	cl.Append("hello")
 	cl.Append("world")
 	cl.Append("!")
-	ensure.DeepEqual(t, cl.Get(0), "hello")
-	ensure.DeepEqual(t, cl.Get(1), "world")
-	ensure.DeepEqual(t, cl.Get(2), "!")
+	require.EqualValues(t, cl.Get(0), "hello")
+	require.EqualValues(t, cl.Get(1), "world")
+	require.EqualValues(t, cl.Get(2), "!")
 }
 
 func TestCOWListMT(t *testing.T) {
@@ -32,7 +32,7 @@ func TestCOWListMT(t *testing.T) {
 	}
 	wg.Wait()
 	for i, v := range expectedRes {
-		ensure.DeepEqual(t, cl.Get(i), v)
+		require.EqualValues(t, cl.Get(i), v)
 	}
 }
 

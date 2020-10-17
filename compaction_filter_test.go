@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/facebookgo/ensure"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCompactionFilter(t *testing.T) {
@@ -32,8 +32,8 @@ func TestCompactionFilter(t *testing.T) {
 
 	// insert the test keys
 	wo := NewDefaultWriteOptions()
-	ensure.Nil(t, db.Put(wo, changeKey, changeValOld))
-	ensure.Nil(t, db.Put(wo, deleteKey, changeValNew))
+	require.Nil(t, db.Put(wo, changeKey, changeValOld))
+	require.Nil(t, db.Put(wo, deleteKey, changeValNew))
 
 	// trigger a compaction
 	db.CompactRange(Range{nil, nil})
@@ -42,13 +42,13 @@ func TestCompactionFilter(t *testing.T) {
 	ro := NewDefaultReadOptions()
 	v1, err := db.Get(ro, changeKey)
 	defer v1.Free()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, v1.Data(), changeValNew)
+	require.Nil(t, err)
+	require.EqualValues(t, v1.Data(), changeValNew)
 
 	// ensure that the key is deleted after compaction
 	v2, err := db.Get(ro, deleteKey)
-	ensure.Nil(t, err)
-	ensure.True(t, v2.Data() == nil)
+	require.Nil(t, err)
+	require.Nil(t, v2.Data())
 }
 
 type mockCompactionFilter struct {

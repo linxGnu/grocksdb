@@ -3,7 +3,7 @@ package grocksdb
 import (
 	"testing"
 
-	"github.com/facebookgo/ensure"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWriteBatch(t *testing.T) {
@@ -16,41 +16,41 @@ func TestWriteBatch(t *testing.T) {
 		givenKey2 = []byte("key2")
 	)
 	wo := NewDefaultWriteOptions()
-	ensure.Nil(t, db.Put(wo, givenKey2, []byte("foo")))
+	require.Nil(t, db.Put(wo, givenKey2, []byte("foo")))
 
 	// create and fill the write batch
 	wb := NewWriteBatch()
 	defer wb.Destroy()
 	wb.Put(givenKey1, givenVal1)
 	wb.Delete(givenKey2)
-	ensure.DeepEqual(t, wb.Count(), 2)
+	require.EqualValues(t, wb.Count(), 2)
 
 	// perform the batch
-	ensure.Nil(t, db.Write(wo, wb))
+	require.Nil(t, db.Write(wo, wb))
 
 	// check changes
 	ro := NewDefaultReadOptions()
 	v1, err := db.Get(ro, givenKey1)
 	defer v1.Free()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, v1.Data(), givenVal1)
+	require.Nil(t, err)
+	require.EqualValues(t, v1.Data(), givenVal1)
 
 	v2, err := db.Get(ro, givenKey2)
 	defer v2.Free()
-	ensure.Nil(t, err)
-	ensure.True(t, v2.Data() == nil)
+	require.Nil(t, err)
+	require.True(t, v2.Data() == nil)
 
 	// DeleteRange test
 	wb.Clear()
 	wb.DeleteRange(givenKey1, givenKey2)
 
 	// perform the batch
-	ensure.Nil(t, db.Write(wo, wb))
+	require.Nil(t, db.Write(wo, wb))
 
 	v1, err = db.Get(ro, givenKey1)
 	defer v1.Free()
-	ensure.Nil(t, err)
-	ensure.True(t, v1.Data() == nil)
+	require.Nil(t, err)
+	require.True(t, v1.Data() == nil)
 }
 
 func TestWriteBatchIterator(t *testing.T) {
@@ -67,21 +67,21 @@ func TestWriteBatchIterator(t *testing.T) {
 	defer wb.Destroy()
 	wb.Put(givenKey1, givenVal1)
 	wb.Delete(givenKey2)
-	ensure.DeepEqual(t, wb.Count(), 2)
+	require.EqualValues(t, wb.Count(), 2)
 
 	// iterate over the batch
 	iter := wb.NewIterator()
-	ensure.True(t, iter.Next())
+	require.True(t, iter.Next())
 	record := iter.Record()
-	ensure.DeepEqual(t, record.Type, WriteBatchValueRecord)
-	ensure.DeepEqual(t, record.Key, givenKey1)
-	ensure.DeepEqual(t, record.Value, givenVal1)
+	require.EqualValues(t, record.Type, WriteBatchValueRecord)
+	require.EqualValues(t, record.Key, givenKey1)
+	require.EqualValues(t, record.Value, givenVal1)
 
-	ensure.True(t, iter.Next())
+	require.True(t, iter.Next())
 	record = iter.Record()
-	ensure.DeepEqual(t, record.Type, WriteBatchDeletionRecord)
-	ensure.DeepEqual(t, record.Key, givenKey2)
+	require.EqualValues(t, record.Type, WriteBatchDeletionRecord)
+	require.EqualValues(t, record.Key, givenKey2)
 
 	// there shouldn't be any left
-	ensure.False(t, iter.Next())
+	require.False(t, iter.Next())
 }

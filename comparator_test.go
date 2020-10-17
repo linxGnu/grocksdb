@@ -3,7 +3,7 @@ package grocksdb
 import (
 	"testing"
 
-	"github.com/facebookgo/ensure"
+	"github.com/stretchr/testify/require"
 )
 
 func TestComparator(t *testing.T) {
@@ -16,7 +16,7 @@ func TestComparator(t *testing.T) {
 	givenKeys := [][]byte{[]byte("key1"), []byte("key2"), []byte("key3")}
 	wo := NewDefaultWriteOptions()
 	for _, k := range givenKeys {
-		ensure.Nil(t, db.Put(wo, k, []byte("val")))
+		require.Nil(t, db.Put(wo, k, []byte("val")))
 	}
 
 	// create a iterator to collect the keys
@@ -32,8 +32,8 @@ func TestComparator(t *testing.T) {
 		copy(key, iter.Key().Data())
 		actualKeys = append(actualKeys, key)
 	}
-	ensure.Nil(t, iter.Err())
+	require.Nil(t, iter.Err())
 
 	// ensure that the order is correct
-	ensure.DeepEqual(t, actualKeys, givenKeys)
+	require.EqualValues(t, actualKeys, givenKeys)
 }

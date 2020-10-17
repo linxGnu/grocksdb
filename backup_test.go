@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/facebookgo/ensure"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,31 +22,31 @@ func TestBackupEngine(t *testing.T) {
 	defer ro.Destroy()
 
 	// create
-	ensure.Nil(t, db.Put(wo, givenKey, givenVal1))
+	require.Nil(t, db.Put(wo, givenKey, givenVal1))
 
 	// retrieve
 	v1, err := db.Get(ro, givenKey)
 	defer v1.Free()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, v1.Data(), givenVal1)
+	require.Nil(t, err)
+	require.EqualValues(t, v1.Data(), givenVal1)
 
 	// retrieve bytes
 	_v1, err := db.GetBytes(ro, givenKey)
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, _v1, givenVal1)
+	require.Nil(t, err)
+	require.EqualValues(t, _v1, givenVal1)
 
 	// update
-	ensure.Nil(t, db.Put(wo, givenKey, givenVal2))
+	require.Nil(t, db.Put(wo, givenKey, givenVal2))
 	v2, err := db.Get(ro, givenKey)
 	defer v2.Free()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, v2.Data(), givenVal2)
+	require.Nil(t, err)
+	require.EqualValues(t, v2.Data(), givenVal2)
 
 	// retrieve pinned
 	v3, err := db.GetPinned(ro, givenKey)
 	defer v3.Destroy()
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, v3.Data(), givenVal2)
+	require.Nil(t, err)
+	require.EqualValues(t, v3.Data(), givenVal2)
 
 	engine, err := CreateBackupEngine(db)
 	require.Nil(t, err)
@@ -109,7 +108,7 @@ func TestBackupEngine(t *testing.T) {
 
 		v3, err := backupDB.GetPinned(r, givenKey)
 		defer v3.Destroy()
-		ensure.Nil(t, err)
-		ensure.DeepEqual(t, v3.Data(), givenVal2)
+		require.Nil(t, err)
+		require.EqualValues(t, v3.Data(), givenVal2)
 	})
 }

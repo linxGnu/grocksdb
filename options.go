@@ -1101,7 +1101,7 @@ func (opts *Options) SetArenaBlockSize(value uint64) {
 	C.rocksdb_options_set_arena_block_size(opts.c, C.size_t(value))
 }
 
-// SetArenaBlockSize returns the size of one block in arena memory allocation.
+// GetArenaBlockSize returns the size of one block in arena memory allocation.
 func (opts *Options) GetArenaBlockSize() uint64 {
 	return uint64(C.rocksdb_options_get_arena_block_size(opts.c))
 }
