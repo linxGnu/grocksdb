@@ -68,13 +68,13 @@ func OpenDbWithTTL(opts *Options, name string, ttl int) (db *DB, err error) {
 }
 
 // OpenDbForReadOnly opens a database with the specified options for readonly usage.
-func OpenDbForReadOnly(opts *Options, name string, errorIfLogFileExist bool) (db *DB, err error) {
+func OpenDbForReadOnly(opts *Options, name string, errorIfWalFileExists bool) (db *DB, err error) {
 	var (
 		cErr  *C.char
 		cName = C.CString(name)
 	)
 
-	_db := C.rocksdb_open_for_read_only(opts.c, cName, boolToChar(errorIfLogFileExist), &cErr)
+	_db := C.rocksdb_open_for_read_only(opts.c, cName, boolToChar(errorIfWalFileExists), &cErr)
 	if err = fromCError(cErr); err == nil {
 		db = &DB{
 			name: name,
@@ -252,7 +252,7 @@ func OpenDbForReadOnlyColumnFamilies(
 	name string,
 	cfNames []string,
 	cfOpts []*Options,
-	errorIfLogFileExist bool,
+	errorIfWalFileExists bool,
 ) (db *DB, cfHandles []*ColumnFamilyHandle, err error) {
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
@@ -281,7 +281,7 @@ func OpenDbForReadOnlyColumnFamilies(
 		&cNames[0],
 		&cOpts[0],
 		&cHandles[0],
-		boolToChar(errorIfLogFileExist),
+		boolToChar(errorIfWalFileExists),
 		&cErr,
 	)
 	if err = fromCError(cErr); err == nil {
