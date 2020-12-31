@@ -32,6 +32,7 @@ func TestFifoCompactOption(t *testing.T) {
 	defer fo.Destroy()
 
 	fo.SetMaxTableFilesSize(2 << 10)
+	require.EqualValues(t, 2<<10, fo.GetMaxTableFilesSize())
 }
 
 func TestUniversalCompactOption(t *testing.T) {
@@ -39,9 +40,20 @@ func TestUniversalCompactOption(t *testing.T) {
 	defer uo.Destroy()
 
 	uo.SetSizeRatio(2)
+	require.EqualValues(t, 2, uo.GetSizeRatio())
+
 	uo.SetMinMergeWidth(3)
+	require.EqualValues(t, 3, uo.GetMinMergeWidth())
+
 	uo.SetMaxMergeWidth(123)
+	require.EqualValues(t, 123, uo.GetMaxMergeWidth())
+
 	uo.SetMaxSizeAmplificationPercent(20)
-	uo.SetCompressionSizePercent(15)
+	require.EqualValues(t, 20, uo.GetMaxSizeAmplificationPercent())
+
+	uo.SetCompressionSizePercent(18)
+	require.EqualValues(t, 18, uo.GetCompressionSizePercent())
+
 	uo.SetStopStyle(CompactionStopStyleTotalSize)
+	require.EqualValues(t, CompactionStopStyleTotalSize, uo.GetStopStyle())
 }

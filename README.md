@@ -16,7 +16,7 @@ convention of how/when to free c-mem, thus break the rule of [tecbot/gorocksdb](
 
 ## Install
 
-### Default - Builtin Static (Linux, Mac OS)
+### Default - Builtin Static (Linux only)
 
 `grocksdb` contains built static version of `Rocksdb` with:
 - gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39)
@@ -31,7 +31,7 @@ go get -u github.com/linxGnu/grocksdb
 go build -tags builtin_static
 ```
 
-### Static lib (Linux, Mac OS)
+### Static lib (Linux only)
 
 If you don't trust my builtin/want to build with your compiler/env:
 
