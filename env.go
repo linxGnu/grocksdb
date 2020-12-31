@@ -33,11 +33,25 @@ func (env *Env) SetBackgroundThreads(n int) {
 	C.rocksdb_env_set_background_threads(env.c, C.int(n))
 }
 
+// GetBackgroundThreads sets the number of background worker threads
+// of a specific thread pool for this environment.
+// 'LOW' is the default pool.
+func (env *Env) GetBackgroundThreads() int {
+	return int(C.rocksdb_env_get_background_threads(env.c))
+}
+
 // SetHighPriorityBackgroundThreads sets the size of the high priority
 // thread pool that can be used to prevent compactions from stalling
 // memtable flushes.
 func (env *Env) SetHighPriorityBackgroundThreads(n int) {
 	C.rocksdb_env_set_high_priority_background_threads(env.c, C.int(n))
+}
+
+// GetHighPriorityBackgroundThreads gets the size of the high priority
+// thread pool that can be used to prevent compactions from stalling
+// memtable flushes.
+func (env *Env) GetHighPriorityBackgroundThreads() int {
+	return int(C.rocksdb_env_get_high_priority_background_threads(env.c))
 }
 
 // SetLowPriorityBackgroundThreads sets the size of the low priority
@@ -47,11 +61,25 @@ func (env *Env) SetLowPriorityBackgroundThreads(n int) {
 	C.rocksdb_env_set_low_priority_background_threads(env.c, C.int(n))
 }
 
+// GetLowPriorityBackgroundThreads gets the size of the low priority
+// thread pool that can be used to prevent compactions from stalling
+// memtable flushes.
+func (env *Env) GetLowPriorityBackgroundThreads() int {
+	return int(C.rocksdb_env_get_low_priority_background_threads(env.c))
+}
+
 // SetBottomPriorityBackgroundThreads sets the size of
 // thread pool that can be used to prevent bottommost compactions
 // from stalling memtable flushes.
 func (env *Env) SetBottomPriorityBackgroundThreads(n int) {
 	C.rocksdb_env_set_bottom_priority_background_threads(env.c, C.int(n))
+}
+
+// GetBottomPriorityBackgroundThreads gets the size of
+// thread pool that can be used to prevent bottommost compactions
+// from stalling memtable flushes.
+func (env *Env) GetBottomPriorityBackgroundThreads() int {
+	return int(C.rocksdb_env_get_bottom_priority_background_threads(env.c))
 }
 
 // JoinAllThreads wait for all threads started by StartThread to terminate.

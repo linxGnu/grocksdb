@@ -50,7 +50,19 @@ func TestBackupEngine(t *testing.T) {
 
 	engine, err := CreateBackupEngine(db)
 	require.Nil(t, err)
-	defer engine.Close()
+	defer func() {
+		engine.Close()
+
+		// re-open with opts
+		opts := NewBackupableDBOptions(db.name)
+		env := NewDefaultEnv()
+
+		_, err = OpenBackupEngineWithOpt(opts, env)
+		require.Nil(t, err)
+
+		env.Destroy()
+		opts.Destroy()
+	}()
 
 	t.Run("createBackupAndVerify", func(t *testing.T) {
 		infos := engine.GetInfo()

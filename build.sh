@@ -11,24 +11,30 @@ mkdir -p $BUILD_PATH
 
 CMAKE_REQUIRED_PARAMS="-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}"
 
-cd $BUILD_PATH && wget https://github.com/madler/zlib/archive/v1.2.11.tar.gz && tar xzf v1.2.11.tar.gz && cd zlib-1.2.11 && \
+zlib_version="1.2.11"
+cd $BUILD_PATH && wget https://github.com/madler/zlib/archive/v${zlib_version}.tar.gz && tar xzf v${zlib_version}.tar.gz && cd zlib-${zlib_version} && \
     ./configure --prefix=$INSTALL_PREFIX --static && make -j16 install && \
     cd $BUILD_PATH && rm -rf *
 
-cd $BUILD_PATH && wget https://github.com/google/snappy/archive/1.1.8.tar.gz && tar xzf 1.1.8.tar.gz && cd snappy-1.1.8 && \
+snappy_version="1.1.8"
+cd $BUILD_PATH && wget https://github.com/google/snappy/archive/${snappy_version}.tar.gz && tar xzf ${snappy_version}.tar.gz && cd snappy-${snappy_version} && \
     mkdir -p build_place && cd build_place && cmake $CMAKE_REQUIRED_PARAMS -DSNAPPY_BUILD_TESTS=OFF .. && make install/strip -j16 && \
     cd $BUILD_PATH && rm -rf *
 
-cd $BUILD_PATH && wget https://github.com/lz4/lz4/archive/v1.9.3.tar.gz && tar xzf v1.9.3.tar.gz && cd lz4-1.9.3/build/cmake && \
+lz4_version="1.9.3"
+cd $BUILD_PATH && wget https://github.com/lz4/lz4/archive/v${lz4_version}.tar.gz && tar xzf v${lz4_version}.tar.gz && cd lz4-${lz4_version}/build/cmake && \
     cmake $CMAKE_REQUIRED_PARAMS -DLZ4_BUILD_LEGACY_LZ4C=OFF -DBUILD_SHARED_LIBS=OFF -DLZ4_POSITION_INDEPENDENT_LIB=ON && make -j16 install && \
     cd $BUILD_PATH && rm -rf *
 
-cd $BUILD_PATH && wget https://github.com/facebook/zstd/releases/download/v1.4.5/zstd-1.4.5.tar.gz && tar xzf zstd-1.4.5.tar.gz && cd zstd-1.4.5/build/cmake && mkdir -p build_place && cd build_place && \
-    cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DZSTD_BUILD_PROGRAMS=OFF -DZSTD_BUILD_CONTRIB=OFF -DZSTD_BUILD_STATIC=ON -DZSTD_BUILD_SHARED=OFF -DZSTD_BUILD_TESTS=OFF \
-    $CMAKE_REQUIRED_PARAMS -DZSTD_ZLIB_SUPPORT=ON -DZSTD_LZMA_SUPPORT=OFF -DCMAKE_BUILD_TYPE=Release .. && make -j16 install && \
-    cd $BUILD_PATH && rm -rf *
+zstd_version="1.4.8"
+cd $BUILD_PATH && wget https://github.com/facebook/zstd/archive/v${zstd_version}.tar.gz && tar xzf v${zstd_version}.tar.gz && \
+    cd zstd-${zstd_version}/build/cmake && mkdir -p build_place && cd build_place && \
+    cmake -DZSTD_BUILD_PROGRAMS=OFF -DZSTD_BUILD_CONTRIB=OFF -DZSTD_BUILD_STATIC=ON -DZSTD_BUILD_SHARED=OFF -DZSTD_BUILD_TESTS=OFF \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DZSTD_ZLIB_SUPPORT=ON -DZSTD_LZMA_SUPPORT=OFF -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc) install && \
+    cd $BUILD_PATH && rm -rf * && ldconfig
 
-cd $BUILD_PATH && wget https://github.com/facebook/rocksdb/archive/v6.14.6.tar.gz && tar xzf v6.14.6.tar.gz && cd rocksdb-6.14.6/ && \
+rocksdb_version="6.15.2"
+cd $BUILD_PATH && wget https://github.com/facebook/rocksdb/archive/v${rocksdb_version}.tar.gz && tar xzf v${rocksdb_version}.tar.gz && cd rocksdb-${rocksdb_version}/ && \
     mkdir -p build_place && cd build_place && cmake -DCMAKE_BUILD_TYPE=Release $CMAKE_REQUIRED_PARAMS -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX -DWITH_TESTS=OFF -DWITH_GFLAGS=OFF \
     -DWITH_BENCHMARK_TOOLS=OFF -DWITH_TOOLS=OFF -DWITH_MD_LIBRARY=OFF -DWITH_RUNTIME_DEBUG=OFF -DROCKSDB_BUILD_SHARED=OFF -DWITH_SNAPPY=ON -DWITH_LZ4=ON -DWITH_ZLIB=ON \
     -DWITH_ZSTD=ON -DWITH_BZ2=OFF -WITH_GFLAGS=OFF .. && make -j16 install/strip && \
