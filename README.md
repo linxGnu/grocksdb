@@ -27,11 +27,20 @@ Please follow this guide: https://github.com/facebook/rocksdb/blob/master/INSTAL
 
 ### Build 
 
-After that, you can install `grocksdb` using the following command:
+After that, you can install and build `grocksdb` using the following commands:
 
-    CGO_CFLAGS="-I/path/to/rocksdb/include" \
-    CGO_LDFLAGS="-L/path/to/rocksdb -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" \
-      go get -u github.com/linxGnu/grocksdb
+```
+go get -u github.com/linxGnu/grocksdb
+
+CGO_CFLAGS="-I/path/to/rocksdb/include" \
+CGO_LDFLAGS="-L/path/to/rocksdb -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" \
+  go build
+```
+
+Or just:
+```
+go build // if prerequisites are in linker paths
+```
 
 ## Usage
 
