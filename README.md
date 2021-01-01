@@ -1,4 +1,4 @@
-# grocksdb, a Go wrapper for RocksDB
+# grocksdb, RocksDB wrapper for Go
 
 [![](https://github.com/linxGnu/grocksdb/workflows/CI/badge.svg)]()
 [![Go Report Card](https://goreportcard.com/badge/github.com/linxGnu/grocksdb)](https://goreportcard.com/report/github.com/linxGnu/grocksdb)
@@ -10,73 +10,46 @@ The `LICENSE` still remains as upstream.
 
 Why I made a patched clone instead of PR:
 - Supports almost C API (unlike upstream). Catching up with latest version of Rocksdb as promise.
-- Static build focused.
 - This fork contains `no defer` in codebase (my side project requires as less overhead as possible). This introduces loose
 convention of how/when to free c-mem, thus break the rule of [tecbot/gorocksdb](https://github.com/tecbot/gorocksdb).
 
 ## Install
 
-### Default - Builtin Static (Linux only)
+### Prerequisite 
 
-`grocksdb` contains built static version of `Rocksdb` with:
-- gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39)
+- librocksdb
+- libsnappy
+- libz
+- liblz4
+- libzstd
 
-You have to do nothing on your machine. Just install it like other go libraries:
+Please follow this guide: https://github.com/facebook/rocksdb/blob/master/INSTALL.md to build above libs.
 
-```bash
-go get -u github.com/linxGnu/grocksdb
-
-# Build your project with `builtin_static` tags:
-go build -tags builtin_static
-```
-
-### Static lib (Linux only)
-
-If you don't trust my builtin/want to build with your compiler/env:
-
-##### Prerequisite
-- cmake 3.11+
-- make
-
-##### Build
-
-Make sure to install libraries for linking before making targets.
-
-```bash
-# You could find `Makefile` at root of repository
-
-# build static libs
-make
-```
-
-Then, build your project with tags (same as above):
-
-```
-go build -tags builtin_static
-```
-
-### Existed Static lib
-
-In case, already have static-lib version of rocksdb, you could build your project with:
-
-```
-# don't use builtin static
-go build -tags static
-```
-
-### Shared lib
-
-You'll need to build [RocksDB](https://github.com/facebook/rocksdb) v6.3.6+ on your machine.
+### Build 
 
 After that, you can install `grocksdb` using the following command:
 
     CGO_CFLAGS="-I/path/to/rocksdb/include" \
     CGO_LDFLAGS="-L/path/to/rocksdb -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" \
-      go get github.com/linxGnu/grocksdb
+      go get -u github.com/linxGnu/grocksdb
 
 ## Usage
 
 See also: [doc](https://godoc.org/github.com/linxGnu/grocksdb)
+
+## Builtin Static
+
+grocksdb bundles static version of RocksDB, build with env:
+- centos 7 x86_64
+- gcc 4.8
+
+You could give it a try:
+
+```
+go get -u github.com/linxGnu/grocksdb
+
+go build -tags builtin_static
+```
 
 ## API Support
 
