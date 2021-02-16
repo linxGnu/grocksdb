@@ -51,10 +51,17 @@ func TestDBCRUD(t *testing.T) {
 	require.EqualValues(t, v2.Data(), givenVal2)
 
 	// retrieve pinned
-	v3, err := db.GetPinned(ro, givenKey)
-	defer v3.Destroy()
-	require.Nil(t, err)
-	require.EqualValues(t, v3.Data(), givenVal2)
+	for i := 0; i < 1000; i++ {
+		v3, err := db.GetPinned(ro, givenKey)
+		require.Nil(t, err)
+		require.EqualValues(t, v3.Data(), givenVal2)
+		v3.Destroy()
+
+		v3NE, err := db.GetPinned(ro, []byte("justFake"))
+		require.Nil(t, err)
+		require.False(t, v3NE.Exists())
+		v3NE.Destroy()
+	}
 
 	// delete
 	require.Nil(t, db.Delete(wo, givenKey))

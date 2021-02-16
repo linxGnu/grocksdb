@@ -118,9 +118,16 @@ func TestBackupEngine(t *testing.T) {
 		r := NewDefaultReadOptions()
 		defer r.Destroy()
 
-		v3, err := backupDB.GetPinned(r, givenKey)
-		defer v3.Destroy()
-		require.Nil(t, err)
-		require.EqualValues(t, v3.Data(), givenVal2)
+		for i := 0; i < 1000; i++ {
+			v3, err := backupDB.GetPinned(r, givenKey)
+			require.Nil(t, err)
+			require.EqualValues(t, v3.Data(), givenVal2)
+			v3.Destroy()
+
+			v4, err := backupDB.GetPinned(r, []byte("justFake"))
+			require.Nil(t, err)
+			require.False(t, v4.Exists())
+			v4.Destroy()
+		}
 	})
 }
