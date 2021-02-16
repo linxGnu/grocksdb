@@ -56,10 +56,12 @@ func TestDBCRUD(t *testing.T) {
 		require.Nil(t, err)
 		require.EqualValues(t, v3.Data(), givenVal2)
 		v3.Destroy()
+		v3.Destroy()
 
 		v3NE, err := db.GetPinned(ro, []byte("justFake"))
 		require.Nil(t, err)
 		require.False(t, v3NE.Exists())
+		v3NE.Destroy()
 		v3NE.Destroy()
 	}
 

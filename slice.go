@@ -35,7 +35,11 @@ func (s *Slice) Exists() bool {
 // Data returns the data of the slice. If the key doesn't exist this will be a
 // nil slice.
 func (s *Slice) Data() []byte {
-	return charToByte(s.data, s.size)
+	if s.Exists() {
+		return charToByte(s.data, s.size)
+	}
+
+	return nil
 }
 
 // Size returns the size of the data.
@@ -69,13 +73,13 @@ func (h *PinnableSliceHandle) Exists() bool {
 
 // Data returns the data of the slice.
 func (h *PinnableSliceHandle) Data() []byte {
-	if !h.Exists() {
-		return nil
+	if h.Exists() {
+		var cValLen C.size_t
+		cValue := C.rocksdb_pinnableslice_value(h.c, &cValLen)
+		return charToByte(cValue, cValLen)
 	}
 
-	var cValLen C.size_t
-	cValue := C.rocksdb_pinnableslice_value(h.c, &cValLen)
-	return charToByte(cValue, cValLen)
+	return nil
 }
 
 // Destroy calls the destructor of the underlying pinnable slice handle.
