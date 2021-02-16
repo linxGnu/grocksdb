@@ -27,27 +27,24 @@ func NewSlice(data *C.char, size C.size_t) *Slice {
 	return &Slice{data, size, false}
 }
 
-// StringToSlice is similar to NewSlice, but can be called with
-// a Go string type. This exists to make testing integration
-// with Gorocksdb easier.
-func StringToSlice(data string) *Slice {
-	return NewSlice(C.CString(data), C.size_t(len(data)))
+// Exists returns if underlying data exists.
+func (s *Slice) Exists() bool {
+	return s.data != nil
 }
 
 // Data returns the data of the slice. If the key doesn't exist this will be a
 // nil slice.
 func (s *Slice) Data() []byte {
-	return charToByte(s.data, s.size)
+	if s.Exists() {
+		return charToByte(s.data, s.size)
+	}
+
+	return nil
 }
 
 // Size returns the size of the data.
 func (s *Slice) Size() int {
 	return int(s.size)
-}
-
-// Exists returns if the key exists
-func (s *Slice) Exists() bool {
-	return s.data != nil
 }
 
 // Free frees the slice data.
@@ -69,16 +66,20 @@ func NewNativePinnableSliceHandle(c *C.rocksdb_pinnableslice_t) *PinnableSliceHa
 	return &PinnableSliceHandle{c}
 }
 
+// Exists returns if underlying data exists.
+func (h *PinnableSliceHandle) Exists() bool {
+	return h.c != nil
+}
+
 // Data returns the data of the slice.
 func (h *PinnableSliceHandle) Data() []byte {
-	if h.c == nil {
-		return nil
+	if h.Exists() {
+		var cValLen C.size_t
+		cValue := C.rocksdb_pinnableslice_value(h.c, &cValLen)
+		return charToByte(cValue, cValLen)
 	}
 
-	var cValLen C.size_t
-	cValue := C.rocksdb_pinnableslice_value(h.c, &cValLen)
-
-	return charToByte(cValue, cValLen)
+	return nil
 }
 
 // Destroy calls the destructor of the underlying pinnable slice handle.
