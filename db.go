@@ -931,10 +931,10 @@ func (db *DB) DropColumnFamily(c *ColumnFamilyHandle) (err error) {
 //
 // The keys counted will begin at Range.Start and end on the key before
 // Range.Limit.
-func (db *DB) GetApproximateSizes(ranges []Range) []uint64 {
+func (db *DB) GetApproximateSizes(ranges []Range) ([]uint64, error) {
 	sizes := make([]uint64, len(ranges))
 	if len(ranges) == 0 {
-		return sizes
+		return sizes, nil
 	}
 
 	cStarts := make([]*C.char, len(ranges))
@@ -948,6 +948,7 @@ func (db *DB) GetApproximateSizes(ranges []Range) []uint64 {
 		cLimitLens[i] = C.size_t(len(r.Limit))
 	}
 
+	var cErr *C.char
 	C.rocksdb_approximate_sizes(
 		db.c,
 		C.int(len(ranges)),
@@ -955,7 +956,12 @@ func (db *DB) GetApproximateSizes(ranges []Range) []uint64 {
 		&cStartLens[0],
 		&cLimits[0],
 		&cLimitLens[0],
-		(*C.uint64_t)(&sizes[0]))
+		(*C.uint64_t)(&sizes[0]),
+		&cErr,
+	)
+
+	// parse error
+	err := fromCError(cErr)
 
 	// free before return
 	for i := range ranges {
@@ -963,7 +969,7 @@ func (db *DB) GetApproximateSizes(ranges []Range) []uint64 {
 		C.free(unsafe.Pointer(cLimits[i]))
 	}
 
-	return sizes
+	return sizes, err
 }
 
 // GetApproximateSizesCF returns the approximate number of bytes of file system
@@ -971,10 +977,10 @@ func (db *DB) GetApproximateSizes(ranges []Range) []uint64 {
 //
 // The keys counted will begin at Range.Start and end on the key before
 // Range.Limit.
-func (db *DB) GetApproximateSizesCF(cf *ColumnFamilyHandle, ranges []Range) []uint64 {
+func (db *DB) GetApproximateSizesCF(cf *ColumnFamilyHandle, ranges []Range) ([]uint64, error) {
 	sizes := make([]uint64, len(ranges))
 	if len(ranges) == 0 {
-		return sizes
+		return sizes, nil
 	}
 
 	cStarts := make([]*C.char, len(ranges))
@@ -988,6 +994,7 @@ func (db *DB) GetApproximateSizesCF(cf *ColumnFamilyHandle, ranges []Range) []ui
 		cLimitLens[i] = C.size_t(len(r.Limit))
 	}
 
+	var cErr *C.char
 	C.rocksdb_approximate_sizes_cf(
 		db.c,
 		cf.c,
@@ -996,7 +1003,12 @@ func (db *DB) GetApproximateSizesCF(cf *ColumnFamilyHandle, ranges []Range) []ui
 		&cStartLens[0],
 		&cLimits[0],
 		&cLimitLens[0],
-		(*C.uint64_t)(&sizes[0]))
+		(*C.uint64_t)(&sizes[0]),
+		&cErr,
+	)
+
+	// parse error
+	err := fromCError(cErr)
 
 	// free before return
 	for i := range ranges {
@@ -1004,7 +1016,7 @@ func (db *DB) GetApproximateSizesCF(cf *ColumnFamilyHandle, ranges []Range) []ui
 		C.free(unsafe.Pointer(cLimits[i]))
 	}
 
-	return sizes
+	return sizes, err
 }
 
 // SetOptions dynamically changes options through the SetOptions API.
