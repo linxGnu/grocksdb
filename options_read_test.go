@@ -58,4 +58,12 @@ func TestReadOptions(t *testing.T) {
 	require.EqualValues(t, false, ro.IgnoreRangeDeletions())
 	ro.SetIgnoreRangeDeletions(true)
 	require.EqualValues(t, true, ro.IgnoreRangeDeletions())
+
+	require.EqualValues(t, 0, ro.GetDeadline())
+	ro.SetDeadline(1000)
+	require.EqualValues(t, 1000, ro.GetDeadline())
+
+	require.EqualValues(t, 0, ro.GetIOTimeout())
+	ro.SetIOTimeout(1212)
+	require.EqualValues(t, 1212, ro.GetIOTimeout())
 }
