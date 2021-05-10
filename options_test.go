@@ -247,7 +247,9 @@ func TestOptions(t *testing.T) {
 	require.EqualValues(t, false, opts.AllowConcurrentMemtableWrites())
 
 	opts.SetCompressionOptionsZstdMaxTrainBytes(123 << 20)
+	opts.SetCompressionOptionsMaxDictBufferBytes(213 << 10)
 	opts.SetBottommostCompressionOptionsZstdMaxTrainBytes(234<<20, true)
+	opts.SetBottommostCompressionOptionsMaxDictBufferBytes(312<<10, true)
 
 	opts.SetBottommostCompressionOptions(NewDefaultCompressionOptions(), true)
 	opts.SetCompressionOptions(NewDefaultCompressionOptions())

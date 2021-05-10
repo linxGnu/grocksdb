@@ -53,7 +53,7 @@ func TestBackupableDBOptions(t *testing.T) {
 	opts.SetMaxValidBackupsToOpen(29)
 	require.EqualValues(t, 29, opts.GetMaxValidBackupsToOpen())
 
-	require.EqualValues(t, UseDBSessionID|FlagIncludeFileSize|FlagMatchInterimNaming, opts.GetShareFilesWithChecksumNaming())
+	require.EqualValues(t, 0x80000002, opts.GetShareFilesWithChecksumNaming())
 	opts.SetShareFilesWithChecksumNaming(UseDBSessionID | LegacyCrc32cAndFileSize)
 	require.EqualValues(t, UseDBSessionID|LegacyCrc32cAndFileSize, opts.GetShareFilesWithChecksumNaming())
 }

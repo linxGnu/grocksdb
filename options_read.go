@@ -251,6 +251,43 @@ func (opts *ReadOptions) IgnoreRangeDeletions() bool {
 	return charToBool(C.rocksdb_readoptions_get_ignore_range_deletions(opts.c))
 }
 
+// SetDeadline for completing an API call (Get/MultiGet/Seek/Next for now)
+// in microseconds.
+//
+// It should be set to microseconds since epoch, i.e, gettimeofday or
+// equivalent plus allowed duration in microseconds. The best way is to use
+// env->NowMicros() + some timeout.
+//
+// This is best efforts. The call may exceed the deadline if there is IO
+// involved and the file system doesn't support deadlines, or due to
+// checking for deadline periodically rather than for every key if
+// processing a batch
+func (opts *ReadOptions) SetDeadline(microseconds uint64) {
+	C.rocksdb_readoptions_set_deadline(opts.c, C.uint64_t(microseconds))
+}
+
+// GetDeadline for completing an API call (Get/MultiGet/Seek/Next for now)
+// in microseconds.
+func (opts *ReadOptions) GetDeadline() uint64 {
+	return uint64(C.rocksdb_readoptions_get_deadline(opts.c))
+}
+
+// SetIOTimeout sets a timeout in microseconds to be passed to the underlying FileSystem for
+// reads. As opposed to deadline, this determines the timeout for each
+// individual file read request. If a MultiGet/Get/Seek/Next etc call
+// results in multiple reads, each read can last upto io_timeout us.
+func (opts *ReadOptions) SetIOTimeout(microseconds uint64) {
+	C.rocksdb_readoptions_set_io_timeout(opts.c, C.uint64_t(microseconds))
+}
+
+// GetIOTimeout gets timeout in microseconds to be passed to the underlying FileSystem for
+// reads. As opposed to deadline, this determines the timeout for each
+// individual file read request. If a MultiGet/Get/Seek/Next etc call
+// results in multiple reads, each read can last upto io_timeout us.
+func (opts *ReadOptions) GetIOTimeout() uint64 {
+	return uint64(C.rocksdb_readoptions_get_io_timeout(opts.c))
+}
+
 // Destroy deallocates the ReadOptions object.
 func (opts *ReadOptions) Destroy() {
 	C.rocksdb_readoptions_destroy(opts.c)
