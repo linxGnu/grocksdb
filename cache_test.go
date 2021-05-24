@@ -13,4 +13,6 @@ func TestCache(t *testing.T) {
 	require.EqualValues(t, 19, cache.GetCapacity())
 	cache.SetCapacity(128)
 	require.EqualValues(t, 128, cache.GetCapacity())
+
+	cache.DisownData()
 }

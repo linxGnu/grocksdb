@@ -38,6 +38,15 @@ func (c *Cache) GetCapacity() uint64 {
 	return uint64(C.rocksdb_cache_get_capacity(c.c))
 }
 
+// Disowndata call this on shutdown if you want to speed it up. Cache will disown
+// any underlying data and will not free it on delete. This call will leak
+// memory - call this only if you're shutting down the process.
+// Any attempts of using cache after this call will fail terribly.
+// Always delete the DB object before calling this method!
+func (c *Cache) DisownData() {
+	C.rocksdb_cache_disown_data(c.c)
+}
+
 // Destroy deallocates the Cache object.
 func (c *Cache) Destroy() {
 	C.rocksdb_cache_destroy(c.c)
