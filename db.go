@@ -10,7 +10,7 @@ import (
 
 var (
 	// ErrColumnFamilyMustMatch indicates number of column family names and options must match.
-	ErrColumnFamilyMustMatch = fmt.Errorf("Must provide the same number of column family names and options")
+	ErrColumnFamilyMustMatch = fmt.Errorf("must provide the same number of column family names and options")
 )
 
 // Range is a range of keys in the database. GetApproximateSizes calls with it

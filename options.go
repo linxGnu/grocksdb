@@ -1857,6 +1857,116 @@ func (opts *Options) SkipCheckingSSTFileSizesOnDBOpen() bool {
 	return charToBool(C.rocksdb_options_get_skip_checking_sst_file_sizes_on_db_open(opts.c))
 }
 
+/* Blob Options Settings */
+
+// EnableBlobFiles when set, large values (blobs) are written to separate blob files, and
+// only pointers to them are stored in SST files. This can reduce write
+// amplification for large-value use cases at the cost of introducing a level
+// of indirection for reads. See also the options min_blob_size,
+// blob_file_size, blob_compression_type, enable_blob_garbage_collection,
+// and blob_garbage_collection_age_cutoff below.
+//
+// Default: false
+//
+// Dynamically changeable through the API.
+func (opts *Options) EnableBlobFiles(value bool) {
+	C.rocksdb_options_set_enable_blob_files(opts.c, boolToChar(value))
+}
+
+// IsBlobFilesEnabled returns if blob-file setting is enabled.
+func (opts *Options) IsBlobFilesEnabled() bool {
+	return charToBool(C.rocksdb_options_get_enable_blob_files(opts.c))
+}
+
+// SetMinBlogSize sets the size of the smallest value to be stored separately in a blob file.
+// Values which have an uncompressed size smaller than this threshold are
+// stored alongside the keys in SST files in the usual fashion. A value of
+// zero for this option means that all values are stored in blob files. Note
+// that enable_blob_files has to be set in order for this option to have any
+// effect.
+//
+// Default: 0
+//
+// Dynamically changeable through the API.
+func (opts *Options) SetMinBlobSize(value uint64) {
+	C.rocksdb_options_set_min_blob_size(opts.c, C.uint64_t(value))
+}
+
+// GetMinBlobSize returns the size of the smallest value to be stored separately in a blob file.
+func (opts *Options) GetMinBlobSize() uint64 {
+	return uint64(C.rocksdb_options_get_min_blob_size(opts.c))
+}
+
+// SetBlobFileSize sets the size limit for blob files. When writing blob files, a new file is
+// opened once this limit is reached. Note that enable_blob_files has to be
+// set in order for this option to have any effect.
+//
+// Default: 256 MB
+//
+// Dynamically changeable through the API.
+func (opts *Options) SetBlobFileSize(value uint64) {
+	C.rocksdb_options_set_blob_file_size(opts.c, C.uint64_t(value))
+}
+
+// GetBlobFileSize gets the size limit for blob files.
+func (opts *Options) GetBlobFileSize() uint64 {
+	return uint64(C.rocksdb_options_get_blob_file_size(opts.c))
+}
+
+// SetBlobCompressionType sets the compression algorithm to use for large values stored in blob files.
+// Note that enable_blob_files has to be set in order for this option to have
+// any effect.
+//
+// Default: no compression
+//
+// Dynamically changeable through the API.
+func (opts *Options) SetBlobCompressionType(compressionType CompressionType) {
+	C.rocksdb_options_set_blob_compression_type(opts.c, C.int(compressionType))
+}
+
+// GetBlobCompressionType gets the compression algorithm to use for large values stored in blob files.
+// Note that enable_blob_files has to be set in order for this option to have
+// any effect.
+func (opts *Options) GetBlobCompressionType() CompressionType {
+	return CompressionType(C.rocksdb_options_get_blob_compression_type(opts.c))
+}
+
+// EnableBlobGC toggles garbage collection of blobs. Blob GC is performed as part of
+// compaction. Valid blobs residing in blob files older than a cutoff get
+// relocated to new files as they are encountered during compaction, which
+// makes it possible to clean up blob files once they contain nothing but
+// obsolete/garbage blobs. See also blob_garbage_collection_age_cutoff below.
+//
+// Default: false
+//
+// Dynamically changeable through the API.
+func (opts *Options) EnableBlobGC(value bool) {
+	C.rocksdb_options_set_enable_blob_gc(opts.c, boolToChar(value))
+}
+
+// IsBlobGCEnabled returns if blob garbage collection is enabled.
+func (opts *Options) IsBlobGCEnabled() bool {
+	return charToBool(C.rocksdb_options_get_enable_blob_gc(opts.c))
+}
+
+// SetBlobGCAgeCutoff sets the cutoff in terms of blob file age for garbage collection. Blobs in
+// the oldest N blob files will be relocated when encountered during
+// compaction, where N = garbage_collection_cutoff * number_of_blob_files.
+// Note that enable_blob_garbage_collection has to be set in order for this
+// option to have any effect.
+//
+// Default: 0.25
+//
+// Dynamically changeable through the API.
+func (opts *Options) SetBlobGCAgeCutoff(value float64) {
+	C.rocksdb_options_set_blob_gc_age_cutoff(opts.c, C.double(value))
+}
+
+// GetBlobGCAgeCutoff returns the cutoff in terms of blob file age for garbage collection.
+func (opts *Options) GetBlobGCAgeCutoff() float64 {
+	return float64(C.rocksdb_options_get_blob_gc_age_cutoff(opts.c))
+}
+
 // SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
 // to maintain in memory including copies of buffers that have already been flushed.
 // Unlike max_write_buffer_number, this parameter does not affect flushing.
