@@ -247,7 +247,18 @@ func TestOptions(t *testing.T) {
 	require.EqualValues(t, false, opts.AllowConcurrentMemtableWrites())
 
 	opts.SetCompressionOptionsZstdMaxTrainBytes(123 << 20)
+	require.EqualValues(t, 123<<20, opts.GetCompressionOptionsZstdMaxTrainBytes())
+
+	require.EqualValues(t, 1, opts.GetCompressionOptionsParallelThreads())
+	opts.SetCompressionOptionsParallelThreads(12)
+	require.EqualValues(t, 12, opts.GetCompressionOptionsParallelThreads())
+
+	opts.AddCompactOnDeletionCollectorFactory(12, 13)
+
+	require.EqualValues(t, 0, opts.GetCompressionOptionsMaxDictBufferBytes())
 	opts.SetCompressionOptionsMaxDictBufferBytes(213 << 10)
+	require.EqualValues(t, 213<<10, opts.GetCompressionOptionsMaxDictBufferBytes())
+
 	opts.SetBottommostCompressionOptionsZstdMaxTrainBytes(234<<20, true)
 	opts.SetBottommostCompressionOptionsMaxDictBufferBytes(312<<10, true)
 
@@ -354,6 +365,10 @@ func TestOptions(t *testing.T) {
 
 	opts.SetMaxWriteBufferNumberToMaintain(45)
 	require.EqualValues(t, 45, opts.GetMaxWriteBufferNumberToMaintain())
+
+	require.False(t, opts.IsManualWALFlush())
+	opts.SetManualWALFlush(true)
+	require.True(t, opts.IsManualWALFlush())
 
 	// cloning
 	cl := opts.Clone()
