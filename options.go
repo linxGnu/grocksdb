@@ -554,9 +554,46 @@ func (opts *Options) SetCompressionOptionsZstdMaxTrainBytes(value int) {
 	C.rocksdb_options_set_compression_options_zstd_max_train_bytes(opts.c, C.int(value))
 }
 
-// SetCompressionOptionsMaxDictBufferBytes limits on data buffering when gathering samples to build a dictionary.
-// Zero means no limit. When dictionary is disabled (`max_dict_bytes == 0`),
-// enabling this limit (`max_dict_buffer_bytes != 0`) has no effect.
+// GetCompressionOptionsZstdMaxTrainBytes gets maximum size of training data passed
+// to zstd's dictionary trainer. Using zstd's dictionary trainer can achieve even
+// better compression ratio improvements than using `max_dict_bytes` alone.
+func (opts *Options) GetCompressionOptionsZstdMaxTrainBytes() int {
+	return int(C.rocksdb_options_get_compression_options_zstd_max_train_bytes(opts.c))
+}
+
+// SetCompressionOptionsParallelThreads sets number of threads for
+// parallel compression. Parallel compression is enabled only if threads > 1.
+//
+// This option is valid only when BlockBasedTable is used.
+//
+// When parallel compression is enabled, SST size file sizes might be
+// more inflated compared to the target size, because more data of unknown
+// compressed size is in flight when compression is parallelized. To be
+// reasonably accurate, this inflation is also estimated by using historical
+// compression ratio and current bytes inflight.
+//
+// Default: 1.
+//
+// Note: THE FEATURE IS STILL EXPERIMENTAL
+func (opts *Options) SetCompressionOptionsParallelThreads(n int) {
+	C.rocksdb_options_set_compression_options_parallel_threads(opts.c, C.int(n))
+}
+
+// GetCompressionOptionsParallelThreads returns  number of threads for
+// parallel compression. Parallel compression is enabled only if threads > 1.
+//
+// This option is valid only when BlockBasedTable is used.
+// Default: 1.
+//
+// Note: THE FEATURE IS STILL EXPERIMENTAL
+func (opts *Options) GetCompressionOptionsParallelThreads() int {
+	return int(C.rocksdb_options_get_compression_options_parallel_threads(opts.c))
+}
+
+// SetCompressionOptionsMaxDictBufferBytes limits on data buffering when
+// gathering samples to build a dictionary.  Zero means no limit. When dictionary
+// is disabled (`max_dict_bytes == 0`), enabling this limit (`max_dict_buffer_bytes != 0`)
+// has no effect.
 //
 // In compaction, the buffering is limited to the target file size (see
 // `target_file_size_base` and `target_file_size_multiplier`) even if this
@@ -575,6 +612,14 @@ func (opts *Options) SetCompressionOptionsZstdMaxTrainBytes(value int) {
 // Default: 0 (unlimited)
 func (opts *Options) SetCompressionOptionsMaxDictBufferBytes(value uint64) {
 	C.rocksdb_options_set_compression_options_max_dict_buffer_bytes(opts.c, C.uint64_t(value))
+}
+
+// GetCompressionOptionsMaxDictBufferBytes returns the limit on data buffering when
+// gathering samples to build a dictionary.  Zero means no limit. When dictionary
+// is disabled (`max_dict_bytes == 0`), enabling this limit (`max_dict_buffer_bytes != 0`)
+// has no effect.
+func (opts *Options) GetCompressionOptionsMaxDictBufferBytes() uint64 {
+	return uint64(C.rocksdb_options_get_compression_options_max_dict_buffer_bytes(opts.c))
 }
 
 // SetBottommostCompressionOptionsZstdMaxTrainBytes sets maximum size of training data passed
@@ -1542,6 +1587,28 @@ func (opts *Options) IsAtomicFlush() bool {
 // Not supported in ROCKSDB_LITE mode!
 func (opts *Options) SetRowCache(cache *Cache) {
 	C.rocksdb_options_set_row_cache(opts.c, cache.c)
+}
+
+// AddCompactOnDeletionCollectorFactory marks a SST
+// file as need-compaction when it observe at least "D" deletion
+// entries in any "N" consecutive entries or the ratio of tombstone
+// entries in the whole file >= the specified deletion ratio.
+func (opts *Options) AddCompactOnDeletionCollectorFactory(windowSize, numDelsTrigger uint) {
+	C.rocksdb_options_add_compact_on_deletion_collector_factory(opts.c, C.ulong(windowSize), C.ulong(numDelsTrigger))
+}
+
+// SetManualWALFlush if true WAL is not flushed automatically after each write. Instead it
+// relies on manual invocation of db.FlushWAL to write the WAL buffer to its
+// file.
+//
+// Default: false
+func (opts *Options) SetManualWALFlush(v bool) {
+	C.rocksdb_options_set_manual_wal_flush(opts.c, boolToChar(v))
+}
+
+// IsManualWALFlush returns true if WAL is not flushed automatically after each write.
+func (opts *Options) IsManualWALFlush() bool {
+	return charToBool(C.rocksdb_options_get_manual_wal_flush(opts.c))
 }
 
 // SetMaxSequentialSkipInIterations specifies whether an iteration->Next()

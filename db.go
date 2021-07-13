@@ -1150,7 +1150,7 @@ func (db *DB) CompactRangeCFOpt(cf *ColumnFamilyHandle, r Range, opt *CompactRan
 	C.rocksdb_compact_range_cf_opt(db.c, cf.c, opt.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)))
 }
 
-// Flush triggers a manuel flush for the database.
+// Flush triggers a manual flush for the database.
 func (db *DB) Flush(opts *FlushOptions) (err error) {
 	var cErr *C.char
 
@@ -1160,11 +1160,22 @@ func (db *DB) Flush(opts *FlushOptions) (err error) {
 	return
 }
 
-// FlushCF triggers a manuel flush for the database on specific column family.
+// FlushCF triggers a manual flush for the database on specific column family.
 func (db *DB) FlushCF(cf *ColumnFamilyHandle, opts *FlushOptions) (err error) {
 	var cErr *C.char
 
 	C.rocksdb_flush_cf(db.c, opts.c, cf.c, &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// FlushWAL flushes the WAL memory buffer to the file. If sync is true, it calls SyncWAL
+// afterwards.
+func (db *DB) FlushWAL(sync bool) (err error) {
+	var cErr *C.char
+
+	C.rocksdb_flush_wal(db.c, boolToChar(sync), &cErr)
 	err = fromCError(cErr)
 
 	return

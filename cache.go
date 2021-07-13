@@ -13,6 +13,11 @@ func NewLRUCache(capacity uint64) *Cache {
 	return NewNativeCache(C.rocksdb_cache_create_lru(C.size_t(capacity)))
 }
 
+// NewLRUCacheWithOptions creates a new LRU Cache from options.
+func NewLRUCacheWithOptions(opt *LRUCacheOptions) *Cache {
+	return NewNativeCache(C.rocksdb_cache_create_lru_opts(opt.c))
+}
+
 // NewNativeCache creates a Cache object.
 func NewNativeCache(c *C.rocksdb_cache_t) *Cache {
 	return &Cache{c}
@@ -51,4 +56,30 @@ func (c *Cache) DisownData() {
 func (c *Cache) Destroy() {
 	C.rocksdb_cache_destroy(c.c)
 	c.c = nil
+}
+
+// LRUCacheOptions are options for LRU Cache.
+type LRUCacheOptions struct {
+	c *C.rocksdb_lru_cache_options_t
+}
+
+// NewLRUCacheOptions creates lru cache options.
+func NewLRUCacheOptions() *LRUCacheOptions {
+	return &LRUCacheOptions{c: C.rocksdb_lru_cache_options_create()}
+}
+
+// Destroy lru cache options.
+func (l *LRUCacheOptions) Destroy() {
+	C.rocksdb_lru_cache_options_destroy(l.c)
+	l.c = nil
+}
+
+// SetCapacity sets capacity for this lru cache.
+func (l *LRUCacheOptions) SetCapacity(s uint) {
+	C.rocksdb_lru_cache_options_set_capacity(l.c, C.ulong(s))
+}
+
+// SetMemoryAllocator for this lru cache.
+func (l *LRUCacheOptions) SetMemoryAllocator(m *MemoryAllocator) {
+	C.rocksdb_lru_cache_options_set_memory_allocator(l.c, m.c)
 }
