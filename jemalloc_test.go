@@ -1,3 +1,5 @@
+// +build !builtin_static jemalloc
+
 package grocksdb
 
 import (
@@ -7,6 +9,7 @@ import (
 )
 
 func TestMemAlloc(t *testing.T) {
-	_, err := CreateJemallocNodumpAllocator()
-	require.Error(t, err)
+	m, err := CreateJemallocNodumpAllocator()
+	require.NoError(t, err)
+	m.Destroy()
 }

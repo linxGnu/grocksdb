@@ -1,4 +1,4 @@
-// +build builtin_static !static
+// +build builtin_static
 
 package grocksdb
 
