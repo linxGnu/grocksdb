@@ -901,13 +901,13 @@ func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFami
 //
 // CONSTRAINTS:
 // Not specifying/passing or non-positive TTL behaves like TTL = infinity
-func (db *DB) CreateColumnFamilyWithTTL(opts *Options, name string, ttl C.int) (handle *ColumnFamilyHandle, err error) {
+func (db *DB) CreateColumnFamilyWithTTL(opts *Options, name string, ttl int) (handle *ColumnFamilyHandle, err error) {
 	var (
 		cErr  *C.char
 		cName = C.CString(name)
 	)
 
-	cHandle := C.rocksdb_create_column_family_with_ttl(db.c, opts.c, cName, ttl, &cErr)
+	cHandle := C.rocksdb_create_column_family_with_ttl(db.c, opts.c, cName, C.int(ttl), &cErr)
 	if err = fromCError(cErr); err == nil {
 		handle = NewNativeColumnFamilyHandle(cHandle)
 	}
