@@ -21,7 +21,7 @@ ENV CFLAGS='-fPIC -O3 -pipe'
 ENV CXXFLAGS='-fPIC -O3 -pipe'
 
 # install go
-ENV GOLANG_PACKAGE go1.16.4.linux-amd64.tar.gz
+ENV GOLANG_PACKAGE go1.17.2.linux-amd64.tar.gz
 
 RUN curl https://dl.google.com/go/${GOLANG_PACKAGE} -o ${GOLANG_PACKAGE} && \
     tar -C /usr/local -xzf ${GOLANG_PACKAGE} && rm ${GOLANG_PACKAGE}
