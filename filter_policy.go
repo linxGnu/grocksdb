@@ -71,6 +71,31 @@ func NewBloomFilterFull(bitsPerKey int) FilterPolicy {
 	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom_full(C.int(bitsPerKey)))
 }
 
+// NewRibbonFilterPolicy create a new Bloom alternative that saves about 30% space compared to
+// Bloom filters, with similar query times but roughly 3-4x CPU time
+// and 3x temporary space usage during construction. For example, if
+// you pass in 10 for bloom_equivalent_bits_per_key, you'll get the same
+// 0.95% FP rate as Bloom filter but only using about 7 bits per key.
+//
+// Ribbon filters are compatible with RocksDB >= 6.15.0. Earlier
+// versions reading the data will behave as if no filter was used
+// (degraded performance until compaction rebuilds filters). All
+// built-in FilterPolicies (Bloom or Ribbon) are able to read other
+// kinds of built-in filters.
+//
+// Note: the current Ribbon filter schema uses some extra resources
+// when constructing very large filters. For example, for 100 million
+// keys in a single filter (one SST file without partitioned filters),
+// 3GB of temporary, untracked memory is used, vs. 1GB for Bloom.
+// However, the savings in filter space from just ~60 open SST files
+// makes up for the additional temporary memory use.
+//
+// Also consider using optimize_filters_for_memory to save filter
+// memory.
+func NewRibbonFilterPolicy(bloom_equivalent_bits_per_key int) FilterPolicy {
+	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon(C.int(bloom_equivalent_bits_per_key)))
+}
+
 // Hold references to filter policies.
 var filterPolicies = NewCOWList()
 
