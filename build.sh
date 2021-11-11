@@ -29,7 +29,7 @@ cd $BUILD_PATH && wget https://github.com/lz4/lz4/archive/v${lz4_version}.tar.gz
 zstd_version="1.5.0"
 cd $BUILD_PATH && wget https://github.com/facebook/zstd/archive/v${zstd_version}.tar.gz && tar xzf v${zstd_version}.tar.gz && \
     cd zstd-${zstd_version}/build/cmake && mkdir -p build_place && cd build_place && \
-    cmake -DZSTD_BUILD_PROGRAMS=OFF -DZSTD_BUILD_CONTRIB=OFF -DZSTD_BUILD_STATIC=ON -DZSTD_BUILD_SHARED=OFF -DZSTD_BUILD_TESTS=OFF \
+    cmake $CMAKE_REQUIRED_PARAMS -DZSTD_BUILD_PROGRAMS=OFF -DZSTD_BUILD_CONTRIB=OFF -DZSTD_BUILD_STATIC=ON -DZSTD_BUILD_SHARED=OFF -DZSTD_BUILD_TESTS=OFF \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DZSTD_ZLIB_SUPPORT=ON -DZSTD_LZMA_SUPPORT=OFF -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc) install && \
     cd $BUILD_PATH && rm -rf * && ldconfig
 
