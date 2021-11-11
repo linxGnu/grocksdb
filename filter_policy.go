@@ -52,8 +52,8 @@ func (fp nativeFilterPolicy) Destroy() {
 // ignores trailing spaces, it would be incorrect to use a
 // FilterPolicy (like NewBloomFilterPolicy) that does not ignore
 // trailing spaces in keys.
-func NewBloomFilter(bitsPerKey int) FilterPolicy {
-	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom(C.int(bitsPerKey)))
+func NewBloomFilter(bitsPerKey float64) FilterPolicy {
+	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom(C.double(bitsPerKey)))
 }
 
 // NewBloomFilterFull returns a new filter policy that uses a full bloom filter
@@ -67,15 +67,29 @@ func NewBloomFilter(bitsPerKey int) FilterPolicy {
 // ignores trailing spaces, it would be incorrect to use a
 // FilterPolicy (like NewBloomFilterPolicy) that does not ignore
 // trailing spaces in keys.
-func NewBloomFilterFull(bitsPerKey int) FilterPolicy {
-	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom_full(C.int(bitsPerKey)))
+func NewBloomFilterFull(bitsPerKey float64) FilterPolicy {
+	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom_full(C.double(bitsPerKey)))
 }
 
-// NewRibbonFilterPolicy create a new Bloom alternative that saves about 30% space compared to
+// NewRibbonFilterPolicy creates a new Bloom alternative that saves about 30% space compared to
 // Bloom filters, with similar query times but roughly 3-4x CPU time
-// and 3x temporary space usage during construction. For example, if
+// and 3x temporary space usage during construction.  For example, if
 // you pass in 10 for bloom_equivalent_bits_per_key, you'll get the same
 // 0.95% FP rate as Bloom filter but only using about 7 bits per key.
+//
+// The space savings of Ribbon filters makes sense for lower (higher
+// numbered; larger; longer-lived) levels of LSM, whereas the speed of
+// Bloom filters make sense for highest levels of LSM. Setting
+// bloom_before_level allows for this design with Level and Universal
+// compaction styles. For example, bloom_before_level=1 means that Bloom
+// filters will be used in level 0, including flushes, and Ribbon
+// filters elsewhere, including FIFO compaction and external SST files.
+// For this option, memtable flushes are considered level -1 (so that
+// flushes can be distinguished from intra-L0 compaction).
+// bloom_before_level=0 (default) -> Generate Bloom filters only for
+// flushes under Level and Universal compaction styles.
+// bloom_before_level=-1 -> Always generate Ribbon filters (except in
+// some extreme or exceptional cases).
 //
 // Ribbon filters are compatible with RocksDB >= 6.15.0. Earlier
 // versions reading the data will behave as if no filter was used
@@ -92,8 +106,8 @@ func NewBloomFilterFull(bitsPerKey int) FilterPolicy {
 //
 // Also consider using optimize_filters_for_memory to save filter
 // memory.
-func NewRibbonFilterPolicy(bloom_equivalent_bits_per_key int) FilterPolicy {
-	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon(C.int(bloom_equivalent_bits_per_key)))
+func NewRibbonFilterPolicy(bitsPerKey float64, _bloomBeforeLevel int) FilterPolicy {
+	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon(C.double(bitsPerKey)))
 }
 
 // Hold references to filter policies.

@@ -732,7 +732,7 @@ func (db *DB) MergeCF(opts *WriteOptions, cf *ColumnFamilyHandle, key []byte, va
 	return
 }
 
-// Write writes a WriteBatch to the database
+// Write a batch to the database.
 func (db *DB) Write(opts *WriteOptions, batch *WriteBatch) (err error) {
 	var cErr *C.char
 
@@ -742,7 +742,7 @@ func (db *DB) Write(opts *WriteOptions, batch *WriteBatch) (err error) {
 	return
 }
 
-// WriteWI writes a WriteBatchWI to the database
+// WriteWI writes a batch wi to the database.
 func (db *DB) WriteWI(opts *WriteOptions, batch *WriteBatchWI) (err error) {
 	var cErr *C.char
 

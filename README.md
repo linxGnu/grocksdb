@@ -46,22 +46,11 @@ go build // if prerequisites are in linker paths
 
 See also: [doc](https://godoc.org/github.com/linxGnu/grocksdb)
 
-## Builtin Static
-
-grocksdb bundles static version of RocksDB, build with env:
-- centos 7 x86_64
-- gcc 4.8
-
-You could give it a try:
-
-```
-go get -u github.com/linxGnu/grocksdb
-
-go build -tags builtin_static
-```
-
 ## API Support
 
 Almost C API, excepts:
 - [ ] putv/mergev/deletev/delete_rangev
 - [ ] compaction_filter/compaction_filter_factory/compaction_filter_context
+- [ ] transactiondb_property_value/transactiondb_property_int
+- [ ] optimistictransactiondb_write/optimistictransactiondb_checkpoint_object_create/optimistictransactiondb_property_value/optimistictransactiondb_property_int
+
