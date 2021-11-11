@@ -113,6 +113,15 @@ func (db *OptimisticTransactionDB) TransactionBegin(
 		db.c, opts.c, transactionOpts.c, nil))
 }
 
+func (db *OptimisticTransactionDB) Write(opts *WriteOptions, batch *WriteBatch) (err error) {
+	var cErr *C.char
+
+	C.rocksdb_optimistictransactiondb_write(db.c, opts.c, batch.c, &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
 // Close closes the database.
 func (db *OptimisticTransactionDB) Close() {
 	C.rocksdb_optimistictransactiondb_close(db.c)

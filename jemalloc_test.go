@@ -1,4 +1,4 @@
-// +build !builtin_static jemalloc
+// +build !testing,jemalloc
 
 package grocksdb
 
