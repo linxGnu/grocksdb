@@ -52,5 +52,4 @@ Almost C API, excepts:
 - [ ] putv/mergev/deletev/delete_rangev
 - [ ] compaction_filter/compaction_filter_factory/compaction_filter_context
 - [ ] transactiondb_property_value/transactiondb_property_int
-- [ ] optimistictransactiondb_write/optimistictransactiondb_checkpoint_object_create/optimistictransactiondb_property_value/optimistictransactiondb_property_int
-
+- [ ] optimistictransactiondb_property_value/optimistictransactiondb_property_int

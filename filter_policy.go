@@ -106,8 +106,8 @@ func NewBloomFilterFull(bitsPerKey float64) FilterPolicy {
 //
 // Also consider using optimize_filters_for_memory to save filter
 // memory.
-func NewRibbonFilterPolicy(bitsPerKey float64) FilterPolicy {
-	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon(C.double(bitsPerKey)))
+func NewRibbonFilterPolicy(bitsPerKey float64, bloomBeforeLevel int) FilterPolicy {
+	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon_hybrid(C.double(bitsPerKey), C.int(bloomBeforeLevel)))
 }
 
 // Hold references to filter policies.
