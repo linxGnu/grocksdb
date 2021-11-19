@@ -31,4 +31,8 @@ func TestOptionBlobFile(t *testing.T) {
 	require.EqualValues(t, 0.25, opt.GetBlobGCAgeCutoff())
 	opt.SetBlobGCAgeCutoff(0.3)
 	require.EqualValues(t, 0.3, opt.GetBlobGCAgeCutoff())
+
+	require.EqualValues(t, 1.0, opt.GetBlobGCForceThreshold())
+	opt.SetBlobGCForceThreshold(1.3)
+	require.EqualValues(t, 1.3, opt.GetBlobGCForceThreshold())
 }
