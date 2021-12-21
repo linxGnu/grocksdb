@@ -376,14 +376,14 @@ func TestOptions(t *testing.T) {
 }
 
 func TestOptions2(t *testing.T) {
-	t.Run("SetUniversalCompactionOpts", func(t *testing.T) {
+	t.Run("SetUniversalCompactionOpts", func(*testing.T) {
 		opts := NewDefaultOptions()
 		defer opts.Destroy()
 
 		opts.SetUniversalCompactionOptions(NewDefaultUniversalCompactionOptions())
 	})
 
-	t.Run("SetFifoCompactionOpts", func(t *testing.T) {
+	t.Run("SetFifoCompactionOpts", func(*testing.T) {
 		opts := NewDefaultOptions()
 		defer opts.Destroy()
 

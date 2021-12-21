@@ -52,14 +52,14 @@ func TestDBCRUD(t *testing.T) {
 
 	// retrieve pinned
 	for i := 0; i < 1000; i++ {
-		v3, err := db.GetPinned(ro, givenKey)
-		require.Nil(t, err)
+		v3, e := db.GetPinned(ro, givenKey)
+		require.Nil(t, e)
 		require.EqualValues(t, v3.Data(), givenVal2)
 		v3.Destroy()
 		v3.Destroy()
 
-		v3NE, err := db.GetPinned(ro, []byte("justFake"))
-		require.Nil(t, err)
+		v3NE, e := db.GetPinned(ro, []byte("justFake"))
+		require.Nil(t, e)
 		require.False(t, v3NE.Exists())
 		v3NE.Destroy()
 		v3NE.Destroy()
@@ -203,9 +203,9 @@ func newTestDBPathNames(t *testing.T, name string, names []string, targetSizes [
 
 	paths := make([]string, len(names))
 	for i, name := range names {
-		dir, err := ioutil.TempDir("", "gorocksdb-"+name)
-		require.Nil(t, err)
-		paths[i] = dir
+		directory, e := ioutil.TempDir("", "gorocksdb-"+name)
+		require.Nil(t, e)
+		paths[i] = directory
 	}
 
 	dbpaths := NewDBPathsFromData(paths, targetSizes)

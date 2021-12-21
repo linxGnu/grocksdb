@@ -95,7 +95,7 @@ func TestTransactionDBCRUD(t *testing.T) {
 
 func TestTransactionDBGetForUpdate(t *testing.T) {
 	lockTimeoutMilliSec := int64(50)
-	applyOpts := func(opts *Options, transactionDBOpts *TransactionDBOptions) {
+	applyOpts := func(_ *Options, transactionDBOpts *TransactionDBOptions) {
 		transactionDBOpts.SetTransactionLockTimeout(lockTimeoutMilliSec)
 	}
 	db := newTestTransactionDB(t, "TestOpenTransactionDb", applyOpts)

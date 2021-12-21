@@ -2034,6 +2034,27 @@ func (opts *Options) GetBlobGCAgeCutoff() float64 {
 	return float64(C.rocksdb_options_get_blob_gc_age_cutoff(opts.c))
 }
 
+// SetBlobGCForceThreshold if the ratio of garbage in the oldest blob files exceeds this threshold,
+// targeted compactions are scheduled in order to force garbage collecting
+// the blob files in question, assuming they are all eligible based on the
+// value of blob_garbage_collection_age_cutoff above. This option is
+// currently only supported with leveled compactions.
+// Note that enable_blob_garbage_collection has to be set in order for this
+// option to have any effect.
+//
+// Default: 1.0
+func (opts *Options) SetBlobGCForceThreshold(val float64) {
+	C.rocksdb_options_set_blob_gc_force_threshold(opts.c, C.double(val))
+}
+
+// GetBlobGCForceThreshold get the threshold for ratio of garbage in the oldest blob files.
+// See also: `SetBlobGCForceThreshold`
+//
+// Default: 1.0
+func (opts *Options) GetBlobGCForceThreshold() float64 {
+	return float64(C.rocksdb_options_get_blob_gc_force_threshold(opts.c))
+}
+
 // SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
 // to maintain in memory including copies of buffers that have already been flushed.
 // Unlike max_write_buffer_number, this parameter does not affect flushing.
