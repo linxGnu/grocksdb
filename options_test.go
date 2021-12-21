@@ -370,6 +370,10 @@ func TestOptions(t *testing.T) {
 	opts.SetManualWALFlush(true)
 	require.True(t, opts.IsManualWALFlush())
 
+	require.EqualValues(t, 0, opts.GetBlobCompactionReadaheadSize())
+	opts.SetBlobCompactionReadaheadSize(123)
+	require.EqualValues(t, 123, opts.GetBlobCompactionReadaheadSize())
+
 	// cloning
 	cl := opts.Clone()
 	require.EqualValues(t, 5, cl.GetTableCacheNumshardbits())
