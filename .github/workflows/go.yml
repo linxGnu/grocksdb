@@ -33,7 +33,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: dist
-          key: v6.26.1
+          key: v6.27.3
 
       - name: Build
         if: steps.cache-built-rocksdb.outputs.cache-hit != 'true'

@@ -3,6 +3,7 @@ package grocksdb
 // #include "rocksdb/c.h"
 // #include "grocksdb.h"
 import "C"
+
 import (
 	"unsafe"
 )
@@ -501,7 +502,13 @@ func (opts *Options) GetCompression() CompressionType {
 
 // SetCompressionOptions sets different options for compression algorithms.
 func (opts *Options) SetCompressionOptions(value CompressionOptions) {
-	C.rocksdb_options_set_compression_options(opts.c, C.int(value.WindowBits), C.int(value.Level), C.int(value.Strategy), C.int(value.MaxDictBytes))
+	C.rocksdb_options_set_compression_options(
+		opts.c,
+		C.int(value.WindowBits),
+		C.int(value.Level),
+		C.int(value.Strategy),
+		C.int(value.MaxDictBytes),
+	)
 }
 
 // SetBottommostCompression sets the compression algorithm for
@@ -520,7 +527,14 @@ func (opts *Options) GetBottommostCompression() CompressionType {
 //
 // `enabled` true to use these compression options.
 func (opts *Options) SetBottommostCompressionOptions(value CompressionOptions, enabled bool) {
-	C.rocksdb_options_set_bottommost_compression_options(opts.c, C.int(value.WindowBits), C.int(value.Level), C.int(value.Strategy), C.int(value.MaxDictBytes), boolToChar(enabled))
+	C.rocksdb_options_set_bottommost_compression_options(
+		opts.c,
+		C.int(value.WindowBits),
+		C.int(value.Level),
+		C.int(value.Strategy),
+		C.int(value.MaxDictBytes),
+		boolToChar(enabled),
+	)
 }
 
 // SetCompressionPerLevel sets different compression algorithm per level.
@@ -652,7 +666,11 @@ func (opts *Options) SetBottommostCompressionOptionsZstdMaxTrainBytes(value int,
 //
 // Default: 0 (unlimited)
 func (opts *Options) SetBottommostCompressionOptionsMaxDictBufferBytes(value uint64, enabled bool) {
-	C.rocksdb_options_set_bottommost_compression_options_max_dict_buffer_bytes(opts.c, C.uint64_t(value), boolToChar(enabled))
+	C.rocksdb_options_set_bottommost_compression_options_max_dict_buffer_bytes(
+		opts.c,
+		C.uint64_t(value),
+		boolToChar(enabled),
+	)
 }
 
 // SetMinLevelToCompress sets the start level to use compression.
@@ -1763,7 +1781,12 @@ func (opts *Options) SetMemtableVectorRep() {
 // skiplistBranchingFactor: probabilistic size ratio between adjacent
 //                          link lists in the skiplist
 func (opts *Options) SetHashSkipListRep(bucketCount uint, skiplistHeight, skiplistBranchingFactor int32) {
-	C.rocksdb_options_set_hash_skip_list_rep(opts.c, C.size_t(bucketCount), C.int32_t(skiplistHeight), C.int32_t(skiplistBranchingFactor))
+	C.rocksdb_options_set_hash_skip_list_rep(
+		opts.c,
+		C.size_t(bucketCount),
+		C.int32_t(skiplistHeight),
+		C.int32_t(skiplistBranchingFactor),
+	)
 }
 
 // SetHashLinkListRep sets a hashed linked list as MemTableRep.
@@ -1792,8 +1815,19 @@ func (opts *Options) SetHashLinkListRep(bucketCount uint) {
 //                  in the hash table
 // indexSparseness: inside each prefix, need to build one index record for how
 //                  many keys for binary search inside each hash bucket.
-func (opts *Options) SetPlainTableFactory(keyLen uint32, bloomBitsPerKey int, hashTableRatio float64, indexSparseness uint) {
-	C.rocksdb_options_set_plain_table_factory(opts.c, C.uint32_t(keyLen), C.int(bloomBitsPerKey), C.double(hashTableRatio), C.size_t(indexSparseness))
+func (opts *Options) SetPlainTableFactory(
+	keyLen uint32,
+	bloomBitsPerKey int,
+	hashTableRatio float64,
+	indexSparseness uint,
+) {
+	C.rocksdb_options_set_plain_table_factory(
+		opts.c,
+		C.uint32_t(keyLen),
+		C.int(bloomBitsPerKey),
+		C.double(hashTableRatio),
+		C.size_t(indexSparseness),
+	)
 }
 
 // SetCreateIfMissingColumnFamilies specifies whether the column families
@@ -2053,6 +2087,20 @@ func (opts *Options) SetBlobGCForceThreshold(val float64) {
 // Default: 1.0
 func (opts *Options) GetBlobGCForceThreshold() float64 {
 	return float64(C.rocksdb_options_get_blob_gc_force_threshold(opts.c))
+}
+
+// SetBlobCompactionReadaheadSize sets compaction readahead for blob files.
+//
+// Default: 0
+//
+// Dynamically changeable through the SetOptions() API.
+func (opts *Options) SetBlobCompactionReadaheadSize(val uint64) {
+	C.rocksdb_options_set_blob_compaction_readahead_size(opts.c, C.uint64_t(val))
+}
+
+// GetBlobCompactionReadaheadSize returns compaction readahead size for blob files.
+func (opts *Options) GetBlobCompactionReadaheadSize() uint64 {
+	return uint64(C.rocksdb_options_get_blob_compaction_readahead_size(opts.c))
 }
 
 // SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
