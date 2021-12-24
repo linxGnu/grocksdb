@@ -1,6 +1,7 @@
 package grocksdb
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -28,6 +29,35 @@ func TestIterator(t *testing.T) {
 	}
 	require.Nil(t, iter.Err())
 	require.EqualValues(t, actualKeys, givenKeys)
+}
+
+func TestIteratorWriteManyThenIter(t *testing.T) {
+	db := newTestDB(t, "TestIteratorMany", nil)
+	defer db.Close()
+
+	numKey := 10_000
+
+	// insert keys
+	wo := NewDefaultWriteOptions()
+	for i := 0; i < numKey; i++ {
+		require.Nil(t, db.Put(wo, []byte(fmt.Sprintf("key_%d", i)), []byte("val")))
+	}
+
+	for attempt := 0; attempt < 400; attempt++ {
+		ro := NewDefaultReadOptions()
+		ro.SetIterateUpperBound([]byte("keya"))
+
+		iter, count := db.NewIterator(ro), 0
+		for iter.SeekToFirst(); iter.Valid(); iter.Next() {
+			count++
+		}
+
+		require.NoError(t, iter.Err())
+		require.EqualValues(t, numKey, count)
+
+		ro.Destroy()
+		iter.Close()
+	}
 }
 
 func TestIteratorCF(t *testing.T) {

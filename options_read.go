@@ -22,7 +22,9 @@ const (
 // ReadOptions represent all of the available options when reading from a
 // database.
 type ReadOptions struct {
-	c *C.rocksdb_readoptions_t
+	c              *C.rocksdb_readoptions_t
+	iterUpperBound []byte
+	iterLowerBound []byte
 }
 
 // NewDefaultReadOptions creates a default ReadOptions object.
@@ -32,7 +34,7 @@ func NewDefaultReadOptions() *ReadOptions {
 
 // NewNativeReadOptions creates a ReadOptions object.
 func NewNativeReadOptions(c *C.rocksdb_readoptions_t) *ReadOptions {
-	return &ReadOptions{c}
+	return &ReadOptions{c: c}
 }
 
 // SetVerifyChecksums specify if all data read from underlying storage will be
@@ -85,6 +87,7 @@ func (opts *ReadOptions) SetSnapshot(snap *Snapshot) {
 // implemented.
 // Default: nullptr
 func (opts *ReadOptions) SetIterateUpperBound(key []byte) {
+	opts.iterUpperBound = key
 	cKey := byteToChar(key)
 	cKeyLen := C.size_t(len(key))
 	C.rocksdb_readoptions_set_iterate_upper_bound(opts.c, cKey, cKeyLen)
@@ -99,6 +102,7 @@ func (opts *ReadOptions) SetIterateUpperBound(key []byte) {
 // outside of prefix domain.
 // Default: nullptr
 func (opts *ReadOptions) SetIterateLowerBound(key []byte) {
+	opts.iterLowerBound = key
 	cKey := byteToChar(key)
 	cKeyLen := C.size_t(len(key))
 	C.rocksdb_readoptions_set_iterate_lower_bound(opts.c, cKey, cKeyLen)
@@ -292,4 +296,6 @@ func (opts *ReadOptions) GetIOTimeout() uint64 {
 func (opts *ReadOptions) Destroy() {
 	C.rocksdb_readoptions_destroy(opts.c)
 	opts.c = nil
+	opts.iterUpperBound = nil
+	opts.iterLowerBound = nil
 }
