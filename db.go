@@ -3,15 +3,14 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+
 import (
 	"fmt"
 	"unsafe"
 )
 
-var (
-	// ErrColumnFamilyMustMatch indicates number of column family names and options must match.
-	ErrColumnFamilyMustMatch = fmt.Errorf("must provide the same number of column family names and options")
-)
+// ErrColumnFamilyMustMatch indicates number of column family names and options must match.
+var ErrColumnFamilyMustMatch = fmt.Errorf("must provide the same number of column family names and options")
 
 // Range is a range of keys in the database. GetApproximateSizes calls with it
 // begin at the key Start and end right before the key Limit.
@@ -1078,13 +1077,14 @@ func (db *DB) SetOptionsCF(cf *ColumnFamilyHandle, keys, values []string) (err e
 
 // LiveFileMetadata is a metadata which is associated with each SST file.
 type LiveFileMetadata struct {
-	Name        string
-	Level       int
-	Size        int64
-	SmallestKey []byte
-	LargestKey  []byte
-	Entries     uint64 // number of entries
-	Deletions   uint64 // number of deletions
+	Name             string
+	ColumnFamilyName string
+	Level            int
+	Size             int64
+	SmallestKey      []byte
+	LargestKey       []byte
+	Entries          uint64 // number of entries
+	Deletions        uint64 // number of deletions
 }
 
 // GetLiveFilesMetaData returns a list of all table files with their
@@ -1097,6 +1097,7 @@ func (db *DB) GetLiveFilesMetaData() []LiveFileMetadata {
 	for i := C.int(0); i < count; i++ {
 		var liveFile LiveFileMetadata
 		liveFile.Name = C.GoString(C.rocksdb_livefiles_name(lf, i))
+		liveFile.ColumnFamilyName = C.GoString(C.rocksdb_livefiles_column_family_name(lf, i))
 		liveFile.Level = int(C.rocksdb_livefiles_level(lf, i))
 		liveFile.Size = int64(C.rocksdb_livefiles_size(lf, i))
 
