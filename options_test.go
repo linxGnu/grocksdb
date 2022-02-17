@@ -24,9 +24,6 @@ func TestOptions(t *testing.T) {
 	opts.SetMaxBackgroundCompactions(9)
 	require.EqualValues(t, 9, opts.GetMaxBackgroundCompactions())
 
-	opts.SetBaseBackgroundCompactions(4)
-	require.EqualValues(t, 4, opts.GetBaseBackgroundCompactions())
-
 	opts.SetMaxBackgroundFlushes(8)
 	require.EqualValues(t, 8, opts.GetMaxBackgroundFlushes())
 
@@ -42,20 +39,11 @@ func TestOptions(t *testing.T) {
 	opts.SetRecycleLogFileNum(81)
 	require.EqualValues(t, 81, opts.GetRecycleLogFileNum())
 
-	opts.SetSoftRateLimit(0.8)
-	require.EqualValues(t, 0.8, opts.GetSoftRateLimit())
-
-	opts.SetHardRateLimit(0.5)
-	require.EqualValues(t, 0.5, opts.GetHardRateLimit())
-
 	opts.SetSoftPendingCompactionBytesLimit(50 << 18)
 	require.EqualValues(t, 50<<18, opts.GetSoftPendingCompactionBytesLimit())
 
 	opts.SetHardPendingCompactionBytesLimit(50 << 19)
 	require.EqualValues(t, 50<<19, opts.GetHardPendingCompactionBytesLimit())
-
-	opts.SetRateLimitDelayMaxMilliseconds(5000)
-	require.EqualValues(t, 5000, opts.GetRateLimitDelayMaxMilliseconds())
 
 	require.EqualValues(t, uint64(0x40000000), opts.GetMaxManifestFileSize())
 	opts.SetMaxManifestFileSize(23 << 10)
@@ -98,9 +86,6 @@ func TestOptions(t *testing.T) {
 
 	opts.SetIsFdCloseOnExec(true)
 	require.EqualValues(t, true, opts.IsFdCloseOnExec())
-
-	opts.SetSkipLogErrorOnRecovery(true)
-	require.EqualValues(t, true, opts.SkipLogErrorOnRecovery())
 
 	opts.SetStatsDumpPeriodSec(79)
 	require.EqualValues(t, 79, opts.GetStatsDumpPeriodSec())
@@ -306,8 +291,6 @@ func TestOptions(t *testing.T) {
 
 	opts.SetMaxBytesForLevelMultiplierAdditional([]int{2 << 20})
 
-	opts.SetPurgeRedundantKvsWhileFlush(true)
-
 	opts.SetDbLogDir("./abc")
 	opts.SetWalDir("../asdf")
 
@@ -357,9 +340,6 @@ func TestOptions(t *testing.T) {
 	_, err := GetOptionsFromString(nil, "abc")
 	require.Error(t, err)
 
-	// deprecation soon
-	opts.SetTableCacheRemoveScanCountLimit(112)
-
 	opts.SetMaxWriteBufferNumberToMaintain(45)
 	require.EqualValues(t, 45, opts.GetMaxWriteBufferNumberToMaintain())
 
@@ -370,6 +350,10 @@ func TestOptions(t *testing.T) {
 	require.EqualValues(t, 0, opts.GetBlobCompactionReadaheadSize())
 	opts.SetBlobCompactionReadaheadSize(123)
 	require.EqualValues(t, 123, opts.GetBlobCompactionReadaheadSize())
+
+	require.EqualValues(t, 0, opts.GetWALCompression())
+	opts.SetWALCompression(LZ4Compression)
+	require.EqualValues(t, LZ4Compression, opts.GetWALCompression())
 
 	// cloning
 	cl := opts.Clone()

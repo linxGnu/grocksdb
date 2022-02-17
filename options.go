@@ -1121,50 +1121,6 @@ func (opts *Options) GetKeepLogFileNum() uint {
 	return uint(C.rocksdb_options_get_keep_log_file_num(opts.c))
 }
 
-// SetSoftRateLimit sets the soft rate limit.
-//
-// Puts are delayed 0-1 ms when any level has a compaction score that exceeds
-// soft_rate_limit. This is ignored when == 0.0.
-// CONSTRAINT: soft_rate_limit <= hard_rate_limit. If this constraint does not
-// hold, RocksDB will set soft_rate_limit = hard_rate_limit
-// Default: 0.0 (disabled)
-func (opts *Options) SetSoftRateLimit(value float64) {
-	C.rocksdb_options_set_soft_rate_limit(opts.c, C.double(value))
-}
-
-// GetSoftRateLimit returns setting for soft rate limit.
-func (opts *Options) GetSoftRateLimit() float64 {
-	return float64(C.rocksdb_options_get_soft_rate_limit(opts.c))
-}
-
-// SetHardRateLimit sets the hard rate limit.
-//
-// Puts are delayed 1ms at a time when any level has a compaction score that
-// exceeds hard_rate_limit. This is ignored when <= 1.0.
-// Default: 0.0 (disabled)
-func (opts *Options) SetHardRateLimit(value float64) {
-	C.rocksdb_options_set_hard_rate_limit(opts.c, C.double(value))
-}
-
-// GetHardRateLimit returns setting for hard rate limit.
-func (opts *Options) GetHardRateLimit() float64 {
-	return float64(C.rocksdb_options_get_hard_rate_limit(opts.c))
-}
-
-// SetRateLimitDelayMaxMilliseconds sets the max time
-// a put will be stalled when hard_rate_limit is enforced.
-// If 0, then there is no limit.
-// Default: 1000
-func (opts *Options) SetRateLimitDelayMaxMilliseconds(value uint) {
-	C.rocksdb_options_set_rate_limit_delay_max_milliseconds(opts.c, C.uint(value))
-}
-
-// GetRateLimitDelayMaxMilliseconds sets the max time
-// a put will be stalled when hard_rate_limit is enforced.
-func (opts *Options) GetRateLimitDelayMaxMilliseconds() uint {
-	return uint(C.rocksdb_options_get_rate_limit_delay_max_milliseconds(opts.c))
-}
-
 // SetMaxManifestFileSize sets the maximum manifest file size until is rolled over.
 // The older manifest file be deleted.
 // Default: MAX_INT so that roll-over does not take place.
@@ -1187,22 +1143,6 @@ func (opts *Options) SetTableCacheNumshardbits(value int) {
 // GetTableCacheNumshardbits returns the number of shards used for table cache.
 func (opts *Options) GetTableCacheNumshardbits() int {
 	return int(C.rocksdb_options_get_table_cache_numshardbits(opts.c))
-}
-
-// SetTableCacheRemoveScanCountLimit sets the count limit during a scan.
-//
-// During data eviction of table's LRU cache, it would be inefficient
-// to strictly follow LRU because this piece of memory will not really
-// be released unless its refcount falls to zero. Instead, make two
-// passes: the first pass will release items with refcount = 1,
-// and if not enough space releases after scanning the number of
-// elements specified by this parameter, we will remove items in LRU order.
-//
-// Default: 16
-//
-// Deprecated: this options is no longer used.
-func (opts *Options) SetTableCacheRemoveScanCountLimit(value int) {
-	C.rocksdb_options_set_table_cache_remove_scan_count_limit(opts.c, C.int(value))
 }
 
 // SetArenaBlockSize sets the size of one block in arena memory allocation.
@@ -1327,14 +1267,6 @@ func (opts *Options) GetManifestPreallocationSize() uint64 {
 	return uint64(C.rocksdb_options_get_manifest_preallocation_size(opts.c))
 }
 
-// SetPurgeRedundantKvsWhileFlush enable/disable purging of
-// duplicate/deleted keys when a memtable is flushed to storage.
-//
-// Default: true
-func (opts *Options) SetPurgeRedundantKvsWhileFlush(value bool) {
-	C.rocksdb_options_set_purge_redundant_kvs_while_flush(opts.c, boolToChar(value))
-}
-
 // SetAllowMmapReads enable/disable mmap reads for reading sst tables.
 // Default: false
 func (opts *Options) SetAllowMmapReads(value bool) {
@@ -1390,23 +1322,6 @@ func (opts *Options) SetIsFdCloseOnExec(value bool) {
 // IsFdCloseOnExec returns setting for enable/dsiable child process inherit open files.
 func (opts *Options) IsFdCloseOnExec() bool {
 	return charToBool(C.rocksdb_options_get_is_fd_close_on_exec(opts.c))
-}
-
-// SetSkipLogErrorOnRecovery enable/disable skipping of
-// log corruption error on recovery (If client is ok with
-// losing most recent changes)
-// Default: false
-//
-// Deprecated: this options is no longer used.
-func (opts *Options) SetSkipLogErrorOnRecovery(value bool) {
-	C.rocksdb_options_set_skip_log_error_on_recovery(opts.c, boolToChar(value))
-}
-
-// SkipLogErrorOnRecovery returns setting for enable/disable skipping of
-// log corruption error on recovery (If client is ok with
-// losing most recent changes).
-func (opts *Options) SkipLogErrorOnRecovery() bool {
-	return charToBool(C.rocksdb_options_get_skip_log_error_on_recovery(opts.c))
 }
 
 // SetStatsDumpPeriodSec sets the stats dump period in seconds.
@@ -1631,6 +1546,18 @@ func (opts *Options) SetManualWALFlush(v bool) {
 // IsManualWALFlush returns true if WAL is not flushed automatically after each write.
 func (opts *Options) IsManualWALFlush() bool {
 	return charToBool(C.rocksdb_options_get_manual_wal_flush(opts.c))
+}
+
+// SetWALCompression set compression type for WAL.
+//
+// Default: no compression
+func (opts *Options) SetWALCompression(cType CompressionType) {
+	C.rocksdb_options_set_wal_compression(opts.c, C.int(cType))
+}
+
+// GetWALCompression get compression type of WAL.
+func (opts *Options) GetWALCompression() CompressionType {
+	return CompressionType(C.rocksdb_options_get_wal_compression(opts.c))
 }
 
 // SetMaxSequentialSkipInIterations specifies whether an iteration->Next()
@@ -2349,19 +2276,6 @@ func (opts *Options) SetUnorderedWrite(value bool) {
 // UnorderedWrite checks if unordered_write is turned on.
 func (opts *Options) UnorderedWrite() bool {
 	return charToBool(C.rocksdb_options_get_unordered_write(opts.c))
-}
-
-// SetBaseBackgroundCompactions set base background compactions.
-//
-// Deprecated: RocksDB automatically decides this based on the
-// value of max_background_jobs. This option is ignored.
-func (opts *Options) SetBaseBackgroundCompactions(value int) {
-	C.rocksdb_options_set_base_background_compactions(opts.c, C.int(value))
-}
-
-// GetBaseBackgroundCompactions gets base background compactions setting.
-func (opts *Options) GetBaseBackgroundCompactions() int {
-	return int(C.rocksdb_options_get_base_background_compactions(opts.c))
 }
 
 // SetCuckooTableFactory sets to use cuckoo table factory.
