@@ -166,18 +166,22 @@ func (opts *Options) SetCompactionFilter(value CompactionFilter) {
 }
 
 // SetComparator sets the comparator which define the order of keys in the table.
+// This operation is `move`, thus underlying native c-pointer is owned by Options.
+// `cmp` is no longer usable.
 //
 // Default: a comparator that uses lexicographic byte-wise ordering
-func (opts *Options) SetComparator(value Comparator) {
+func (opts *Options) SetComparator(cmp *Comparator) {
+	cmp_ := unsafe.Pointer(cmp.c)
+	opts.SetNativeComparator(cmp_)
+	cmp.c = nil
+}
+
+// SetNativeComparator sets the comparator which define the order of keys in the table.
+//
+// Default: a comparator that uses lexicographic byte-wise ordering
+func (opts *Options) SetNativeComparator(cmp unsafe.Pointer) {
 	C.rocksdb_comparator_destroy(opts.ccmp)
-
-	if nc, ok := value.(*nativeComparator); ok {
-		opts.ccmp = nc.c
-	} else {
-		idx := registerComperator(value)
-		opts.ccmp = C.gorocksdb_comparator_create(C.uintptr_t(idx))
-	}
-
+	opts.ccmp = (*C.rocksdb_comparator_t)(cmp)
 	C.rocksdb_options_set_comparator(opts.c, opts.ccmp)
 }
 

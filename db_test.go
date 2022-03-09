@@ -166,6 +166,25 @@ func newTestDB(t *testing.T, name string, applyOpts func(opts *Options)) *DB {
 	return db
 }
 
+func newTestDBAndOpts(t *testing.T, name string, applyOpts func(opts *Options)) (*DB, *Options) {
+	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
+	require.Nil(t, err)
+
+	opts := NewDefaultOptions()
+	// test the ratelimiter
+	rateLimiter := NewRateLimiter(1024, 100*1000, 10)
+	opts.SetRateLimiter(rateLimiter)
+	opts.SetCreateIfMissing(true)
+	opts.SetCompression(ZSTDCompression)
+	if applyOpts != nil {
+		applyOpts(opts)
+	}
+	db, err := OpenDb(opts, dir)
+	require.Nil(t, err)
+
+	return db, opts
+}
+
 func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts func(opts *Options)) (db *DB, cfh []*ColumnFamilyHandle, cleanup func()) {
 	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
 	require.Nil(t, err)
