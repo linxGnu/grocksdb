@@ -350,9 +350,6 @@ func TestOptions(t *testing.T) {
 	// set compaction filter
 	opts.SetCompactionFilter(NewNativeCompactionFilter(nil))
 
-	// set comparator
-	opts.SetComparator(NewNativeComparator(nil))
-
 	// set merge operator
 	opts.SetMergeOperator(NewNativeMergeOperator(nil))
 

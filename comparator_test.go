@@ -1,16 +1,22 @@
 package grocksdb
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestComparator(t *testing.T) {
-	db := newTestDB(t, "TestComparator", func(opts *Options) {
-		opts.SetComparator(&testBytesReverseComparator{})
+	db, opts := newTestDBAndOpts(t, "TestComparator", func(opts *Options) {
+		opts.SetComparator(NewComparator("rev", func(a, b []byte) int {
+			return bytes.Compare(a, b) * -1
+		}))
 	})
-	defer db.Close()
+	defer func() {
+		db.Close()
+		opts.Destroy()
+	}()
 
 	// insert keys
 	givenKeys := [][]byte{[]byte("key1"), []byte("key2"), []byte("key3")}

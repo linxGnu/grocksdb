@@ -1,45 +1,39 @@
 package grocksdb
 
 // #include "rocksdb/c.h"
+// #include "grocksdb.h"
 import "C"
+
 import (
 	"bytes"
 )
 
-// A Comparator object provides a total order across slices that are
-// used as keys in an sstable or a database.
-type Comparator interface {
-	// Three-way comparison. Returns value:
-	//   < 0 iff "a" < "b",
-	//   == 0 iff "a" == "b",
-	//   > 0 iff "a" > "b"
-	Compare(a, b []byte) int
+// Comparing functor.
+//
+// Three-way comparison. Returns value:
+//   < 0 iff "a" < "b",
+//   == 0 iff "a" == "b",
+//   > 0 iff "a" > "b"
+type Comparing = func(a, b []byte) int
 
-	// The name of the comparator.
-	Name() string
-
-	// Return native comparator.
-	Native() *C.rocksdb_comparator_t
-
-	// Destroy comparator.
-	Destroy()
+// NewComparator creates a Comparator object which contains native c-comparator pointer.
+func NewComparator(name string, compare Comparing) *Comparator {
+	cmp := &Comparator{name: name, compare: compare}
+	idx := registerComperator(cmp)
+	cmp.c = C.gorocksdb_comparator_create(C.uintptr_t(idx))
+	return cmp
 }
 
-// NewNativeComparator creates a Comparator object.
-func NewNativeComparator(c *C.rocksdb_comparator_t) Comparator {
-	return &nativeComparator{c}
+// NativeComparator wraps c-comparator pointer.
+type Comparator struct {
+	c       *C.rocksdb_comparator_t
+	compare Comparing
+	name    string
 }
 
-type nativeComparator struct {
-	c *C.rocksdb_comparator_t
-}
-
-func (c *nativeComparator) Compare(a, b []byte) int { return 0 }
-func (c *nativeComparator) Name() string            { return "" }
-func (c *nativeComparator) Native() *C.rocksdb_comparator_t {
-	return c.c
-}
-func (c *nativeComparator) Destroy() {
+func (c *Comparator) Compare(a, b []byte) int { return c.compare(a, b) }
+func (c *Comparator) Name() string            { return c.name }
+func (c *Comparator) Destroy() {
 	C.rocksdb_comparator_destroy(c.c)
 	c.c = nil
 }
@@ -49,10 +43,10 @@ var comperators = NewCOWList()
 
 type comperatorWrapper struct {
 	name       *C.char
-	comparator Comparator
+	comparator *Comparator
 }
 
-func registerComperator(cmp Comparator) int {
+func registerComperator(cmp *Comparator) int {
 	return comperators.Append(comperatorWrapper{C.CString(cmp.Name()), cmp})
 }
 
@@ -75,5 +69,4 @@ func (cmp *testBytesReverseComparator) Name() string { return "grocksdb.bytes-re
 func (cmp *testBytesReverseComparator) Compare(a, b []byte) int {
 	return bytes.Compare(a, b) * -1
 }
-func (cmp *testBytesReverseComparator) Native() *C.rocksdb_comparator_t { return nil }
-func (cmp *testBytesReverseComparator) Destroy()                        {}
+func (cmp *testBytesReverseComparator) Destroy() {}

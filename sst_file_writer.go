@@ -21,8 +21,15 @@ func NewSSTFileWriter(opts *EnvOptions, dbOpts *Options) *SSTFileWriter {
 }
 
 // NewSSTFileWriterWithComparator creates an SSTFileWriter object with comparator.
-func NewSSTFileWriterWithComparator(opts *EnvOptions, dbOpts *Options, cmp Comparator) *SSTFileWriter {
-	c := C.rocksdb_sstfilewriter_create_with_comparator(opts.c, dbOpts.c, cmp.Native())
+func NewSSTFileWriterWithComparator(opts *EnvOptions, dbOpts *Options, cmp *Comparator) *SSTFileWriter {
+	cmp_ := unsafe.Pointer(cmp.c)
+	return NewSSTFileWriterWithNativeComparator(opts, dbOpts, cmp_)
+}
+
+// NewSSTFileWriterWithNativeComparator creates an SSTFileWriter object with native comparator.
+func NewSSTFileWriterWithNativeComparator(opts *EnvOptions, dbOpts *Options, cmp unsafe.Pointer) *SSTFileWriter {
+	cmp_ := (*C.rocksdb_comparator_t)(cmp)
+	c := C.rocksdb_sstfilewriter_create_with_comparator(opts.c, dbOpts.c, cmp_)
 	return &SSTFileWriter{c: c}
 }
 
