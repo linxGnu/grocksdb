@@ -3,42 +3,19 @@ package grocksdb
 // #include "rocksdb/c.h"
 import "C"
 
-// FilterPolicy is a factory type that allows the RocksDB database to create a
-// filter, such as a bloom filter, which will used to reduce reads.
-type FilterPolicy interface {
-	// keys contains a list of keys (potentially with duplicates)
-	// that are ordered according to the user supplied comparator.
-	CreateFilter(keys [][]byte) []byte
-
-	// "filter" contains the data appended by a preceding call to
-	// CreateFilter(). This method must return true if
-	// the key was in the list of keys passed to CreateFilter().
-	// This method may return true or false if the key was not on the
-	// list, but it should aim to return false with a high probability.
-	KeyMayMatch(key []byte, filter []byte) bool
-
-	// Return the name of this policy.
-	Name() string
-
-	// Destroy filter policy object.
-	Destroy()
-}
-
-// NewNativeFilterPolicy creates a FilterPolicy object.
-func NewNativeFilterPolicy(c *C.rocksdb_filterpolicy_t) FilterPolicy {
-	return nativeFilterPolicy{c}
-}
-
-type nativeFilterPolicy struct {
+// NativeFilterPolicy wraps over rocksdb filter policy.
+type NativeFilterPolicy struct {
 	c *C.rocksdb_filterpolicy_t
 }
 
-func (fp nativeFilterPolicy) CreateFilter(keys [][]byte) []byte          { return nil }
-func (fp nativeFilterPolicy) KeyMayMatch(key []byte, filter []byte) bool { return false }
-func (fp nativeFilterPolicy) Name() string                               { return "" }
-func (fp nativeFilterPolicy) Destroy() {
+func (fp *NativeFilterPolicy) Destroy() {
 	C.rocksdb_filterpolicy_destroy(fp.c)
 	fp.c = nil
+}
+
+// creates a FilterPolicy object.
+func newNativeFilterPolicy(c *C.rocksdb_filterpolicy_t) *NativeFilterPolicy {
+	return &NativeFilterPolicy{c}
 }
 
 // NewBloomFilter returns a new filter policy that uses a bloom filter with approximately
@@ -52,8 +29,8 @@ func (fp nativeFilterPolicy) Destroy() {
 // ignores trailing spaces, it would be incorrect to use a
 // FilterPolicy (like NewBloomFilterPolicy) that does not ignore
 // trailing spaces in keys.
-func NewBloomFilter(bitsPerKey float64) FilterPolicy {
-	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom(C.double(bitsPerKey)))
+func NewBloomFilter(bitsPerKey float64) *NativeFilterPolicy {
+	return newNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom(C.double(bitsPerKey)))
 }
 
 // NewBloomFilterFull returns a new filter policy that uses a full bloom filter
@@ -67,29 +44,21 @@ func NewBloomFilter(bitsPerKey float64) FilterPolicy {
 // ignores trailing spaces, it would be incorrect to use a
 // FilterPolicy (like NewBloomFilterPolicy) that does not ignore
 // trailing spaces in keys.
-func NewBloomFilterFull(bitsPerKey float64) FilterPolicy {
-	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom_full(C.double(bitsPerKey)))
+func NewBloomFilterFull(bitsPerKey float64) *NativeFilterPolicy {
+	return newNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom_full(C.double(bitsPerKey)))
 }
 
-// NewRibbonFilterPolicy creates a new Bloom alternative that saves about 30% space compared to
-// Bloom filters, with similar query times but roughly 3-4x CPU time
-// and 3x temporary space usage during construction.  For example, if
-// you pass in 10 for bloom_equivalent_bits_per_key, you'll get the same
+// NewRibbonFilterPolicy creates a new Bloom alternative that saves about
+// 30% space compared to Bloom filters, with similar query times but
+// roughly 3-4x CPU time and 3x temporary space usage during construction.
+//
+// For example:
+// if you pass in 10 for bloom_equivalent_bits_per_key, you'll get the same
 // 0.95% FP rate as Bloom filter but only using about 7 bits per key.
 //
 // The space savings of Ribbon filters makes sense for lower (higher
 // numbered; larger; longer-lived) levels of LSM, whereas the speed of
-// Bloom filters make sense for highest levels of LSM. Setting
-// bloom_before_level allows for this design with Level and Universal
-// compaction styles. For example, bloom_before_level=1 means that Bloom
-// filters will be used in level 0, including flushes, and Ribbon
-// filters elsewhere, including FIFO compaction and external SST files.
-// For this option, memtable flushes are considered level -1 (so that
-// flushes can be distinguished from intra-L0 compaction).
-// bloom_before_level=0 (default) -> Generate Bloom filters only for
-// flushes under Level and Universal compaction styles.
-// bloom_before_level=-1 -> Always generate Ribbon filters (except in
-// some extreme or exceptional cases).
+// Bloom filters make sense for highest levels of LSM.
 //
 // Ribbon filters are compatible with RocksDB >= 6.15.0. Earlier
 // versions reading the data will behave as if no filter was used
@@ -106,44 +75,22 @@ func NewBloomFilterFull(bitsPerKey float64) FilterPolicy {
 //
 // Also consider using optimize_filters_for_memory to save filter
 // memory.
-func NewRibbonFilterPolicy(bitsPerKey float64, bloomBeforeLevel int) FilterPolicy {
-	return NewNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon_hybrid(C.double(bitsPerKey), C.int(bloomBeforeLevel)))
+func NewRibbonFilterPolicy(bloomEquivalentBitsPerKey float64) *NativeFilterPolicy {
+	return newNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon(C.double(bloomEquivalentBitsPerKey)))
 }
 
-// Hold references to filter policies.
-var filterPolicies = NewCOWList()
-
-type filterPolicyWrapper struct {
-	name         *C.char
-	filterPolicy FilterPolicy
-}
-
-func registerFilterPolicy(fp FilterPolicy) int {
-	return filterPolicies.Append(filterPolicyWrapper{C.CString(fp.Name()), fp})
-}
-
-//export gorocksdb_filterpolicy_create_filter
-func gorocksdb_filterpolicy_create_filter(idx int, cKeys **C.char, cKeysLen *C.size_t, cNumKeys C.int, cDstLen *C.size_t) *C.char {
-	rawKeys := charSlice(cKeys, cNumKeys)
-	keysLen := sizeSlice(cKeysLen, cNumKeys)
-	keys := make([][]byte, int(cNumKeys))
-	for i, len := range keysLen {
-		keys[i] = charToByte(rawKeys[i], len)
-	}
-
-	dst := filterPolicies.Get(idx).(filterPolicyWrapper).filterPolicy.CreateFilter(keys)
-	*cDstLen = C.size_t(len(dst))
-	return cByteSlice(dst)
-}
-
-//export gorocksdb_filterpolicy_key_may_match
-func gorocksdb_filterpolicy_key_may_match(idx int, cKey *C.char, cKeyLen C.size_t, cFilter *C.char, cFilterLen C.size_t) C.uchar {
-	key := charToByte(cKey, cKeyLen)
-	filter := charToByte(cFilter, cFilterLen)
-	return boolToChar(filterPolicies.Get(idx).(filterPolicyWrapper).filterPolicy.KeyMayMatch(key, filter))
-}
-
-//export gorocksdb_filterpolicy_name
-func gorocksdb_filterpolicy_name(idx int) *C.char {
-	return filterPolicies.Get(idx).(filterPolicyWrapper).name
+// NewRibbonHybridFilterPolicy similar to Ribbon.
+//
+// Setting bloom_before_level allows for this design with Level and Universal
+// compaction styles. For example, bloom_before_level=1 means that Bloom
+// filters will be used in level 0, including flushes, and Ribbon
+// filters elsewhere, including FIFO compaction and external SST files.
+// For this option, memtable flushes are considered level -1 (so that
+// flushes can be distinguished from intra-L0 compaction).
+// bloom_before_level=0 (default) -> Generate Bloom filters only for
+// flushes under Level and Universal compaction styles.
+// bloom_before_level=-1 -> Always generate Ribbon filters (except in
+// some extreme or exceptional cases).
+func NewRibbonHybridFilterPolicy(bloomEquivalentBitsPerKey float64, bloomBeforeLevel int) *NativeFilterPolicy {
+	return newNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon_hybrid(C.double(bloomEquivalentBitsPerKey), C.int(bloomBeforeLevel)))
 }

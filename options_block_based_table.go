@@ -128,14 +128,13 @@ func (opts *BlockBasedTableOptions) SetBlockRestartInterval(blockRestartInterval
 // SetFilterPolicy sets the filter policy opts reduce disk reads.
 // Many applications will benefit from passing the result of
 // NewBloomFilterPolicy() here.
+//
+// Note: this op is `move`, fp is no longer usable.
+//
 // Default: nil
-func (opts *BlockBasedTableOptions) SetFilterPolicy(fp FilterPolicy) {
-	if nfp, ok := fp.(nativeFilterPolicy); ok {
-		opts.cFp = nfp.c
-	} else {
-		idx := registerFilterPolicy(fp)
-		opts.cFp = C.gorocksdb_filterpolicy_create(C.uintptr_t(idx))
-	}
+func (opts *BlockBasedTableOptions) SetFilterPolicy(fp *NativeFilterPolicy) {
+	opts.cFp = fp.c
+	fp.c = nil
 	C.rocksdb_block_based_options_set_filter_policy(opts.c, opts.cFp)
 }
 
