@@ -28,13 +28,6 @@ jobs:
               dep ensure
           fi
 
-      - name: Cache Built RocksDB
-        id: cache-built-rocksdb
-        uses: actions/cache@v2
-        with:
-          path: dist
-          key: v6.29.3
-
       - name: Build
         if: steps.cache-built-rocksdb.outputs.cache-hit != 'true'
         run: make libs

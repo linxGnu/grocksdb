@@ -39,7 +39,7 @@ func OpenBackupEngine(opts *Options, path string) (be *BackupEngine, err error) 
 }
 
 // OpenBackupEngineWithOpt opens a backup engine with specified options.
-func OpenBackupEngineWithOpt(opts *BackupableDBOptions, env *Env) (be *BackupEngine, err error) {
+func OpenBackupEngineWithOpt(opts *BackupEngineOptions, env *Env) (be *BackupEngine, err error) {
 	var cErr *C.char
 	bEngine := C.rocksdb_backup_engine_open_opts(opts.c, env.c, &cErr)
 	if err = fromCError(cErr); err == nil {

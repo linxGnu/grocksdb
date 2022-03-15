@@ -62,24 +62,24 @@ const (
 	MaskNamingFlags ShareFilesNaming = ^MaskNoNamingFlags
 )
 
-// BackupableDBOptions represents options for backupable db.
-type BackupableDBOptions struct {
-	c *C.rocksdb_backupable_db_options_t
+// BackupEngineOptions represents options for backup engine.
+type BackupEngineOptions struct {
+	c *C.rocksdb_backup_engine_options_t
 }
 
 // NewBackupableDBOptions
-func NewBackupableDBOptions(backupDir string) *BackupableDBOptions {
+func NewBackupableDBOptions(backupDir string) *BackupEngineOptions {
 	cDir := C.CString(backupDir)
-	op := C.rocksdb_backupable_db_options_create(cDir)
+	op := C.rocksdb_backup_engine_options_create(cDir)
 	C.free(unsafe.Pointer(cDir))
-	return &BackupableDBOptions{c: op}
+	return &BackupEngineOptions{c: op}
 }
 
 // SetBackupDir sets where to keep the backup files. Has to be different than dbname_
 // Best to set this to dbname_ + "/backups".
-func (b *BackupableDBOptions) SetBackupDir(dir string) {
+func (b *BackupEngineOptions) SetBackupDir(dir string) {
 	cDir := C.CString(dir)
-	C.rocksdb_backupable_db_options_set_backup_dir(b.c, cDir)
+	C.rocksdb_backup_engine_options_set_backup_dir(b.c, cDir)
 	C.free(unsafe.Pointer(cDir))
 }
 
@@ -87,8 +87,8 @@ func (b *BackupableDBOptions) SetBackupDir(dir string) {
 // nullptr, backups will be written out using DBs Env. If it's
 // non-nullptr, backup's I/O will be performed using this object.
 // If you want to have backups on HDFS, use HDFS Env here!
-func (b *BackupableDBOptions) SetEnv(env *Env) {
-	C.rocksdb_backupable_db_options_set_env(b.c, env.c)
+func (b *BackupEngineOptions) SetEnv(env *Env) {
+	C.rocksdb_backup_engine_options_set_env(b.c, env.c)
 }
 
 // ShareTableFiles if set to true, backup will assume that table files with
@@ -99,8 +99,8 @@ func (b *BackupableDBOptions) SetEnv(env *Env) {
 // not share any data with other backups.
 //
 // Default: true
-func (b *BackupableDBOptions) ShareTableFiles(flag bool) {
-	C.rocksdb_backupable_db_options_set_share_table_files(b.c, boolToChar(flag))
+func (b *BackupEngineOptions) ShareTableFiles(flag bool) {
+	C.rocksdb_backup_engine_options_set_share_table_files(b.c, boolToChar(flag))
 }
 
 // IsShareTableFiles returns if backup will assume that table files with
@@ -109,8 +109,8 @@ func (b *BackupableDBOptions) ShareTableFiles(flag bool) {
 //
 // If false, each backup will be on its own and will
 // not share any data with other backups.
-func (b *BackupableDBOptions) IsShareTableFiles() bool {
-	return charToBool(C.rocksdb_backupable_db_options_get_share_table_files(b.c))
+func (b *BackupEngineOptions) IsShareTableFiles() bool {
+	return charToBool(C.rocksdb_backup_engine_options_get_share_table_files(b.c))
 }
 
 // SetSync if true, we can guarantee you'll get consistent backup even
@@ -120,8 +120,8 @@ func (b *BackupableDBOptions) IsShareTableFiles() bool {
 // chances are some of the backups are consistent.
 //
 // Default: true
-func (b *BackupableDBOptions) SetSync(flag bool) {
-	C.rocksdb_backupable_db_options_set_sync(b.c, boolToChar(flag))
+func (b *BackupEngineOptions) SetSync(flag bool) {
+	C.rocksdb_backup_engine_options_set_sync(b.c, boolToChar(flag))
 }
 
 // IsSync if true, we can guarantee you'll get consistent backup even
@@ -129,20 +129,20 @@ func (b *BackupableDBOptions) SetSync(flag bool) {
 //
 // If false, we don't guarantee anything on machine reboot. However,
 // chances are some of the backups are consistent.
-func (b *BackupableDBOptions) IsSync() bool {
-	return charToBool(C.rocksdb_backupable_db_options_get_sync(b.c))
+func (b *BackupEngineOptions) IsSync() bool {
+	return charToBool(C.rocksdb_backup_engine_options_get_sync(b.c))
 }
 
 // DestroyOldData if true, it will delete whatever backups there are already
 //
 // Default: false
-func (b *BackupableDBOptions) DestroyOldData(flag bool) {
-	C.rocksdb_backupable_db_options_set_destroy_old_data(b.c, boolToChar(flag))
+func (b *BackupEngineOptions) DestroyOldData(flag bool) {
+	C.rocksdb_backup_engine_options_set_destroy_old_data(b.c, boolToChar(flag))
 }
 
 // IsDestroyOldData indicates if we should delete whatever backups there are already.
-func (b *BackupableDBOptions) IsDestroyOldData() bool {
-	return charToBool(C.rocksdb_backupable_db_options_get_destroy_old_data(b.c))
+func (b *BackupEngineOptions) IsDestroyOldData() bool {
+	return charToBool(C.rocksdb_backup_engine_options_get_destroy_old_data(b.c))
 }
 
 // BackupLogFiles if false, we won't backup log files. This option can be useful for backing
@@ -150,71 +150,71 @@ func (b *BackupableDBOptions) IsDestroyOldData() bool {
 // memory.
 //
 // Default: true
-func (b *BackupableDBOptions) BackupLogFiles(flag bool) {
-	C.rocksdb_backupable_db_options_set_backup_log_files(b.c, boolToChar(flag))
+func (b *BackupEngineOptions) BackupLogFiles(flag bool) {
+	C.rocksdb_backup_engine_options_set_backup_log_files(b.c, boolToChar(flag))
 }
 
 // IsBackupLogFiles if false, we won't backup log files. This option can be useful for backing
 // up in-memory databases where log file are persisted, but table files are in
 // memory.
-func (b *BackupableDBOptions) IsBackupLogFiles() bool {
-	return charToBool(C.rocksdb_backupable_db_options_get_backup_log_files(b.c))
+func (b *BackupEngineOptions) IsBackupLogFiles() bool {
+	return charToBool(C.rocksdb_backup_engine_options_get_backup_log_files(b.c))
 }
 
 // SetBackupRateLimit sets max bytes that can be transferred in a second during backup.
 // If 0, go as fast as you can.
 //
 // Default: 0
-func (b *BackupableDBOptions) SetBackupRateLimit(limit uint64) {
-	C.rocksdb_backupable_db_options_set_backup_rate_limit(b.c, C.uint64_t(limit))
+func (b *BackupEngineOptions) SetBackupRateLimit(limit uint64) {
+	C.rocksdb_backup_engine_options_set_backup_rate_limit(b.c, C.uint64_t(limit))
 }
 
 // GetBackupRateLimit gets max bytes that can be transferred in a second during backup.
 // If 0, go as fast as you can.
-func (b *BackupableDBOptions) GetBackupRateLimit() uint64 {
-	return uint64(C.rocksdb_backupable_db_options_get_backup_rate_limit(b.c))
+func (b *BackupEngineOptions) GetBackupRateLimit() uint64 {
+	return uint64(C.rocksdb_backup_engine_options_get_backup_rate_limit(b.c))
 }
 
 // SetRestoreRateLimit sets max bytes that can be transferred in a second during restore.
 // If 0, go as fast as you can
 //
 // Default: 0
-func (b *BackupableDBOptions) SetRestoreRateLimit(limit uint64) {
-	C.rocksdb_backupable_db_options_set_restore_rate_limit(b.c, C.uint64_t(limit))
+func (b *BackupEngineOptions) SetRestoreRateLimit(limit uint64) {
+	C.rocksdb_backup_engine_options_set_restore_rate_limit(b.c, C.uint64_t(limit))
 }
 
 // GetRestoreRateLimit gets max bytes that can be transferred in a second during restore.
 // If 0, go as fast as you can
-func (b *BackupableDBOptions) GetRestoreRateLimit() uint64 {
-	return uint64(C.rocksdb_backupable_db_options_get_restore_rate_limit(b.c))
+func (b *BackupEngineOptions) GetRestoreRateLimit() uint64 {
+	return uint64(C.rocksdb_backup_engine_options_get_restore_rate_limit(b.c))
 }
 
 // SetMaxBackgroundOperations sets max number of background threads will copy files for CreateNewBackup()
 // and RestoreDBFromBackup()
 //
 // Default: 1
-func (b *BackupableDBOptions) SetMaxBackgroundOperations(v int) {
-	C.rocksdb_backupable_db_options_set_max_background_operations(b.c, C.int(v))
+func (b *BackupEngineOptions) SetMaxBackgroundOperations(v int) {
+	C.rocksdb_backup_engine_options_set_max_background_operations(b.c, C.int(v))
 }
 
 // GetMaxBackgroundOperations gets max number of background threads will copy files for CreateNewBackup()
 // and RestoreDBFromBackup()
-func (b *BackupableDBOptions) GetMaxBackgroundOperations() int {
-	return int(C.rocksdb_backupable_db_options_get_max_background_operations(b.c))
+func (b *BackupEngineOptions) GetMaxBackgroundOperations() int {
+	return int(C.rocksdb_backup_engine_options_get_max_background_operations(b.c))
 }
 
 // SetCallbackTriggerIntervalSize sets size (N) during backup user can get callback every time next
 // N bytes being copied.
 //
 // Default: N=4194304
-func (b *BackupableDBOptions) SetCallbackTriggerIntervalSize(size uint64) {
-	C.rocksdb_backupable_db_options_set_callback_trigger_interval_size(b.c, C.uint64_t(size))
+func (b *BackupEngineOptions) SetCallbackTriggerIntervalSize(size uint64) {
+	C.rocksdb_backup_engine_options_set_callback_trigger_interval_size(b.c, C.uint64_t(size))
 }
 
 // GetCallbackTriggerIntervalSize gets size (N) during backup user can get callback every time next
 // N bytes being copied.
-func (b *BackupableDBOptions) GetCallbackTriggerIntervalSize() uint64 {
-	return uint64(C.rocksdb_backupable_db_options_get_callback_trigger_interval_size(b.c))
+func (b *BackupEngineOptions) GetCallbackTriggerIntervalSize() uint64 {
+	return uint64(C.rocksdb_backup_engine_options_get_callback_trigger_interval_size(b.c))
 }
 
 // SetMaxValidBackupsToOpen sets max number of valid backup to open.
@@ -228,8 +228,8 @@ func (b *BackupableDBOptions) GetCallbackTriggerIntervalSize() uint64 {
 // created backups on creation of a new backup.
 //
 // Default: INT_MAX
-func (b *BackupableDBOptions) SetMaxValidBackupsToOpen(val int) {
-	C.rocksdb_backupable_db_options_set_max_valid_backups_to_open(b.c, C.int(val))
+func (b *BackupEngineOptions) SetMaxValidBackupsToOpen(val int) {
+	C.rocksdb_backup_engine_options_set_max_valid_backups_to_open(b.c, C.int(val))
 }
 
 // GetMaxValidBackupsToOpen gets max number of valid backup to open.
@@ -241,8 +241,8 @@ func (b *BackupableDBOptions) SetMaxValidBackupsToOpen(val int) {
 // writable BackupEngine because it would inhibit accounting for shared
 // files for proper backup deletion, including purging any incompletely
 // created backups on creation of a new backup.
-func (b *BackupableDBOptions) GetMaxValidBackupsToOpen() int {
-	return int(C.rocksdb_backupable_db_options_get_max_valid_backups_to_open(b.c))
+func (b *BackupEngineOptions) GetMaxValidBackupsToOpen() int {
+	return int(C.rocksdb_backup_engine_options_get_max_valid_backups_to_open(b.c))
 }
 
 // SetShareFilesWithChecksumNaming sets naming option for share_files_with_checksum table files. See
@@ -259,17 +259,17 @@ func (b *BackupableDBOptions) GetMaxValidBackupsToOpen() int {
 // name.
 //
 // Default: UseDBSessionID | FlagIncludeFileSize | FlagMatchInterimNaming
-func (b *BackupableDBOptions) SetShareFilesWithChecksumNaming(val ShareFilesNaming) {
-	C.rocksdb_backupable_db_options_set_share_files_with_checksum_naming(b.c, C.int(val))
+func (b *BackupEngineOptions) SetShareFilesWithChecksumNaming(val ShareFilesNaming) {
+	C.rocksdb_backup_engine_options_set_share_files_with_checksum_naming(b.c, C.int(val))
 }
 
 // GetShareFilesWithChecksumNaming gets naming option for share_files_with_checksum table files. See
 // ShareFilesNaming for details.
-func (b *BackupableDBOptions) GetShareFilesWithChecksumNaming() ShareFilesNaming {
-	return ShareFilesNaming(C.rocksdb_backupable_db_options_get_share_files_with_checksum_naming(b.c))
+func (b *BackupEngineOptions) GetShareFilesWithChecksumNaming() ShareFilesNaming {
+	return ShareFilesNaming(C.rocksdb_backup_engine_options_get_share_files_with_checksum_naming(b.c))
 }
 
 // Destroy releases these options.
-func (b *BackupableDBOptions) Destroy() {
-	C.rocksdb_backupable_db_options_destroy(b.c)
+func (b *BackupEngineOptions) Destroy() {
+	C.rocksdb_backup_engine_options_destroy(b.c)
 }
