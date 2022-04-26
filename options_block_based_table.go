@@ -260,14 +260,6 @@ func (opts *BlockBasedTableOptions) SetFormatVersion(value int) {
 	C.rocksdb_block_based_options_set_format_version(opts.c, C.int(value))
 }
 
-// SetHashIndexAllowCollision set allows hash-index collision.
-//
-// Deprecated: no matter what value it is set to,
-// it will behave as if hash_index_allow_collision=true.
-func (opts *BlockBasedTableOptions) SetHashIndexAllowCollision(value bool) {
-	C.rocksdb_block_based_options_set_hash_index_allow_collision(opts.c, boolToChar(value))
-}
-
 // SetCacheIndexAndFilterBlocksWithHighPriority if cache_index_and_filter_blocks is enabled,
 // cache index and filter blocks with high priority. If set to true, depending on implementation of
 // block cache, index and filter blocks may be less likely to be evicted
