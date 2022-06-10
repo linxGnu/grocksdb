@@ -1,15 +1,13 @@
 package grocksdb
 
 import (
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestColumnFamilyOpen(t *testing.T) {
-	dir, err := ioutil.TempDir("", "gorocksdb-TestColumnFamilyOpen")
-	require.Nil(t, err)
+	dir := t.TempDir()
 
 	givenNames := []string{"default", "guide"}
 	opts := NewDefaultOptions()
@@ -29,8 +27,7 @@ func TestColumnFamilyOpen(t *testing.T) {
 }
 
 func TestColumnFamilyCreateDrop(t *testing.T) {
-	dir, err := ioutil.TempDir("", "gorocksdb-TestColumnFamilyCreate")
-	require.Nil(t, err)
+	dir := t.TempDir()
 
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
@@ -55,8 +52,7 @@ func TestColumnFamilyCreateDrop(t *testing.T) {
 }
 
 func TestColumnFamilyBatchPutGet(t *testing.T) {
-	dir, err := ioutil.TempDir("", "gorocksdb-TestColumnFamilyPutGet")
-	require.Nil(t, err)
+	dir := t.TempDir()
 
 	givenNames := []string{"default", "guide"}
 	opts := NewDefaultOptions()
@@ -115,8 +111,7 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 }
 
 func TestColumnFamilyPutGetDelete(t *testing.T) {
-	dir, err := ioutil.TempDir("", "gorocksdb-TestColumnFamilyPutGet")
-	require.Nil(t, err)
+	dir := t.TempDir()
 
 	givenNames := []string{"default", "guide"}
 	opts := NewDefaultOptions()
@@ -190,16 +185,15 @@ func TestColumnFamilyPutGetDelete(t *testing.T) {
 	}
 }
 
-func newTestDBCF(t *testing.T, name string) (db *DB, cfh []*ColumnFamilyHandle, cleanup func()) {
-	dir, err := ioutil.TempDir("", "gorocksdb-TestColumnFamilyPutGet")
-	require.Nil(t, err)
+func newTestDBCF(t *testing.T) (db *DB, cfh []*ColumnFamilyHandle, cleanup func()) {
+	dir := t.TempDir()
 
 	givenNames := []string{"default", "guide"}
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
 	opts.SetCompression(ZLibCompression)
-	db, cfh, err = OpenDbColumnFamilies(opts, dir, givenNames, []*Options{opts, opts})
+	db, cfh, err := OpenDbColumnFamilies(opts, dir, givenNames, []*Options{opts, opts})
 	require.Nil(t, err)
 	cleanup = func() {
 		for _, cf := range cfh {
@@ -211,7 +205,7 @@ func newTestDBCF(t *testing.T, name string) (db *DB, cfh []*ColumnFamilyHandle, 
 }
 
 func TestColumnFamilyMultiGet(t *testing.T) {
-	db, cfh, cleanup := newTestDBCF(t, "TestDBMultiGet")
+	db, cfh, cleanup := newTestDBCF(t)
 	defer cleanup()
 
 	var (

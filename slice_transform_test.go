@@ -7,7 +7,7 @@ import (
 )
 
 func TestSliceTransform(t *testing.T) {
-	db := newTestDB(t, "TestSliceTransform", func(opts *Options) {
+	db := newTestDB(t, func(opts *Options) {
 		opts.SetPrefixExtractor(&testSliceTransform{})
 	})
 	defer db.Close()
@@ -29,14 +29,14 @@ func TestSliceTransform(t *testing.T) {
 }
 
 func TestFixedPrefixTransformOpen(t *testing.T) {
-	db := newTestDB(t, "TestFixedPrefixTransformOpen", func(opts *Options) {
+	db := newTestDB(t, func(opts *Options) {
 		opts.SetPrefixExtractor(NewFixedPrefixTransform(3))
 	})
 	defer db.Close()
 }
 
 func TestNewNoopPrefixTransform(t *testing.T) {
-	db := newTestDB(t, "TestNewNoopPrefixTransform", func(opts *Options) {
+	db := newTestDB(t, func(opts *Options) {
 		opts.SetPrefixExtractor(NewNoopPrefixTransform())
 	})
 	defer db.Close()

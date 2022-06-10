@@ -1,7 +1,6 @@
 package grocksdb
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -10,13 +9,11 @@ import (
 
 func TestCheckpoint(t *testing.T) {
 
-	suffix := "checkpoint"
-	dir, err := ioutil.TempDir("", "gorocksdb-"+suffix)
-	require.Nil(t, err)
-	err = os.RemoveAll(dir)
+	dir := t.TempDir()
+	err := os.RemoveAll(dir)
 	require.Nil(t, err)
 
-	db := newTestDB(t, "TestCheckpoint", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 
 	// insert keys

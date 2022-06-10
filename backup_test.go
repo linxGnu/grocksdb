@@ -1,14 +1,13 @@
 package grocksdb
 
 import (
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestBackupEngine(t *testing.T) {
-	db := newTestDB(t, "TestDBBackup", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 
 	var (
@@ -91,8 +90,7 @@ func TestBackupEngine(t *testing.T) {
 	})
 
 	t.Run("restoreFromLatest", func(t *testing.T) {
-		dir, err := ioutil.TempDir("", "gorocksdb-restoreFromLatest")
-		require.Nil(t, err)
+		dir := t.TempDir()
 
 		ro := NewRestoreOptions()
 		defer ro.Destroy()
@@ -104,8 +102,7 @@ func TestBackupEngine(t *testing.T) {
 		infos := engine.GetInfo()
 		require.Equal(t, 1, len(infos))
 
-		dir, err := ioutil.TempDir("", "gorocksdb-restoreFromBackup")
-		require.Nil(t, err)
+		dir := t.TempDir()
 
 		ro := NewRestoreOptions()
 		defer ro.Destroy()

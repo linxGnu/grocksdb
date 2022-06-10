@@ -1,19 +1,18 @@
 package grocksdb
 
 import (
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestOpenTransactionDb(t *testing.T) {
-	db := newTestTransactionDB(t, "TestOpenTransactionDb", nil)
+	db := newTestTransactionDB(t, nil)
 	defer db.Close()
 }
 
 func TestTransactionDBCRUD(t *testing.T) {
-	db := newTestTransactionDB(t, "TestTransactionDBGet", nil)
+	db := newTestTransactionDB(t, nil)
 	defer db.Close()
 
 	var (
@@ -98,7 +97,7 @@ func TestTransactionDBGetForUpdate(t *testing.T) {
 	applyOpts := func(_ *Options, transactionDBOpts *TransactionDBOptions) {
 		transactionDBOpts.SetTransactionLockTimeout(lockTimeoutMilliSec)
 	}
-	db := newTestTransactionDB(t, "TestOpenTransactionDb", applyOpts)
+	db := newTestTransactionDB(t, applyOpts)
 	defer db.Close()
 
 	var (
@@ -122,9 +121,8 @@ func TestTransactionDBGetForUpdate(t *testing.T) {
 	}
 }
 
-func newTestTransactionDB(t *testing.T, name string, applyOpts func(opts *Options, transactionDBOpts *TransactionDBOptions)) *TransactionDB {
-	dir, err := ioutil.TempDir("", "gorockstransactiondb-"+name)
-	require.Nil(t, err)
+func newTestTransactionDB(t *testing.T, applyOpts func(opts *Options, transactionDBOpts *TransactionDBOptions)) *TransactionDB {
+	dir := t.TempDir()
 
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissing(true)
