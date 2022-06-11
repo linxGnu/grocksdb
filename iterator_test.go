@@ -8,7 +8,7 @@ import (
 )
 
 func TestIterator(t *testing.T) {
-	db := newTestDB(t, "TestIterator", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 
 	// insert keys
@@ -32,7 +32,7 @@ func TestIterator(t *testing.T) {
 }
 
 func TestIteratorWriteManyThenIter(t *testing.T) {
-	db := newTestDB(t, "TestIteratorMany", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 
 	numKey := 10_000
@@ -61,7 +61,7 @@ func TestIteratorWriteManyThenIter(t *testing.T) {
 }
 
 func TestIteratorCF(t *testing.T) {
-	db, cfs, cleanup := newTestDBMultiCF(t, "TestIteratorCF", []string{"default", "c1", "c2", "c3"}, nil)
+	db, cfs, cleanup := newTestDBMultiCF(t, []string{"default", "c1", "c2", "c3"}, nil)
 	defer cleanup()
 
 	// insert keys

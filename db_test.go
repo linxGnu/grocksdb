@@ -9,7 +9,7 @@ import (
 )
 
 func TestOpenDb(t *testing.T) {
-	db := newTestDB(t, "TestOpenDb", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 	require.EqualValues(t, "0", db.GetProperty("rocksdb.num-immutable-mem-table"))
 	v, success := db.GetIntProperty("rocksdb.num-immutable-mem-table")
@@ -18,7 +18,7 @@ func TestOpenDb(t *testing.T) {
 }
 
 func TestDBCRUD(t *testing.T) {
-	db := newTestDB(t, "TestDBGet", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 
 	var (
@@ -87,7 +87,7 @@ func TestDBCRUDDBPaths(t *testing.T) {
 		targetSizes[i] = uint64(1024 * 1024 * (i + 1))
 	}
 
-	db := newTestDBPathNames(t, "TestDBGet", names, targetSizes, nil)
+	db := newTestDBPathNames(t, names, targetSizes, nil)
 	defer db.Close()
 
 	var (
@@ -147,9 +147,8 @@ func TestDBCRUDDBPaths(t *testing.T) {
 	require.EqualValues(t, v4.Data(), []byte(nil))
 }
 
-func newTestDB(t *testing.T, name string, applyOpts func(opts *Options)) *DB {
-	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
-	require.Nil(t, err)
+func newTestDB(t *testing.T, applyOpts func(opts *Options)) *DB {
+	dir := t.TempDir()
 
 	opts := NewDefaultOptions()
 	// test the ratelimiter
@@ -166,9 +165,8 @@ func newTestDB(t *testing.T, name string, applyOpts func(opts *Options)) *DB {
 	return db
 }
 
-func newTestDBAndOpts(t *testing.T, name string, applyOpts func(opts *Options)) (*DB, *Options) {
-	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
-	require.Nil(t, err)
+func newTestDBAndOpts(t *testing.T, applyOpts func(opts *Options)) (*DB, *Options) {
+	dir := t.TempDir()
 
 	opts := NewDefaultOptions()
 	// test the ratelimiter
@@ -185,9 +183,8 @@ func newTestDBAndOpts(t *testing.T, name string, applyOpts func(opts *Options)) 
 	return db, opts
 }
 
-func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts func(opts *Options)) (db *DB, cfh []*ColumnFamilyHandle, cleanup func()) {
-	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
-	require.Nil(t, err)
+func newTestDBMultiCF(t *testing.T, columns []string, applyOpts func(opts *Options)) (db *DB, cfh []*ColumnFamilyHandle, cleanup func()) {
+	dir := t.TempDir()
 
 	opts := NewDefaultOptions()
 	opts.SetCreateIfMissingColumnFamilies(true)
@@ -202,7 +199,7 @@ func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts fun
 		options[i] = opts
 	}
 
-	db, cfh, err = OpenDbColumnFamilies(opts, dir, columns, options)
+	db, cfh, err := OpenDbColumnFamilies(opts, dir, columns, options)
 	require.Nil(t, err)
 	cleanup = func() {
 		for _, cf := range cfh {
@@ -213,16 +210,15 @@ func newTestDBMultiCF(t *testing.T, name string, columns []string, applyOpts fun
 	return db, cfh, cleanup
 }
 
-func newTestDBPathNames(t *testing.T, name string, names []string, targetSizes []uint64, applyOpts func(opts *Options)) *DB {
+func newTestDBPathNames(t *testing.T, names []string, targetSizes []uint64, applyOpts func(opts *Options)) *DB {
 	require.EqualValues(t, len(targetSizes), len(names))
 	require.True(t, len(names) > 0)
 
-	dir, err := ioutil.TempDir("", "gorocksdb-"+name)
-	require.Nil(t, err)
+	dir := t.TempDir()
 
 	paths := make([]string, len(names))
 	for i, name := range names {
-		directory, e := ioutil.TempDir("", "gorocksdb-"+name)
+		directory, e := ioutil.TempDir(dir, "gorocksdb-"+name)
 		require.Nil(t, e)
 		paths[i] = directory
 	}
@@ -246,7 +242,7 @@ func newTestDBPathNames(t *testing.T, name string, names []string, targetSizes [
 }
 
 func TestDBMultiGet(t *testing.T) {
-	db := newTestDB(t, "TestDBMultiGet", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 
 	var (
@@ -278,7 +274,7 @@ func TestDBMultiGet(t *testing.T) {
 }
 
 func TestDBGetApproximateSizes(t *testing.T) {
-	db := newTestDB(t, "TestDBGetApproximateSizes", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 
 	// no ranges
@@ -298,7 +294,7 @@ func TestDBGetApproximateSizes(t *testing.T) {
 }
 
 func TestDBGetApproximateSizesCF(t *testing.T) {
-	db := newTestDB(t, "TestDBGetApproximateSizesCF", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 
 	o := NewDefaultOptions()

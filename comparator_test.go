@@ -9,7 +9,7 @@ import (
 )
 
 func TestComparator(t *testing.T) {
-	db, opts := newTestDBAndOpts(t, "TestComparator", func(opts *Options) {
+	db, opts := newTestDBAndOpts(t, func(opts *Options) {
 		opts.SetComparator(NewComparator("rev", func(a, b []byte) int {
 			return bytes.Compare(a, b) * -1
 		}))

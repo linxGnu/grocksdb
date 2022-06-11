@@ -21,7 +21,7 @@ func TestMergeOperator(t *testing.T) {
 			return givenMerged, true
 		},
 	}
-	db := newTestDB(t, "TestMergeOperator", func(opts *Options) {
+	db := newTestDB(t, func(opts *Options) {
 		opts.SetMergeOperator(merger)
 	})
 	defer db.Close()
@@ -64,7 +64,7 @@ func TestPartialMergeOperator(t *testing.T) {
 			return pMergeResult, true
 		},
 	}
-	db := newTestDB(t, "TestMergeOperator", func(opts *Options) {
+	db := newTestDB(t, func(opts *Options) {
 		opts.SetMergeOperator(merger)
 	})
 	defer db.Close()
@@ -118,7 +118,7 @@ func TestMergeMultiOperator(t *testing.T) {
 			return pMergeResult, true
 		},
 	}
-	db := newTestDB(t, "TestMergeOperator", func(opts *Options) {
+	db := newTestDB(t, func(opts *Options) {
 		opts.SetMergeOperator(merger)
 	})
 	defer db.Close()

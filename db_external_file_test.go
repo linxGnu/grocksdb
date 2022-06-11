@@ -9,7 +9,7 @@ import (
 )
 
 func TestExternalFile(t *testing.T) {
-	db := newTestDB(t, "TestDBExternalFile", nil)
+	db := newTestDB(t, nil)
 	defer db.Close()
 
 	envOpts := NewDefaultEnvOptions()

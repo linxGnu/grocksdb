@@ -25,7 +25,7 @@ func TestMemoryUsage(t *testing.T) {
 		opts.SetRowCache(rowCache)
 	}
 
-	db := newTestDB(t, "TestMemoryUsage", applyOpts)
+	db := newTestDB(t, applyOpts)
 	defer db.Close()
 
 	// take first memory usage snapshot

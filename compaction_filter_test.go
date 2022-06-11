@@ -14,7 +14,7 @@ func TestCompactionFilter(t *testing.T) {
 		changeValNew = []byte("new")
 		deleteKey    = []byte("delete")
 	)
-	db := newTestDB(t, "TestCompactionFilter", func(opts *Options) {
+	db := newTestDB(t, func(opts *Options) {
 		opts.SetCompactionFilter(&mockCompactionFilter{
 			filter: func(_ int, key, val []byte) (remove bool, newVal []byte) {
 				if bytes.Equal(key, changeKey) {
