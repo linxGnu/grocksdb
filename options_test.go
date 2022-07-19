@@ -353,6 +353,14 @@ func TestOptions(t *testing.T) {
 	opts.SetWALCompression(LZ4Compression)
 	require.EqualValues(t, LZ4Compression, opts.GetWALCompression())
 
+	require.True(t, opts.GetCompressionOptionsZstdDictTrainer())
+	opts.SetCompressionOptionsZstdDictTrainer(false)
+	require.False(t, opts.GetCompressionOptionsZstdDictTrainer())
+
+	// require.True(t, opts.GetBottommostCompressionOptionsZstdDictTrainer())
+	// opts.SetCompressionOptionsZstdDictTrainer(false)
+	// require.False(t, opts.GetBottommostCompressionOptionsZstdDictTrainer())
+
 	// cloning
 	cl := opts.Clone()
 	require.EqualValues(t, 5, cl.GetTableCacheNumshardbits())

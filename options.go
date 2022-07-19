@@ -579,6 +579,27 @@ func (opts *Options) GetCompressionOptionsZstdMaxTrainBytes() int {
 	return int(C.rocksdb_options_get_compression_options_zstd_max_train_bytes(opts.c))
 }
 
+// SetCompressionOptionsZstdDictTrainer uses/not use zstd trainer to generate dictionaries.
+// When this option is set to true, zstd_max_train_bytes of training data sampled from
+// max_dict_buffer_bytes buffered data will be passed to zstd dictionary trainer to generate a
+// dictionary of size max_dict_bytes.
+//
+// When this option is false, zstd's API ZDICT_finalizeDictionary() will be
+// called to generate dictionaries. zstd_max_train_bytes of training sampled
+// data will be passed to this API. Using this API should save CPU time on
+// dictionary training, but the compression ratio may not be as good as using
+// a dictionary trainer.
+//
+// Default: true
+func (opts *Options) SetCompressionOptionsZstdDictTrainer(enabled bool) {
+	C.rocksdb_options_set_compression_options_use_zstd_dict_trainer(opts.c, boolToChar(enabled))
+}
+
+// GetCompressionOptionsZstdDictTrainer returns if zstd dict trainer is used or not.
+func (opts *Options) GetCompressionOptionsZstdDictTrainer() bool {
+	return charToBool(C.rocksdb_options_get_compression_options_use_zstd_dict_trainer(opts.c))
+}
+
 // SetCompressionOptionsParallelThreads sets number of threads for
 // parallel compression. Parallel compression is enabled only if threads > 1.
 //
@@ -676,6 +697,28 @@ func (opts *Options) SetBottommostCompressionOptionsMaxDictBufferBytes(value uin
 		boolToChar(enabled),
 	)
 }
+
+// // SetBottommostCompressionOptionsZstdDictTrainer uses/not use zstd trainer to generate dictionaries.
+// // When this option is set to true, zstd_max_train_bytes of training data sampled from
+// // max_dict_buffer_bytes buffered data will be passed to zstd dictionary trainer to generate a
+// // dictionary of size max_dict_bytes.
+// //
+// // When this option is false, zstd's API ZDICT_finalizeDictionary() will be
+// // called to generate dictionaries. zstd_max_train_bytes of training sampled
+// // data will be passed to this API. Using this API should save CPU time on
+// // dictionary training, but the compression ratio may not be as good as using
+// // a dictionary trainer.
+// //
+// // Default: true
+// func (opts *Options) SetBottommostCompressionOptionsZstdDictTrainer(enabled bool) {
+// 	c := boolToChar(enabled)
+// 	C.rocksdb_options_set_bottommost_compression_options_use_zstd_dict_trainer(opts.c, c, c)
+// }
+
+// // GetBottommostCompressionOptionsZstdDictTrainer returns if zstd dict trainer is used or not.
+// func (opts *Options) GetBottommostCompressionOptionsZstdDictTrainer() bool {
+// 	return charToBool(C.rocksdb_options_get_bottommost_compression_options_use_zstd_dict_trainer(opts.c))
+// }
 
 // SetMinLevelToCompress sets the start level to use compression.
 func (opts *Options) SetMinLevelToCompress(value int) {
