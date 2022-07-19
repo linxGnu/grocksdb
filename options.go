@@ -2068,6 +2068,28 @@ func (opts *Options) GetBlobCompactionReadaheadSize() uint64 {
 	return uint64(C.rocksdb_options_get_blob_compaction_readahead_size(opts.c))
 }
 
+// SetBlobFileStartingLevel enables blob files starting from a certain LSM tree level.
+//
+// For certain use cases that have a mix of short-lived and long-lived values,
+// it might make sense to support extracting large values only during
+// compactions whose output level is greater than or equal to a specified LSM
+// tree level (e.g. compactions into L1/L2/... or above). This could reduce
+// the space amplification caused by large values that are turned into garbage
+// shortly after being written at the price of some write amplification
+// incurred by long-lived values whose extraction to blob files is delayed.
+//
+// Default: 0
+//
+// Dynamically changeable through the SetOptions() API
+func (opts *Options) SetBlobFileStartingLevel(level int) {
+	C.rocksdb_options_set_blob_file_starting_level(opts.c, C.int(level))
+}
+
+// GetBlobFileStartingLevel returns blob starting level.
+func (opts *Options) GetBlobFileStartingLevel() int {
+	return int(C.rocksdb_options_get_blob_file_starting_level(opts.c))
+}
+
 // SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
 // to maintain in memory including copies of buffers that have already been flushed.
 // Unlike max_write_buffer_number, this parameter does not affect flushing.

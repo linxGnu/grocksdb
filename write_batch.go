@@ -169,8 +169,10 @@ func (wb *WriteBatch) Clear() {
 
 // Destroy deallocates the WriteBatch object.
 func (wb *WriteBatch) Destroy() {
-	C.rocksdb_writebatch_destroy(wb.c)
-	wb.c = nil
+	if wb.c != nil {
+		C.rocksdb_writebatch_destroy(wb.c)
+		wb.c = nil
+	}
 }
 
 // WriteBatchRecordType describes the type of a batch record.

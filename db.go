@@ -702,6 +702,62 @@ func (db *DB) DeleteRangeCF(opts *WriteOptions, cf *ColumnFamilyHandle, startKey
 	return
 }
 
+// SingleDelete removes the database entry for "key". Requires that the key exists
+// and was not overwritten. Returns OK on success, and a non-OK status
+// on error.  It is not an error if "key" did not exist in the database.
+//
+// If a key is overwritten (by calling Put() multiple times), then the result
+// of calling SingleDelete() on this key is undefined.  SingleDelete() only
+// behaves correctly if there has been only one Put() for this key since the
+// previous call to SingleDelete() for this key.
+//
+// This feature is currently an experimental performance optimization
+// for a very specific workload.  It is up to the caller to ensure that
+// SingleDelete is only used for a key that is not deleted using Delete() or
+// written using Merge().  Mixing SingleDelete operations with Deletes and
+// Merges can result in undefined behavior.
+//
+// Note: consider setting options.sync = true.
+func (db *DB) SingleDelete(opts *WriteOptions, key []byte) (err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	C.rocksdb_singledelete(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// SingleDeleteCF removes the database entry for "key". Requires that the key exists
+// and was not overwritten. Returns OK on success, and a non-OK status
+// on error.  It is not an error if "key" did not exist in the database.
+//
+// If a key is overwritten (by calling Put() multiple times), then the result
+// of calling SingleDelete() on this key is undefined.  SingleDelete() only
+// behaves correctly if there has been only one Put() for this key since the
+// previous call to SingleDelete() for this key.
+//
+// This feature is currently an experimental performance optimization
+// for a very specific workload.  It is up to the caller to ensure that
+// SingleDelete is only used for a key that is not deleted using Delete() or
+// written using Merge().  Mixing SingleDelete operations with Deletes and
+// Merges can result in undefined behavior.
+//
+// Note: consider setting options.sync = true.
+func (db *DB) SingleDeleteCF(opts *WriteOptions, cf *ColumnFamilyHandle, key []byte) (err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	C.rocksdb_singledelete_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
 // Merge merges the data associated with the key with the actual data in the database.
 func (db *DB) Merge(opts *WriteOptions, key []byte, value []byte) (err error) {
 	var (
@@ -1335,6 +1391,16 @@ func (db *DB) TryCatchUpWithPrimary() (err error) {
 // CancelAllBackgroundWork requests stopping background work, if wait is true wait until it's done
 func (db *DB) CancelAllBackgroundWork(wait bool) {
 	C.rocksdb_cancel_all_background_work(db.c, boolToChar(wait))
+}
+
+// EnableManualCompaction enables manual compaction.
+func (db *DB) EnableManualCompaction() {
+	C.rocksdb_enable_manual_compaction(db.c)
+}
+
+// DisableManualCompaction disables manual compaction.
+func (db *DB) DisableManualCompaction() {
+	C.rocksdb_disable_manual_compaction(db.c)
 }
 
 // Close closes the database.

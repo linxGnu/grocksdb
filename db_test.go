@@ -139,7 +139,7 @@ func TestDBCRUDDBPaths(t *testing.T) {
 	}
 
 	// delete
-	require.Nil(t, db.Delete(wo, givenKey))
+	require.Nil(t, db.SingleDelete(wo, givenKey))
 	v4, err := db.Get(ro, givenKey)
 	defer v4.Free()
 	require.Nil(t, err)
@@ -161,6 +161,9 @@ func newTestDB(t *testing.T, applyOpts func(opts *Options)) *DB {
 	}
 	db, err := OpenDb(opts, dir)
 	require.Nil(t, err)
+
+	db.EnableManualCompaction()
+	db.DisableManualCompaction()
 
 	return db
 }

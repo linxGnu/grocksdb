@@ -59,6 +59,11 @@ func (opts *TransactionOptions) SetMaxWriteBatchSize(size uint64) {
 	C.rocksdb_transaction_options_set_max_write_batch_size(opts.c, C.size_t(size))
 }
 
+// SetSkipPrepare skips prepare phase.
+func (opts *TransactionOptions) SetSkipPrepare(skip bool) {
+	C.rocksdb_transaction_options_set_skip_prepare(opts.c, boolToChar(skip))
+}
+
 // Destroy deallocates the TransactionOptions object.
 func (opts *TransactionOptions) Destroy() {
 	C.rocksdb_transaction_options_destroy(opts.c)
