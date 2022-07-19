@@ -221,6 +221,8 @@ func (wb *WriteBatchWI) Clear() {
 
 // Destroy deallocates the WriteBatch object.
 func (wb *WriteBatchWI) Destroy() {
-	C.rocksdb_writebatch_wi_destroy(wb.c)
-	wb.c = nil
+	if wb.c != nil {
+		C.rocksdb_writebatch_wi_destroy(wb.c)
+		wb.c = nil
+	}
 }

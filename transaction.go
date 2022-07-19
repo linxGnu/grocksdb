@@ -5,6 +5,7 @@ package grocksdb
 import "C"
 
 import (
+	"fmt"
 	"unsafe"
 )
 
@@ -16,6 +17,34 @@ type Transaction struct {
 // NewNativeTransaction creates a Transaction object.
 func NewNativeTransaction(c *C.rocksdb_transaction_t) *Transaction {
 	return &Transaction{c}
+}
+
+// SetName of transaction.
+func (transaction *Transaction) SetName(name string) (err error) {
+	var (
+		cErr  *C.char
+		name_ = byteToChar([]byte(name))
+	)
+
+	C.rocksdb_transaction_set_name(transaction.c, name_, C.size_t(len(name)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// GetName of transaction.
+func (transaction *Transaction) GetName() string {
+	var nameSize C.size_t
+	name := C.rocksdb_transaction_get_name(transaction.c, &nameSize)
+	return C.GoString(name)
+}
+
+// Prepare transaction.
+func (transaction *Transaction) Prepare() (err error) {
+	var cErr *C.char
+	C.rocksdb_transaction_prepare(transaction.c, &cErr)
+	err = fromCError(cErr)
+	return
 }
 
 // Commit commits the transaction to the database.
@@ -52,6 +81,21 @@ func (transaction *Transaction) Get(opts *ReadOptions, key []byte) (slice *Slice
 	return
 }
 
+// GetPinned returns the data associated with the key from the transaction.
+func (transaction *Transaction) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	cHandle := C.rocksdb_transaction_get_pinned(transaction.c, opts.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = NewNativePinnableSliceHandle(cHandle)
+	}
+
+	return
+}
+
 // GetWithCF returns the data associated with the key from the database, with column family, given this transaction.
 func (transaction *Transaction) GetWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slice *Slice, err error) {
 	var (
@@ -70,7 +114,22 @@ func (transaction *Transaction) GetWithCF(opts *ReadOptions, cf *ColumnFamilyHan
 	return
 }
 
-// GetForUpdate queries the data associated with the key and puts an exclusive lock on the key
+// GetPinnedWithCF returns the data associated with the key from the transaction.
+func (transaction *Transaction) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	cHandle := C.rocksdb_transaction_get_pinned_cf(transaction.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = NewNativePinnableSliceHandle(cHandle)
+	}
+
+	return
+}
+
+// GetForUpdate returns the data associated with the key and puts an exclusive lock on the key
 // from the database given this transaction.
 func (transaction *Transaction) GetForUpdate(opts *ReadOptions, key []byte) (slice *Slice, err error) {
 	var (
@@ -84,6 +143,25 @@ func (transaction *Transaction) GetForUpdate(opts *ReadOptions, key []byte) (sli
 	)
 	if err = fromCError(cErr); err == nil {
 		slice = NewSlice(cValue, cValLen)
+	}
+
+	return
+}
+
+// GetPinnedForUpdate returns the data associated with the key and puts an exclusive lock on the key
+// from the database given this transaction.
+func (transaction *Transaction) GetPinnedForUpdate(opts *ReadOptions, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	cHandle := C.rocksdb_transaction_get_pinned_for_update(
+		transaction.c, opts.c, cKey, C.size_t(len(key)),
+		C.uchar(byte(1)), /*exclusive*/
+		&cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = NewNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -106,6 +184,110 @@ func (transaction *Transaction) GetForUpdateWithCF(opts *ReadOptions, cf *Column
 	}
 
 	return
+}
+
+// GetPinnedForUpdateWithCF returns the data associated with the key and puts an exclusive lock on the key
+// from the database given this transaction.
+func (transaction *Transaction) GetPinnedForUpdateWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	cHandle := C.rocksdb_transaction_get_pinned_for_update_cf(
+		transaction.c, opts.c, cf.c, cKey, C.size_t(len(key)),
+		C.uchar(byte(1)), /*exclusive*/
+		&cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = NewNativePinnableSliceHandle(cHandle)
+	}
+
+	return
+}
+
+// MultiGet returns the data associated with the passed keys from the transaction.
+func (transaction *Transaction) MultiGet(opts *ReadOptions, keys ...[]byte) (Slices, error) {
+	// will destroy `cKeys` before return
+	cKeys, cKeySizes := byteSlicesToCSlices(keys)
+
+	vals := make(charsSlice, len(keys))
+	valSizes := make(sizeTSlice, len(keys))
+	rocksErrs := make(charsSlice, len(keys))
+
+	C.rocksdb_transaction_multi_get(
+		transaction.c,
+		opts.c,
+		C.size_t(len(keys)),
+		cKeys.c(),
+		cKeySizes.c(),
+		vals.c(),
+		valSizes.c(),
+		rocksErrs.c(),
+	)
+
+	var errs []error
+
+	for i, rocksErr := range rocksErrs {
+		if err := fromCError(rocksErr); err != nil {
+			errs = append(errs, fmt.Errorf("getting %q failed: %v", string(keys[i]), err.Error()))
+		}
+	}
+
+	if len(errs) > 0 {
+		cKeys.Destroy()
+		return nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
+	}
+
+	slices := make(Slices, len(keys))
+	for i, val := range vals {
+		slices[i] = NewSlice(val, valSizes[i])
+	}
+
+	cKeys.Destroy()
+	return slices, nil
+}
+
+// MultiGetWithCF returns the data associated with the passed keys from the transaction.
+func (transaction *Transaction) MultiGetWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, keys ...[]byte) (Slices, error) {
+	// will destroy `cKeys` before return
+	cKeys, cKeySizes := byteSlicesToCSlices(keys)
+
+	vals := make(charsSlice, len(keys))
+	valSizes := make(sizeTSlice, len(keys))
+	rocksErrs := make(charsSlice, len(keys))
+
+	C.rocksdb_transaction_multi_get_cf(
+		transaction.c,
+		opts.c,
+		&cf.c,
+		C.size_t(len(keys)),
+		cKeys.c(),
+		cKeySizes.c(),
+		vals.c(),
+		valSizes.c(),
+		rocksErrs.c(),
+	)
+
+	var errs []error
+
+	for i, rocksErr := range rocksErrs {
+		if err := fromCError(rocksErr); err != nil {
+			errs = append(errs, fmt.Errorf("getting %q failed: %v", string(keys[i]), err.Error()))
+		}
+	}
+
+	if len(errs) > 0 {
+		cKeys.Destroy()
+		return nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
+	}
+
+	slices := make(Slices, len(keys))
+	for i, val := range vals {
+		slices[i] = NewSlice(val, valSizes[i])
+	}
+
+	cKeys.Destroy()
+	return slices, nil
 }
 
 // Put writes data associated with a key to the transaction.
@@ -254,4 +436,34 @@ func (transaction *Transaction) GetSnapshot() *Snapshot {
 func (transaction *Transaction) Destroy() {
 	C.rocksdb_transaction_destroy(transaction.c)
 	transaction.c = nil
+}
+
+// GetWriteBatchWI returns underlying write batch wi.
+func (transaction *Transaction) GetWriteBatchWI() *WriteBatchWI {
+	wi := C.rocksdb_transaction_get_writebatch_wi(transaction.c)
+	return NewNativeWriteBatchWI(wi)
+}
+
+// RebuildFromWriteBatch rebuilds transaction from write_batch.
+// Note: If no error, write_batch will be destroyed. It's move-op (see also: C++ Move)
+func (transaction *Transaction) RebuildFromWriteBatch(wb *WriteBatch) (err error) {
+	var cErr *C.char
+	C.rocksdb_transaction_rebuild_from_writebatch(transaction.c, wb.c, &cErr)
+	err = fromCError(cErr)
+	if err == nil {
+		wb.Destroy()
+	}
+	return
+}
+
+// RebuildFromWriteBatchWI rebuilds transaction from write_batch.
+// Note: If no error, write_batch will be destroyed. It's move-op (see also: C++ Move)
+func (transaction *Transaction) RebuildFromWriteBatchWI(wb *WriteBatchWI) (err error) {
+	var cErr *C.char
+	C.rocksdb_transaction_rebuild_from_writebatch_wi(transaction.c, wb.c, &cErr)
+	err = fromCError(cErr)
+	if err == nil {
+		wb.Destroy()
+	}
+	return
 }

@@ -4,6 +4,7 @@ package grocksdb
 // #include "rocksdb/c.h"
 import "C"
 import (
+	"fmt"
 	"unsafe"
 )
 
@@ -148,6 +149,21 @@ func (db *TransactionDB) Get(opts *ReadOptions, key []byte) (slice *Slice, err e
 	return
 }
 
+// GetPinned returns the data associated with the key from the database.
+func (db *TransactionDB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	cHandle := C.rocksdb_transactiondb_get_pinned(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = NewNativePinnableSliceHandle(cHandle)
+	}
+
+	return
+}
+
 // GetCF returns the data associated with the key from the database, from column family.
 func (db *TransactionDB) GetCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slice *Slice, err error) {
 	var (
@@ -164,6 +180,106 @@ func (db *TransactionDB) GetCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []
 	}
 
 	return
+}
+
+// GetPinnedWithCF returns the data associated with the key from the database.
+func (db *TransactionDB) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+	)
+
+	cHandle := C.rocksdb_transactiondb_get_pinned_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = NewNativePinnableSliceHandle(cHandle)
+	}
+
+	return
+}
+
+// MultiGet returns the data associated with the passed keys from the database.
+func (db *TransactionDB) MultiGet(opts *ReadOptions, keys ...[]byte) (Slices, error) {
+	// will destroy `cKeys` before return
+	cKeys, cKeySizes := byteSlicesToCSlices(keys)
+
+	vals := make(charsSlice, len(keys))
+	valSizes := make(sizeTSlice, len(keys))
+	rocksErrs := make(charsSlice, len(keys))
+
+	C.rocksdb_transactiondb_multi_get(
+		db.c,
+		opts.c,
+		C.size_t(len(keys)),
+		cKeys.c(),
+		cKeySizes.c(),
+		vals.c(),
+		valSizes.c(),
+		rocksErrs.c(),
+	)
+
+	var errs []error
+
+	for i, rocksErr := range rocksErrs {
+		if err := fromCError(rocksErr); err != nil {
+			errs = append(errs, fmt.Errorf("getting %q failed: %v", string(keys[i]), err.Error()))
+		}
+	}
+
+	if len(errs) > 0 {
+		cKeys.Destroy()
+		return nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
+	}
+
+	slices := make(Slices, len(keys))
+	for i, val := range vals {
+		slices[i] = NewSlice(val, valSizes[i])
+	}
+
+	cKeys.Destroy()
+	return slices, nil
+}
+
+// MultiGetWithCF returns the data associated with the passed keys from the database.
+func (db *TransactionDB) MultiGetWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, keys ...[]byte) (Slices, error) {
+	// will destroy `cKeys` before return
+	cKeys, cKeySizes := byteSlicesToCSlices(keys)
+
+	vals := make(charsSlice, len(keys))
+	valSizes := make(sizeTSlice, len(keys))
+	rocksErrs := make(charsSlice, len(keys))
+
+	C.rocksdb_transactiondb_multi_get_cf(
+		db.c,
+		opts.c,
+		&cf.c,
+		C.size_t(len(keys)),
+		cKeys.c(),
+		cKeySizes.c(),
+		vals.c(),
+		valSizes.c(),
+		rocksErrs.c(),
+	)
+
+	var errs []error
+
+	for i, rocksErr := range rocksErrs {
+		if err := fromCError(rocksErr); err != nil {
+			errs = append(errs, fmt.Errorf("getting %q failed: %v", string(keys[i]), err.Error()))
+		}
+	}
+
+	if len(errs) > 0 {
+		cKeys.Destroy()
+		return nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
+	}
+
+	slices := make(Slices, len(keys))
+	for i, val := range vals {
+		slices[i] = NewSlice(val, valSizes[i])
+	}
+
+	cKeys.Destroy()
+	return slices, nil
 }
 
 // Put writes data associated with a key to the database.
@@ -291,6 +407,37 @@ func (db *TransactionDB) Write(opts *WriteOptions, batch *WriteBatch) (err error
 	var cErr *C.char
 
 	C.rocksdb_transactiondb_write(db.c, opts.c, batch.c, &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// Flush triggers a manual flush for the database.
+func (db *TransactionDB) Flush(opts *FlushOptions) (err error) {
+	var cErr *C.char
+
+	C.rocksdb_transactiondb_flush(db.c, opts.c, &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// FlushCF triggers a manual flush for the database on specific column family.
+func (db *TransactionDB) FlushCF(cf *ColumnFamilyHandle, opts *FlushOptions) (err error) {
+	var cErr *C.char
+
+	C.rocksdb_transactiondb_flush_cf(db.c, opts.c, cf.c, &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// FlushWAL flushes the WAL memory buffer to the file. If sync is true, it calls SyncWAL
+// afterwards.
+func (db *TransactionDB) FlushWAL(sync bool) (err error) {
+	var cErr *C.char
+
+	C.rocksdb_transactiondb_flush_wal(db.c, boolToChar(sync), &cErr)
 	err = fromCError(cErr)
 
 	return

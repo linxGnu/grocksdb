@@ -73,16 +73,23 @@ func TestTransactionDBCRUD(t *testing.T) {
 	require.Nil(t, txn2.Put(givenTxnKey2, givenTxnVal1))
 	// rollback
 	require.Nil(t, txn2.Rollback())
-
 	v6, err := txn2.Get(ro, givenTxnKey2)
 	defer v6.Free()
 	require.Nil(t, err)
 	require.True(t, v6.Data() == nil)
+
 	// transaction
 	txn3 := db.TransactionBegin(wo, to, nil)
 	defer txn3.Destroy()
+	txn3.SetName("fake_name")
+	require.Equal(t, "fake_name", txn3.GetName())
 	// delete
+	require.Nil(t, txn3.Prepare())
 	require.Nil(t, txn3.Delete(givenTxnKey))
+
+	wi := txn3.GetWriteBatchWI()
+	require.EqualValues(t, 1, wi.Count())
+
 	require.Nil(t, txn3.Commit())
 
 	v7, err := db.Get(ro, givenTxnKey)
@@ -90,6 +97,47 @@ func TestTransactionDBCRUD(t *testing.T) {
 	require.Nil(t, err)
 	require.True(t, v7.Data() == nil)
 
+	// transaction
+	txn4 := db.TransactionBegin(wo, to, nil)
+	defer txn4.Destroy()
+
+	// mark delete
+	require.Nil(t, txn4.Delete(givenTxnKey))
+
+	// rebuild with put op
+	wi = NewWriteBatchWI(123, true)
+	wi.Put(givenTxnKey, givenTxnVal1)
+	require.Nil(t, txn4.RebuildFromWriteBatchWI(wi))
+	require.Nil(t, txn4.Commit())
+
+	v8, err := db.Get(ro, givenTxnKey)
+	defer v8.Free()
+	require.Nil(t, err)
+	require.True(t, v8.Data() != nil) // due to rebuild -> put -> key exists
+
+	// transaction
+	txn5 := db.TransactionBegin(wo, to, nil)
+	defer txn5.Destroy()
+
+	// mark delete
+	require.Nil(t, txn5.Delete(givenTxnKey2))
+
+	// rebuild with put op
+	wb := NewWriteBatch()
+	wb.Put(givenTxnKey2, givenTxnVal1)
+	require.Nil(t, txn5.RebuildFromWriteBatch(wb))
+
+	v, err := txn5.GetPinned(ro, givenTxnKey2)
+	require.Nil(t, err)
+	require.Equal(t, []byte(givenTxnVal1), v.Data())
+	v.Destroy()
+
+	require.Nil(t, txn5.Commit())
+
+	v9, err := db.Get(ro, givenTxnKey2)
+	defer v9.Free()
+	require.Nil(t, err)
+	require.True(t, v8.Data() != nil) // due to rebuild -> put -> key exists
 }
 
 func TestTransactionDBGetForUpdate(t *testing.T) {

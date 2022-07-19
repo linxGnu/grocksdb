@@ -361,6 +361,10 @@ func TestOptions(t *testing.T) {
 	// opts.SetCompressionOptionsZstdDictTrainer(false)
 	// require.False(t, opts.GetBottommostCompressionOptionsZstdDictTrainer())
 
+	require.Equal(t, 0, opts.GetBlobFileStartingLevel())
+	opts.SetBlobFileStartingLevel(1)
+	require.Equal(t, 1, opts.GetBlobFileStartingLevel())
+
 	// cloning
 	cl := opts.Clone()
 	require.EqualValues(t, 5, cl.GetTableCacheNumshardbits())
