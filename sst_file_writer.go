@@ -68,6 +68,17 @@ func (w *SSTFileWriter) Put(key, value []byte) (err error) {
 	return
 }
 
+// Put key with timestamp, value to the currently opened file
+func (w *SSTFileWriter) PutWithTS(key, ts, value []byte) (err error) {
+	cKey := byteToChar(key)
+	cValue := byteToChar(value)
+	cTs := byteToChar(ts)
+	var cErr *C.char
+	C.rocksdb_sstfilewriter_put_with_ts(w.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), cValue, C.size_t(len(value)), &cErr)
+	err = fromCError(cErr)
+	return
+}
+
 // Merge key, value to currently opened file.
 func (w *SSTFileWriter) Merge(key, value []byte) (err error) {
 	cKey := byteToChar(key)
@@ -83,6 +94,16 @@ func (w *SSTFileWriter) Delete(key []byte) (err error) {
 	cKey := byteToChar(key)
 	var cErr *C.char
 	C.rocksdb_sstfilewriter_delete(w.c, cKey, C.size_t(len(key)), &cErr)
+	err = fromCError(cErr)
+	return
+}
+
+// DeleteWithTS deletes key with timestamp to the currently opened file
+func (w *SSTFileWriter) DeleteWithTS(key, ts []byte) (err error) {
+	cKey := byteToChar(key)
+	cTs := byteToChar(ts)
+	var cErr *C.char
+	C.rocksdb_sstfilewriter_delete_with_ts(w.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), &cErr)
 	err = fromCError(cErr)
 	return
 }

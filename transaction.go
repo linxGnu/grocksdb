@@ -467,3 +467,11 @@ func (transaction *Transaction) RebuildFromWriteBatchWI(wb *WriteBatchWI) (err e
 	}
 	return
 }
+
+func (transaction *Transaction) SetCommitTimestamp(ts uint64) {
+	C.rocksdb_transaction_set_commit_timestamp(transaction.c, C.uint64_t(ts))
+}
+
+func (transaction *Transaction) SetReadTimestampForValidation(ts uint64) {
+	C.rocksdb_transaction_set_read_timestamp_for_validation(transaction.c, C.uint64_t(ts))
+}

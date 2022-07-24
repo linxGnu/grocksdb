@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+
 import (
 	"bytes"
 	"unsafe"
@@ -61,6 +62,16 @@ func (iter *Iterator) Key() *Slice {
 		return nil
 	}
 	return &Slice{cKey, cLen, true}
+}
+
+// Timestamp returns the timestamp in the database the iterator currently holds.
+func (iter *Iterator) Timestamp() *Slice {
+	var cLen C.size_t
+	cTs := C.rocksdb_iter_timestamp(iter.c, &cLen)
+	if cTs == nil {
+		return nil
+	}
+	return &Slice{cTs, cLen, true}
 }
 
 // Value returns the value in the database the iterator currently holds.
