@@ -1558,7 +1558,7 @@ func (db *DB) IncreaseFullHistoryTsLow(handle *ColumnFamilyHandle, ts []byte) (e
 	C.rocksdb_increase_full_history_ts_low(db.c, handle.c, cTs, C.size_t(len(ts)), &cErr)
 
 	err = fromCError(cErr)
-	return err
+	return
 }
 
 // GetFullHistoryTsLow returns current full_history_ts value.
@@ -1574,7 +1574,7 @@ func (db *DB) GetFullHistoryTsLow(handle *ColumnFamilyHandle) (slice *Slice, err
 	}
 
 	err = fromCError(cErr)
-	return slice, err
+	return
 }
 
 // IngestExternalFile loads a list of external SST files.

@@ -468,10 +468,20 @@ func (transaction *Transaction) RebuildFromWriteBatchWI(wb *WriteBatchWI) (err e
 	return
 }
 
+// SetCommitTimestamp sets the commit timestamp for the transaction.
+// If a transaction's write batch includes at least one key for a column family that enables user-defined timestamp,
+// then the transaction must be assigned a commit timestamp in order to commit.
+// SetCommitTimestamp should be called before transaction commits.
+// If two-phase commit (2PC) is enabled, then SetCommitTimestamp should be called after Transaction Prepare succeeds.
 func (transaction *Transaction) SetCommitTimestamp(ts uint64) {
 	C.rocksdb_transaction_set_commit_timestamp(transaction.c, C.uint64_t(ts))
 }
 
+// SetReadTimestampForValidation sets the read timestamp for the transaction.
+// Each transaction can have a read timestamp.
+// The transaction will use this timestamp to read data from the database.
+// Any data with timestamp after this read timestamp should be considered invisible to this transaction.
+// The same read timestamp is also used for validation.
 func (transaction *Transaction) SetReadTimestampForValidation(ts uint64) {
 	C.rocksdb_transaction_set_read_timestamp_for_validation(transaction.c, C.uint64_t(ts))
 }
