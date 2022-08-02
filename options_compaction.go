@@ -33,8 +33,6 @@ const (
 // CompactRangeOptions represent all of the available options for compact range.
 type CompactRangeOptions struct {
 	c *C.rocksdb_compactoptions_t
-
-	fullHistoryTsLow []byte
 }
 
 // NewCompactRangeOptions creates new compact range options.
@@ -48,7 +46,6 @@ func NewCompactRangeOptions() *CompactRangeOptions {
 func (opts *CompactRangeOptions) Destroy() {
 	C.rocksdb_compactoptions_destroy(opts.c)
 	opts.c = nil
-	opts.fullHistoryTsLow = nil
 }
 
 // SetExclusiveManualCompaction if more than one thread calls manual compaction,
@@ -108,7 +105,6 @@ func (opts *CompactRangeOptions) TargetLevel() int32 {
 // low bound maybe GCed by compaction.
 // Default: nullptr
 func (opts *CompactRangeOptions) SetFullHistoryTsLow(ts []byte) {
-	opts.fullHistoryTsLow = ts
 	cTs := byteToChar(ts)
 	C.rocksdb_compactoptions_set_full_history_ts_low(opts.c, cTs, C.size_t(len(ts)))
 }
