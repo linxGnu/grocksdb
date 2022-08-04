@@ -381,7 +381,7 @@ func OpenDbAndTrimHistory(opts *Options,
 	name string,
 	cfNames []string,
 	cfOpts []*Options,
-	timestamp []byte,
+	trimTimestamp []byte,
 ) (db *DB, cfHandles []*ColumnFamilyHandle, err error) {
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
@@ -402,7 +402,7 @@ func OpenDbAndTrimHistory(opts *Options,
 
 	cHandles := make([]*C.rocksdb_column_family_handle_t, numColumnFamilies)
 
-	cTs := byteToChar(timestamp)
+	cTs := byteToChar(trimTimestamp)
 
 	var cErr *C.char
 	_db := C.rocksdb_open_and_trim_history(
@@ -413,7 +413,7 @@ func OpenDbAndTrimHistory(opts *Options,
 		&cOpts[0],
 		&cHandles[0],
 		cTs,
-		C.size_t(len(timestamp)),
+		C.size_t(len(trimTimestamp)),
 		&cErr,
 	)
 	if err = fromCError(cErr); err == nil {
@@ -721,18 +721,18 @@ func (db *DB) MultiGetWithTs(opts *ReadOptions, keys ...[]byte) (Slices, Slices,
 		return nil, nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
 	}
 
-	slices := make(Slices, len(keys))
+	values := make(Slices, len(keys))
 	for i, val := range vals {
-		slices[i] = NewSlice(val, valSizes[i])
+		values[i] = NewSlice(val, valSizes[i])
 	}
 
-	tsSlices := make(Slices, len(keys))
+	times := make(Slices, len(keys))
 	for i, ts := range timestamps {
-		tsSlices[i] = NewSlice(ts, timestampSizes[i])
+		times[i] = NewSlice(ts, timestampSizes[i])
 	}
 
 	cKeys.Destroy()
-	return slices, tsSlices, nil
+	return values, times, nil
 }
 
 // MultiGetCF returns the data associated with the passed keys from the column family
