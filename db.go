@@ -709,8 +709,8 @@ func (db *DB) MultiGet(opts *ReadOptions, keys ...[]byte) (Slices, error) {
 	return slices, nil
 }
 
-// MultiGetWithTs returns the data and timestamps associated with the passed keys from the database
-func (db *DB) MultiGetWithTs(opts *ReadOptions, keys ...[]byte) (Slices, Slices, error) {
+// MultiGetWithTS returns the data and timestamps associated with the passed keys from the database
+func (db *DB) MultiGetWithTS(opts *ReadOptions, keys ...[]byte) (Slices, Slices, error) {
 	// will destroy `cKeys` before return
 	cKeys, cKeySizes := byteSlicesToCSlices(keys)
 
@@ -890,8 +890,8 @@ func (db *DB) Put(opts *WriteOptions, key, value []byte) (err error) {
 	return
 }
 
-// PutWithTs writes data associated with a key and timestamp to the database.
-func (db *DB) PutWithTs(opts *WriteOptions, key, ts, value []byte) (err error) {
+// PutWithTS writes data associated with a key and timestamp to the database.
+func (db *DB) PutWithTS(opts *WriteOptions, key, ts, value []byte) (err error) {
 	var (
 		cErr   *C.char
 		cKey   = byteToChar(key)
@@ -919,8 +919,8 @@ func (db *DB) PutCF(opts *WriteOptions, cf *ColumnFamilyHandle, key, value []byt
 	return
 }
 
-// PutCFWithTs writes data associated with a key and timestamp to the database and column family.
-func (db *DB) PutCFWithTs(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts, value []byte) (err error) {
+// PutCFWithTS writes data associated with a key and timestamp to the database and column family.
+func (db *DB) PutCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts, value []byte) (err error) {
 	var (
 		cErr   *C.char
 		cKey   = byteToChar(key)
@@ -960,8 +960,8 @@ func (db *DB) DeleteCF(opts *WriteOptions, cf *ColumnFamilyHandle, key []byte) (
 	return
 }
 
-// DeleteWithTs removes the data associated with the key and timestamp from the database.
-func (db *DB) DeleteWithTs(opts *WriteOptions, key, ts []byte) (err error) {
+// DeleteWithTS removes the data associated with the key and timestamp from the database.
+func (db *DB) DeleteWithTS(opts *WriteOptions, key, ts []byte) (err error) {
 	var (
 		cErr *C.char
 		cKey = byteToChar(key)
@@ -974,8 +974,8 @@ func (db *DB) DeleteWithTs(opts *WriteOptions, key, ts []byte) (err error) {
 	return
 }
 
-// DeleteCFWithTs removes the data associated with the key and timestamp from the database and column family.
-func (db *DB) DeleteCFWithTs(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts []byte) (err error) {
+// DeleteCFWithTS removes the data associated with the key and timestamp from the database and column family.
+func (db *DB) DeleteCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts []byte) (err error) {
 	var (
 		cErr *C.char
 		cKey = byteToChar(key)
@@ -988,8 +988,8 @@ func (db *DB) DeleteCFWithTs(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts
 	return
 }
 
-// SingleDeleteWithTs removes the data associated with the key and timestamp from the database.
-func (db *DB) SingleDeleteWithTs(opts *WriteOptions, key, ts []byte) (err error) {
+// SingleDeleteWithTS removes the data associated with the key and timestamp from the database.
+func (db *DB) SingleDeleteWithTS(opts *WriteOptions, key, ts []byte) (err error) {
 	var (
 		cErr *C.char
 		cKey = byteToChar(key)
@@ -1002,8 +1002,8 @@ func (db *DB) SingleDeleteWithTs(opts *WriteOptions, key, ts []byte) (err error)
 	return
 }
 
-// SingleDeleteCFWithTs removes the data associated with the key and timestamp from the database and column family.
-func (db *DB) SingleDeleteCFWithTs(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts []byte) (err error) {
+// SingleDeleteCFWithTS removes the data associated with the key and timestamp from the database and column family.
+func (db *DB) SingleDeleteCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts []byte) (err error) {
 	var (
 		cErr *C.char
 		cKey = byteToChar(key)
