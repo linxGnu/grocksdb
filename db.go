@@ -181,10 +181,11 @@ func OpenDbColumnFamilies(
 // Expired TTL values deleted in compaction only:(Timestamp+ttl<time_now)
 // Get/Iterator may return expired entries(compaction not run on them yet)
 // Different TTL may be used during different Opens
-// Example: Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
-//          Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
+// Example:
+// Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
+// Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
 // read_only=true opens in the usual read-only mode. Compactions will not be
-//  triggered(neither manual nor automatic), so no expired entries removed
+// triggered(neither manual nor automatic), so no expired entries removed
 //
 // CONSTRAINTS:
 // Not specifying/passing or non-positive TTL behaves like TTL = infinity
@@ -788,6 +789,68 @@ func (db *DB) MultiGetCFMultiCF(opts *ReadOptions, cfs ColumnFamilyHandles, keys
 	return slices, nil
 }
 
+// MultiGetCFWithTS returns the data and timestamp associated with the passed keys from the column family
+func (db *DB) MultiGetCFWithTS(opts *ReadOptions, cf *ColumnFamilyHandle, keys ...[]byte) (Slices, Slices, error) {
+	cfs := make(ColumnFamilyHandles, len(keys))
+	for i := 0; i < len(keys); i++ {
+		cfs[i] = cf
+	}
+	return db.MultiGetMultiCFWithTS(opts, cfs, keys)
+}
+
+// MultiGetMultiCFWithTS returns the data and timestamp associated with the passed keys and
+// column families.
+func (db *DB) MultiGetMultiCFWithTS(opts *ReadOptions, cfs ColumnFamilyHandles, keys [][]byte) (Slices, Slices, error) {
+	// will destroy `cKeys` before return
+	cKeys, cKeySizes := byteSlicesToCSlices(keys)
+
+	vals := make(charsSlice, len(keys))
+	valSizes := make(sizeTSlice, len(keys))
+	timestamps := make(charsSlice, len(keys))
+	timestampSizes := make(sizeTSlice, len(keys))
+	rocksErrs := make(charsSlice, len(keys))
+
+	C.rocksdb_multi_get_cf_with_ts(
+		db.c,
+		opts.c,
+		cfs.toCSlice().c(),
+		C.size_t(len(keys)),
+		cKeys.c(),
+		cKeySizes.c(),
+		vals.c(),
+		valSizes.c(),
+		timestamps.c(),
+		timestampSizes.c(),
+		rocksErrs.c(),
+	)
+
+	var errs []error
+
+	for i, rocksErr := range rocksErrs {
+		if err := fromCError(rocksErr); err != nil {
+			errs = append(errs, fmt.Errorf("getting %q failed: %v", string(keys[i]), err.Error()))
+		}
+	}
+
+	if len(errs) > 0 {
+		cKeys.Destroy()
+		return nil, nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
+	}
+
+	values := make(Slices, len(keys))
+	for i, val := range vals {
+		values[i] = NewSlice(val, valSizes[i])
+	}
+
+	times := make(Slices, len(keys))
+	for i, ts := range timestamps {
+		times[i] = NewSlice(ts, timestampSizes[i])
+	}
+
+	cKeys.Destroy()
+	return values, times, nil
+}
+
 // Put writes data associated with a key to the database.
 func (db *DB) Put(opts *WriteOptions, key, value []byte) (err error) {
 	var (
@@ -1189,10 +1252,11 @@ func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFami
 // Expired TTL values deleted in compaction only:(Timestamp+ttl<time_now)
 // Get/Iterator may return expired entries(compaction not run on them yet)
 // Different TTL may be used during different Opens
-// Example: Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
-//          Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
+// Example:
+// Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
+// Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
 // read_only=true opens in the usual read-only mode. Compactions will not be
-//  triggered(neither manual nor automatic), so no expired entries removed
+// triggered(neither manual nor automatic), so no expired entries removed
 //
 // CONSTRAINTS:
 // Not specifying/passing or non-positive TTL behaves like TTL = infinity
