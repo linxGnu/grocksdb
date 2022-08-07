@@ -577,6 +577,31 @@ func (db *DB) GetBytes(opts *ReadOptions, key []byte) (data []byte, err error) {
 	return
 }
 
+// GetBytesWithTS is like Get but returns a copy of the data and timestamp.
+func (db *DB) GetBytesWithTS(opts *ReadOptions, key []byte) (data, timestamp []byte, err error) {
+	var (
+		cErr    *C.char
+		cTs     *C.char
+		cValLen C.size_t
+		cTsLen  C.size_t
+		cKey    = byteToChar(key)
+	)
+
+	cValue := C.rocksdb_get_with_ts(db.c, opts.c, cKey, C.size_t(len(key)), &cValLen, &cTs, &cTsLen, &cErr)
+	if err = fromCError(cErr); err == nil {
+		if cValue == nil {
+			return nil, nil, nil
+		}
+
+		data = C.GoBytes(unsafe.Pointer(cValue), C.int(cValLen))
+		timestamp = C.GoBytes(unsafe.Pointer(cTs), C.int(cTsLen))
+		C.rocksdb_free(unsafe.Pointer(cValue))
+		C.rocksdb_free(unsafe.Pointer(cTs))
+	}
+
+	return
+}
+
 // GetCF returns the data associated with the key from the database and column family.
 func (db *DB) GetCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slice *Slice, err error) {
 	var (
