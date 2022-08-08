@@ -202,6 +202,12 @@ func newTestDBMultiCF(t *testing.T, columns []string, applyOpts func(opts *Optio
 		options[i] = opts
 	}
 
+	if applyOpts != nil {
+		for _, opts := range options {
+			applyOpts(opts)
+		}
+	}
+
 	db, cfh, err := OpenDbColumnFamilies(opts, dir, columns, options)
 	require.Nil(t, err)
 	cleanup = func() {

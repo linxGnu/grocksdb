@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+
 import (
 	"errors"
 	"io"
@@ -39,6 +40,14 @@ func (wb *WriteBatch) PutCF(cf *ColumnFamilyHandle, key, value []byte) {
 	cKey := byteToChar(key)
 	cValue := byteToChar(value)
 	C.rocksdb_writebatch_put_cf(wb.c, cf.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)))
+}
+
+// PutCFWithTS queues a key-value pair with given timestamp in a column family.
+func (wb *WriteBatch) PutCFWithTS(cf *ColumnFamilyHandle, key, ts, value []byte) {
+	cKey := byteToChar(key)
+	cValue := byteToChar(value)
+	cTs := byteToChar(ts)
+	C.rocksdb_writebatch_put_cf_with_ts(wb.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), cValue, C.size_t(len(value)))
 }
 
 // PutLogData appends a blob of arbitrary size to the records in this batch.
@@ -95,10 +104,24 @@ func (wb *WriteBatch) DeleteCF(cf *ColumnFamilyHandle, key []byte) {
 	C.rocksdb_writebatch_delete_cf(wb.c, cf.c, cKey, C.size_t(len(key)))
 }
 
+// DeleteCF queues a deletion of the data at key with given timestamp in a column family.
+func (wb *WriteBatch) DeleteCFWithTS(cf *ColumnFamilyHandle, key, ts []byte) {
+	cKey := byteToChar(key)
+	cTs := byteToChar(ts)
+	C.rocksdb_writebatch_delete_cf_with_ts(wb.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)))
+}
+
 // SingleDeleteCF same as SingleDelete but specific column family
 func (wb *WriteBatch) SingleDeleteCF(cf *ColumnFamilyHandle, key []byte) {
 	cKey := byteToChar(key)
 	C.rocksdb_writebatch_singledelete_cf(wb.c, cf.c, cKey, C.size_t(len(key)))
+}
+
+// SingleDeleteCFWithTS same as SingleDelete but with timestamp for specific column family
+func (wb *WriteBatch) SingleDeleteCFWithTS(cf *ColumnFamilyHandle, key, ts []byte) {
+	cKey := byteToChar(key)
+	cTs := byteToChar(ts)
+	C.rocksdb_writebatch_singledelete_cf_with_ts(wb.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)))
 }
 
 // DeleteRange deletes keys that are between [startKey, endKey)
@@ -280,7 +303,6 @@ func (iter *WriteBatchIterator) Next() bool {
 	}
 
 	return iter.err == nil
-
 }
 
 // Record returns the current record.

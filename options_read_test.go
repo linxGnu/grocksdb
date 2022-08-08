@@ -22,6 +22,8 @@ func TestReadOptions(t *testing.T) {
 
 	ro.SetIterateUpperBound([]byte{1, 2, 3})
 	ro.SetIterateLowerBound([]byte{1, 1, 1})
+	ro.SetTimestamp([]byte{1, 2, 3})
+	ro.SetIterStartTimestamp([]byte{1, 2, 3})
 
 	require.EqualValues(t, ReadAllTier, ro.GetReadTier())
 	ro.SetReadTier(BlockCacheTier)

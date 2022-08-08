@@ -25,6 +25,8 @@ type ReadOptions struct {
 	c              *C.rocksdb_readoptions_t
 	iterUpperBound []byte
 	iterLowerBound []byte
+	timestamp      []byte
+	timestampStart []byte
 }
 
 // NewDefaultReadOptions creates a default ReadOptions object.
@@ -298,4 +300,30 @@ func (opts *ReadOptions) Destroy() {
 	opts.c = nil
 	opts.iterUpperBound = nil
 	opts.iterLowerBound = nil
+	opts.timestamp = nil
+	opts.timestampStart = nil
+}
+
+// SetTimestamp sets timestamp. Read should return the latest data visible to the
+// specified timestamp. All timestamps of the same database must be of the
+// same length and format. The user is responsible for providing a customized
+// compare function via Comparator to order <key, timestamp> tuples.
+// Default: nullptr
+func (opts *ReadOptions) SetTimestamp(ts []byte) {
+	opts.timestamp = ts
+	cTS := byteToChar(ts)
+	cTSLen := C.size_t(len(ts))
+	C.rocksdb_readoptions_set_timestamp(opts.c, cTS, cTSLen)
+}
+
+// SetIterStartTimestamp sets iter_start_ts which is the lower bound (older) and timestamp
+// serves as the upper bound. Versions of the same record that fall in
+// the timestamp range will be returned. If iter_start_ts is nullptr,
+// only the most recent version visible to timestamp is returned.
+// Default: nullptr
+func (opts *ReadOptions) SetIterStartTimestamp(ts []byte) {
+	opts.timestampStart = ts
+	cTS := byteToChar(ts)
+	cTSLen := C.size_t(len(ts))
+	C.rocksdb_readoptions_set_iter_start_ts(opts.c, cTS, cTSLen)
 }

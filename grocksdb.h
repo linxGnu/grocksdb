@@ -15,6 +15,8 @@ extern rocksdb_compactionfilter_t* gorocksdb_compactionfilter_create(uintptr_t i
 
 extern rocksdb_comparator_t* gorocksdb_comparator_create(uintptr_t idx);
 
+extern rocksdb_comparator_t* gorocksdb_comparator_with_ts_create(uintptr_t idx, size_t ts_size);
+
 /* Merge Operator */
 
 extern rocksdb_mergeoperator_t* gorocksdb_mergeoperator_create(uintptr_t idx);

@@ -10,6 +10,8 @@ func TestOptionCompactions(t *testing.T) {
 	co := NewCompactRangeOptions()
 	defer co.Destroy()
 
+	co.SetFullHistoryTsLow([]byte{1, 2, 3})
+
 	require.EqualValues(t, true, co.GetExclusiveManualCompaction())
 	co.SetExclusiveManualCompaction(false)
 	require.EqualValues(t, false, co.GetExclusiveManualCompaction())

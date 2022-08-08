@@ -101,6 +101,14 @@ func (opts *CompactRangeOptions) TargetLevel() int32 {
 	return int32(C.rocksdb_compactoptions_get_target_level(opts.c))
 }
 
+// SetFullHistoryTsLow user-defined timestamp low bound, the data with older timestamp than
+// low bound maybe GCed by compaction.
+// Default: nullptr
+func (opts *CompactRangeOptions) SetFullHistoryTsLow(ts []byte) {
+	cTs := byteToChar(ts)
+	C.rocksdb_compactoptions_set_full_history_ts_low(opts.c, cTs, C.size_t(len(ts)))
+}
+
 // FIFOCompactionOptions represent all of the available options for
 // FIFO compaction.
 type FIFOCompactionOptions struct {

@@ -181,10 +181,11 @@ func OpenDbColumnFamilies(
 // Expired TTL values deleted in compaction only:(Timestamp+ttl<time_now)
 // Get/Iterator may return expired entries(compaction not run on them yet)
 // Different TTL may be used during different Opens
-// Example: Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
-//          Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
+// Example:
+// Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
+// Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
 // read_only=true opens in the usual read-only mode. Compactions will not be
-//  triggered(neither manual nor automatic), so no expired entries removed
+// triggered(neither manual nor automatic), so no expired entries removed
 //
 // CONSTRAINTS:
 // Not specifying/passing or non-positive TTL behaves like TTL = infinity
@@ -371,6 +372,70 @@ func OpenDbAsSecondaryColumnFamilies(
 	return
 }
 
+// OpenDbAndTrimHistory opens DB and trim data newer than specified timestamp.
+// The trim_ts specified the user-defined timestamp trim bound.
+// This API should only be used at timestamp enabled column families recovery.
+// If some input column families do not support timestamp, nothing will
+// be happened to them. The data with timestamp > trim_ts
+// will be removed after this API returns successfully.
+func OpenDbAndTrimHistory(opts *Options,
+	name string,
+	cfNames []string,
+	cfOpts []*Options,
+	trimTimestamp []byte,
+) (db *DB, cfHandles []*ColumnFamilyHandle, err error) {
+	numColumnFamilies := len(cfNames)
+	if numColumnFamilies != len(cfOpts) {
+		err = ErrColumnFamilyMustMatch
+		return
+	}
+
+	cName := C.CString(name)
+	cNames := make([]*C.char, numColumnFamilies)
+	for i, s := range cfNames {
+		cNames[i] = C.CString(s)
+	}
+
+	cOpts := make([]*C.rocksdb_options_t, numColumnFamilies)
+	for i, o := range cfOpts {
+		cOpts[i] = o.c
+	}
+
+	cHandles := make([]*C.rocksdb_column_family_handle_t, numColumnFamilies)
+
+	cTs := byteToChar(trimTimestamp)
+
+	var cErr *C.char
+	_db := C.rocksdb_open_and_trim_history(
+		opts.c,
+		cName,
+		C.int(numColumnFamilies),
+		&cNames[0],
+		&cOpts[0],
+		&cHandles[0],
+		cTs,
+		C.size_t(len(trimTimestamp)),
+		&cErr,
+	)
+	if err = fromCError(cErr); err == nil {
+		db = &DB{
+			name: name,
+			c:    _db,
+			opts: opts,
+		}
+		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
+		for i, c := range cHandles {
+			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+		}
+	}
+
+	C.free(unsafe.Pointer(cName))
+	for _, s := range cNames {
+		C.free(unsafe.Pointer(s))
+	}
+	return
+}
+
 // ListColumnFamilies lists the names of the column families in the DB.
 func ListColumnFamilies(opts *Options, name string) (names []string, err error) {
 	var (
@@ -472,6 +537,25 @@ func (db *DB) Get(opts *ReadOptions, key []byte) (slice *Slice, err error) {
 	return
 }
 
+// GetWithTS returns the data and timestamp associated with the key from the database.
+func (db *DB) GetWithTS(opts *ReadOptions, key []byte) (value, timestamp *Slice, err error) {
+	var (
+		cErr    *C.char
+		cTs     *C.char
+		cValLen C.size_t
+		cTsLen  C.size_t
+		cKey    = byteToChar(key)
+	)
+
+	cValue := C.rocksdb_get_with_ts(db.c, opts.c, cKey, C.size_t(len(key)), &cValLen, &cTs, &cTsLen, &cErr)
+	if err = fromCError(cErr); err == nil {
+		value = NewSlice(cValue, cValLen)
+		timestamp = NewSlice(cTs, cTsLen)
+	}
+
+	return
+}
+
 // GetBytes is like Get but returns a copy of the data.
 func (db *DB) GetBytes(opts *ReadOptions, key []byte) (data []byte, err error) {
 	var (
@@ -493,6 +577,31 @@ func (db *DB) GetBytes(opts *ReadOptions, key []byte) (data []byte, err error) {
 	return
 }
 
+// GetBytesWithTS is like Get but returns a copy of the data and timestamp.
+func (db *DB) GetBytesWithTS(opts *ReadOptions, key []byte) (data, timestamp []byte, err error) {
+	var (
+		cErr    *C.char
+		cTs     *C.char
+		cValLen C.size_t
+		cTsLen  C.size_t
+		cKey    = byteToChar(key)
+	)
+
+	cValue := C.rocksdb_get_with_ts(db.c, opts.c, cKey, C.size_t(len(key)), &cValLen, &cTs, &cTsLen, &cErr)
+	if err = fromCError(cErr); err == nil {
+		if cValue == nil {
+			return nil, nil, nil
+		}
+
+		data = C.GoBytes(unsafe.Pointer(cValue), C.int(cValLen))
+		timestamp = C.GoBytes(unsafe.Pointer(cTs), C.int(cTsLen))
+		C.rocksdb_free(unsafe.Pointer(cValue))
+		C.rocksdb_free(unsafe.Pointer(cTs))
+	}
+
+	return
+}
+
 // GetCF returns the data associated with the key from the database and column family.
 func (db *DB) GetCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slice *Slice, err error) {
 	var (
@@ -504,6 +613,25 @@ func (db *DB) GetCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slic
 	cValue := C.rocksdb_get_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cValLen, &cErr)
 	if err = fromCError(cErr); err == nil {
 		slice = NewSlice(cValue, cValLen)
+	}
+
+	return
+}
+
+// GetCFWithTS returns the data and timestamp associated with the key from the database and column family.
+func (db *DB) GetCFWithTS(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (value, timestamp *Slice, err error) {
+	var (
+		cErr    *C.char
+		cTs     *C.char
+		cValLen C.size_t
+		cTsLen  C.size_t
+		cKey    = byteToChar(key)
+	)
+
+	cValue := C.rocksdb_get_cf_with_ts(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cValLen, &cTs, &cTsLen, &cErr)
+	if err = fromCError(cErr); err == nil {
+		value = NewSlice(cValue, cValLen)
+		timestamp = NewSlice(cTs, cTsLen)
 	}
 
 	return
@@ -581,6 +709,58 @@ func (db *DB) MultiGet(opts *ReadOptions, keys ...[]byte) (Slices, error) {
 	return slices, nil
 }
 
+// MultiGetWithTS returns the data and timestamps associated with the passed keys from the database
+func (db *DB) MultiGetWithTS(opts *ReadOptions, keys ...[]byte) (Slices, Slices, error) {
+	// will destroy `cKeys` before return
+	cKeys, cKeySizes := byteSlicesToCSlices(keys)
+
+	vals := make(charsSlice, len(keys))
+	valSizes := make(sizeTSlice, len(keys))
+
+	timestamps := make(charsSlice, len(keys))
+	timestampSizes := make(sizeTSlice, len(keys))
+	rocksErrs := make(charsSlice, len(keys))
+
+	C.rocksdb_multi_get_with_ts(
+		db.c,
+		opts.c,
+		C.size_t(len(keys)),
+		cKeys.c(),
+		cKeySizes.c(),
+		vals.c(),
+		valSizes.c(),
+		timestamps.c(),
+		timestampSizes.c(),
+		rocksErrs.c(),
+	)
+
+	var errs []error
+
+	for i, rocksErr := range rocksErrs {
+		if err := fromCError(rocksErr); err != nil {
+			errs = append(errs, fmt.Errorf("getting %q failed: %v", string(keys[i]), err.Error()))
+		}
+	}
+
+	if len(errs) > 0 {
+		cKeys.Destroy()
+		return nil, nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
+	}
+
+	values := make(Slices, len(keys))
+	for i, val := range vals {
+		values[i] = NewSlice(val, valSizes[i])
+	}
+
+	times := make(Slices, len(keys))
+	for i, ts := range timestamps {
+		times[i] = NewSlice(ts, timestampSizes[i])
+	}
+
+	cKeys.Destroy()
+	return values, times, nil
+}
+
 // MultiGetCF returns the data associated with the passed keys from the column family
 func (db *DB) MultiGetCF(opts *ReadOptions, cf *ColumnFamilyHandle, keys ...[]byte) (Slices, error) {
 	cfs := make(ColumnFamilyHandles, len(keys))
@@ -634,6 +814,68 @@ func (db *DB) MultiGetCFMultiCF(opts *ReadOptions, cfs ColumnFamilyHandles, keys
 	return slices, nil
 }
 
+// MultiGetCFWithTS returns the data and timestamp associated with the passed keys from the column family
+func (db *DB) MultiGetCFWithTS(opts *ReadOptions, cf *ColumnFamilyHandle, keys ...[]byte) (Slices, Slices, error) {
+	cfs := make(ColumnFamilyHandles, len(keys))
+	for i := 0; i < len(keys); i++ {
+		cfs[i] = cf
+	}
+	return db.MultiGetMultiCFWithTS(opts, cfs, keys)
+}
+
+// MultiGetMultiCFWithTS returns the data and timestamp associated with the passed keys and
+// column families.
+func (db *DB) MultiGetMultiCFWithTS(opts *ReadOptions, cfs ColumnFamilyHandles, keys [][]byte) (Slices, Slices, error) {
+	// will destroy `cKeys` before return
+	cKeys, cKeySizes := byteSlicesToCSlices(keys)
+
+	vals := make(charsSlice, len(keys))
+	valSizes := make(sizeTSlice, len(keys))
+	timestamps := make(charsSlice, len(keys))
+	timestampSizes := make(sizeTSlice, len(keys))
+	rocksErrs := make(charsSlice, len(keys))
+
+	C.rocksdb_multi_get_cf_with_ts(
+		db.c,
+		opts.c,
+		cfs.toCSlice().c(),
+		C.size_t(len(keys)),
+		cKeys.c(),
+		cKeySizes.c(),
+		vals.c(),
+		valSizes.c(),
+		timestamps.c(),
+		timestampSizes.c(),
+		rocksErrs.c(),
+	)
+
+	var errs []error
+
+	for i, rocksErr := range rocksErrs {
+		if err := fromCError(rocksErr); err != nil {
+			errs = append(errs, fmt.Errorf("getting %q failed: %v", string(keys[i]), err.Error()))
+		}
+	}
+
+	if len(errs) > 0 {
+		cKeys.Destroy()
+		return nil, nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
+	}
+
+	values := make(Slices, len(keys))
+	for i, val := range vals {
+		values[i] = NewSlice(val, valSizes[i])
+	}
+
+	times := make(Slices, len(keys))
+	for i, ts := range timestamps {
+		times[i] = NewSlice(ts, timestampSizes[i])
+	}
+
+	cKeys.Destroy()
+	return values, times, nil
+}
+
 // Put writes data associated with a key to the database.
 func (db *DB) Put(opts *WriteOptions, key, value []byte) (err error) {
 	var (
@@ -648,6 +890,21 @@ func (db *DB) Put(opts *WriteOptions, key, value []byte) (err error) {
 	return
 }
 
+// PutWithTS writes data associated with a key and timestamp to the database.
+func (db *DB) PutWithTS(opts *WriteOptions, key, ts, value []byte) (err error) {
+	var (
+		cErr   *C.char
+		cKey   = byteToChar(key)
+		cValue = byteToChar(value)
+		cTs    = byteToChar(ts)
+	)
+
+	C.rocksdb_put_with_ts(db.c, opts.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), cValue, C.size_t(len(value)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
 // PutCF writes data associated with a key to the database and column family.
 func (db *DB) PutCF(opts *WriteOptions, cf *ColumnFamilyHandle, key, value []byte) (err error) {
 	var (
@@ -657,6 +914,21 @@ func (db *DB) PutCF(opts *WriteOptions, cf *ColumnFamilyHandle, key, value []byt
 	)
 
 	C.rocksdb_put_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// PutCFWithTS writes data associated with a key and timestamp to the database and column family.
+func (db *DB) PutCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts, value []byte) (err error) {
+	var (
+		cErr   *C.char
+		cKey   = byteToChar(key)
+		cValue = byteToChar(value)
+		cTs    = byteToChar(ts)
+	)
+
+	C.rocksdb_put_cf_with_ts(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), cValue, C.size_t(len(value)), &cErr)
 	err = fromCError(cErr)
 
 	return
@@ -683,6 +955,62 @@ func (db *DB) DeleteCF(opts *WriteOptions, cf *ColumnFamilyHandle, key []byte) (
 	)
 
 	C.rocksdb_delete_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// DeleteWithTS removes the data associated with the key and timestamp from the database.
+func (db *DB) DeleteWithTS(opts *WriteOptions, key, ts []byte) (err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+		cTs  = byteToChar(ts)
+	)
+
+	C.rocksdb_delete_with_ts(db.c, opts.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// DeleteCFWithTS removes the data associated with the key and timestamp from the database and column family.
+func (db *DB) DeleteCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts []byte) (err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+		cTs  = byteToChar(ts)
+	)
+
+	C.rocksdb_delete_cf_with_ts(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// SingleDeleteWithTS removes the data associated with the key and timestamp from the database.
+func (db *DB) SingleDeleteWithTS(opts *WriteOptions, key, ts []byte) (err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+		cTs  = byteToChar(ts)
+	)
+
+	C.rocksdb_singledelete_with_ts(db.c, opts.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// SingleDeleteCFWithTS removes the data associated with the key and timestamp from the database and column family.
+func (db *DB) SingleDeleteCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts []byte) (err error) {
+	var (
+		cErr *C.char
+		cKey = byteToChar(key)
+		cTs  = byteToChar(ts)
+	)
+
+	C.rocksdb_singledelete_cf_with_ts(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), &cErr)
 	err = fromCError(cErr)
 
 	return
@@ -949,10 +1277,11 @@ func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFami
 // Expired TTL values deleted in compaction only:(Timestamp+ttl<time_now)
 // Get/Iterator may return expired entries(compaction not run on them yet)
 // Different TTL may be used during different Opens
-// Example: Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
-//          Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
+// Example:
+// Open1 at t=0 with ttl=4 and insert k1,k2, close at t=2
+// Open2 at t=3 with ttl=5. Now k1,k2 should be deleted at t>=5
 // read_only=true opens in the usual read-only mode. Compactions will not be
-//  triggered(neither manual nor automatic), so no expired entries removed
+// triggered(neither manual nor automatic), so no expired entries removed
 //
 // CONSTRAINTS:
 // Not specifying/passing or non-positive TTL behaves like TTL = infinity
@@ -1304,6 +1633,36 @@ func (db *DB) DeleteFileInRangeCF(cf *ColumnFamilyHandle, r Range) (err error) {
 	)
 	err = fromCError(cErr)
 
+	return
+}
+
+// IncreaseFullHistoryTsLow increases the full_history_ts of column family. The new ts_low value should
+// be newer than current full_history_ts value.
+// If another thread updates full_history_ts_low concurrently to a higher
+// timestamp than the requested ts_low, a try again error will be returned.
+func (db *DB) IncreaseFullHistoryTsLow(handle *ColumnFamilyHandle, ts []byte) (err error) {
+	var cErr *C.char
+
+	cTs := byteToChar(ts)
+	C.rocksdb_increase_full_history_ts_low(db.c, handle.c, cTs, C.size_t(len(ts)), &cErr)
+
+	err = fromCError(cErr)
+	return
+}
+
+// GetFullHistoryTsLow returns current full_history_ts value.
+func (db *DB) GetFullHistoryTsLow(handle *ColumnFamilyHandle) (slice *Slice, err error) {
+	var (
+		cErr   *C.char
+		cTsLen C.size_t
+	)
+
+	cTs := C.rocksdb_get_full_history_ts_low(db.c, handle.c, &cTsLen, &cErr)
+	if err = fromCError(cErr); err == nil {
+		slice = NewSlice(cTs, cTsLen)
+	}
+
+	err = fromCError(cErr)
 	return
 }
 
