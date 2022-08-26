@@ -3,8 +3,8 @@ DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 INSTALL_PREFIX=$1
 
-export CFLAGS='-fPIC -O2 -pipe' 
-export CXXFLAGS='-fPIC -O2 -pipe -Wno-maybe-uninitialized'
+export CFLAGS='-fPIC -O3 -pipe' 
+export CXXFLAGS='-fPIC -O3 -pipe -Wno-maybe-uninitialized'
 
 BUILD_PATH=/tmp/build
 mkdir -p $BUILD_PATH
@@ -37,7 +37,7 @@ rocksdb_version="7.5.3"
 cd $BUILD_PATH && wget https://github.com/facebook/rocksdb/archive/v${rocksdb_version}.tar.gz && tar xzf v${rocksdb_version}.tar.gz && cd rocksdb-${rocksdb_version}/ && \
     mkdir -p build_place && cd build_place && cmake -DCMAKE_BUILD_TYPE=Release $CMAKE_REQUIRED_PARAMS -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX -DWITH_TESTS=OFF -DWITH_GFLAGS=OFF \
     -DWITH_BENCHMARK_TOOLS=OFF -DWITH_TOOLS=OFF -DWITH_MD_LIBRARY=OFF -DWITH_RUNTIME_DEBUG=OFF -DROCKSDB_BUILD_SHARED=OFF -DWITH_SNAPPY=ON -DWITH_LZ4=ON -DWITH_ZLIB=ON -DWITH_LIBURING=OFF \
-    -DWITH_ZSTD=ON -DWITH_BZ2=OFF -WITH_GFLAGS=OFF .. && make -j16 install/strip && \
+    -DWITH_ZSTD=ON -DWITH_BZ2=OFF -WITH_GFLAGS=OFF -DFORCE_AVX2=ON .. && make -j16 install/strip && \
     cd $BUILD_PATH && rm -rf *
 
 rm -rf $INSTALL_PREFIX/bin $INSTALL_PREFIX/share $INSTALL_PREFIX/lib/cmake $INSTALL_PREFIX/lib64/cmake $INSTALL_PREFIX/lib/pkgconfig $INSTALL_PREFIX/lib64/pkgconfig
