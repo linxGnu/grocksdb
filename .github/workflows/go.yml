@@ -27,17 +27,13 @@ jobs:
           path: dist
           key: prebuilt-${{ hashFiles('**/build.sh') }} 
 
-      - name: Get dependencies
-        run: |
-          go get -v -t -d ./...
-          if [ -f Gopkg.toml ]; then
-              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-              dep ensure
-          fi
-
-      - name: Build
+      - name: Build static libs
         if: steps.cache-prebuilt-static-libs.outputs.cache-hit != 'true'
         run: make libs
+
+      - name: Get dependencies
+        run: |
+          go mod download
 
       - name: Test Coverage
         run: go test -v -tags testing -count=1 -coverprofile=coverage.out
