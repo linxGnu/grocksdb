@@ -271,7 +271,8 @@ func (opts *Options) ParanoidChecks() bool {
 //
 // For example, you have a flash device with 10GB allocated for the DB,
 // as well as a hard drive of 2TB, you should config it to be:
-//   [{"/flash_path", 10GB}, {"/hard_drive", 2TB}]
+//
+//	[{"/flash_path", 10GB}, {"/hard_drive", 2TB}]
 //
 // The system will try to guarantee data under each path is close to but
 // not larger than the target size. But current and future file sizes used
@@ -878,11 +879,12 @@ func (opts *Options) GetMaxBytesForLevelMultiplier() float64 {
 // We will pick a base level b >= 1. L0 will be directly merged into level b,
 // instead of always into level 1. Level 1 to b-1 need to be empty.
 // We try to pick b and its target size so that
-// 1. target size is in the range of
-//   (max_bytes_for_level_base / max_bytes_for_level_multiplier,
-//    max_bytes_for_level_base]
-// 2. target size of the last level (level num_levels-1) equals to extra size
-//    of the level.
+//  1. target size is in the range of
+//     (max_bytes_for_level_base / max_bytes_for_level_multiplier,
+//     max_bytes_for_level_base]
+//  2. target size of the last level (level num_levels-1) equals to extra size
+//     of the level.
+//
 // At the same time max_bytes_for_level_multiplier and
 // max_bytes_for_level_multiplier_additional are still satisfied.
 //
@@ -1219,17 +1221,17 @@ func (opts *Options) GetWALRecoveryMode() WALRecoveryMode {
 // SetWALTtlSeconds sets the WAL ttl in seconds.
 //
 // The following two options affect how archived logs will be deleted.
-// 1. If both set to 0, logs will be deleted asap and will not get into
-//    the archive.
-// 2. If wal_ttl_seconds is 0 and wal_size_limit_mb is not 0,
-//    WAL files will be checked every 10 min and if total size is greater
-//    then wal_size_limit_mb, they will be deleted starting with the
-//    earliest until size_limit is met. All empty files will be deleted.
-// 3. If wal_ttl_seconds is not 0 and wall_size_limit_mb is 0, then
-//    WAL files will be checked every wal_ttl_seconds / 2 and those that
-//    are older than wal_ttl_seconds will be deleted.
-// 4. If both are not 0, WAL files will be checked every 10 min and both
-//    checks will be performed with ttl being first.
+//  1. If both set to 0, logs will be deleted asap and will not get into
+//     the archive.
+//  2. If wal_ttl_seconds is 0 and wal_size_limit_mb is not 0,
+//     WAL files will be checked every 10 min and if total size is greater
+//     then wal_size_limit_mb, they will be deleted starting with the
+//     earliest until size_limit is met. All empty files will be deleted.
+//  3. If wal_ttl_seconds is not 0 and wall_size_limit_mb is 0, then
+//     WAL files will be checked every wal_ttl_seconds / 2 and those that
+//     are older than wal_ttl_seconds will be deleted.
+//  4. If both are not 0, WAL files will be checked every 10 min and both
+//     checks will be performed with ttl being first.
 //
 // Default: 0
 func (opts *Options) SetWALTtlSeconds(value uint64) {
@@ -1646,7 +1648,9 @@ func (opts *Options) GetInplaceUpdateNumLocks() uint {
 // If <=0, it won't allocate from huge page but from malloc.
 // Users are responsible to reserve huge pages for it to be allocated. For
 // example:
-//      sysctl -w vm.nr_hugepages=20
+//
+//	sysctl -w vm.nr_hugepages=20
+//
 // See linux doc Documentation/vm/hugetlbpage.txt
 // If there isn't enough free huge page available, it will fall back to
 // malloc.
@@ -1744,7 +1748,8 @@ func (opts *Options) SetMemtableVectorRep() {
 // bucketCount:             number of fixed array buckets
 // skiplistHeight:          the max height of the skiplist
 // skiplistBranchingFactor: probabilistic size ratio between adjacent
-//                          link lists in the skiplist
+//
+//	link lists in the skiplist
 func (opts *Options) SetHashSkipListRep(bucketCount uint, skiplistHeight, skiplistBranchingFactor int32) {
 	C.rocksdb_options_set_hash_skip_list_rep(
 		opts.c,
@@ -1772,14 +1777,21 @@ func (opts *Options) SetHashLinkListRep(bucketCount uint) {
 // a linear search is used.
 //
 // keyLen: 			plain table has optimization for fix-sized keys,
-// 					which can be specified via keyLen.
+//
+//	which can be specified via keyLen.
+//
 // bloomBitsPerKey: the number of bits used for bloom filer per prefix. You
-//                  may disable it by passing a zero.
+//
+//	may disable it by passing a zero.
+//
 // hashTableRatio:  the desired utilization of the hash table used for prefix
-//                  hashing. hashTableRatio = number of prefixes / #buckets
-//                  in the hash table
+//
+//	hashing. hashTableRatio = number of prefixes / #buckets
+//	in the hash table
+//
 // indexSparseness: inside each prefix, need to build one index record for how
-//                  many keys for binary search inside each hash bucket.
+//
+//	many keys for binary search inside each hash bucket.
 func (opts *Options) SetPlainTableFactory(
 	keyLen uint32,
 	bloomBitsPerKey int,
@@ -2299,6 +2311,33 @@ func (opts *Options) SetReportBackgroundIOStats(value bool) {
 // flushes is turned on.
 func (opts *Options) ReportBackgroundIOStats() bool {
 	return charToBool(C.rocksdb_options_get_report_bg_io_stats(opts.c))
+}
+
+// SetMempurgeThreshold is experimental function to set mempurge threshold.
+//
+// It is used to activate or deactive the Mempurge feature (memtable garbage
+// collection, which is deactivated by default).
+//
+// At every flush, the total useful payload (total entries minus garbage entries) is estimated as a ratio
+// [useful payload bytes]/[size of a memtable (in bytes)]. This ratio is then
+// compared to this `threshold` value:
+//   - if ratio<threshold: the flush is replaced by a mempurge operation
+//   - else: a regular flush operation takes place.
+//
+// Threshold values:
+//
+//	0.0: mempurge deactivated (default).
+//	1.0: recommended threshold value.
+//	>1.0 : aggressive mempurge.
+//	0 < threshold < 1.0: mempurge triggered only for very low useful payload
+//	ratios.
+func (opts *Options) SetMempurgeThreshold(threshold float64) {
+	C.rocksdb_options_set_experimental_mempurge_threshold(opts.c, C.double(threshold))
+}
+
+// GetMempurgeThreshold gets current mempurge threshold value.
+func (opts *Options) GetMempurgeThreshold() float64 {
+	return float64(C.rocksdb_options_get_experimental_mempurge_threshold(opts.c))
 }
 
 // SetUnorderedWrite sets unordered_write to true trades higher write throughput with

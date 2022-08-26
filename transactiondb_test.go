@@ -81,7 +81,7 @@ func TestTransactionDBCRUD(t *testing.T) {
 	// transaction
 	txn3 := db.TransactionBegin(wo, to, nil)
 	defer txn3.Destroy()
-	txn3.SetName("fake_name")
+	require.NoError(t, txn3.SetName("fake_name"))
 	require.Equal(t, "fake_name", txn3.GetName())
 	// delete
 	require.Nil(t, txn3.Prepare())
