@@ -57,6 +57,18 @@ func charSlice(data **C.char, len C.int) []*C.char {
 	return value
 }
 
+// charSliceIntoStringSlice converts a C array of *char to a []string.
+func charSliceIntoStringSlice(data **C.char, len C.int) []string {
+	s := charSlice(data, len)
+
+	result := make([]string, int(len))
+	for i := range s {
+		result[i] = C.GoString(s[i])
+	}
+
+	return result
+}
+
 // sizeSlice converts a C array of size_t to a []C.size_t.
 func sizeSlice(data *C.size_t, len C.int) []C.size_t {
 	var value []C.size_t

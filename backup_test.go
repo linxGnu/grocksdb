@@ -1,6 +1,7 @@
 package grocksdb
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -111,6 +112,15 @@ func TestBackupEngine(t *testing.T) {
 		// try to reopen restored db
 		backupDB, err := OpenDb(db.opts, dir)
 		require.Nil(t, err)
+
+		o, _ := LoadLatestOptions(dir, NewMemEnv(), true, NewLRUCache(1))
+		runtime.GC()
+		if o != nil {
+			o.Destroy()
+		}
+
+		_, err = LoadLatestOptions("", nil, true, nil)
+		require.Error(t, err)
 
 		r := NewDefaultReadOptions()
 		defer r.Destroy()

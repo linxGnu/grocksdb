@@ -111,10 +111,8 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 	require.Nil(t, db.FlushCF(cfh[0], NewDefaultFlushOptions()))
 
 	meta := db.GetColumnFamilyMetadataCF(cfh[0])
-
 	require.NotNil(t, meta)
 	runtime.GC()
-
 	require.True(t, meta.Size() > 0)
 	require.True(t, meta.FileCount() > 0)
 	require.Equal(t, "default", meta.Name())

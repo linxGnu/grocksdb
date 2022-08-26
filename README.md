@@ -53,4 +53,3 @@ Almost C API, excepts:
 - [ ] compaction_filter/compaction_filter_factory/compaction_filter_context
 - [ ] transactiondb_property_value/transactiondb_property_int
 - [ ] optimistictransactiondb_property_value/optimistictransactiondb_property_int
-- [ ] rocksdb_load_latest_options/rocksdb_load_latest_options_destroy

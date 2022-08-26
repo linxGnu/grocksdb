@@ -5,6 +5,8 @@ package grocksdb
 import "C"
 
 import (
+	"fmt"
+	"reflect"
 	"unsafe"
 )
 
@@ -2425,4 +2427,75 @@ func (opts *Options) Destroy() {
 	opts.env = nil
 
 	opts.bbto = nil
+}
+
+type LatestOptions struct {
+	opts Options
+
+	cfNames_ **C.char
+	cfNames  []string
+
+	cfOptions_ **C.rocksdb_options_t
+	cfOptions  []Options
+}
+
+// LoadLatestOptions loads the latest rocksdb options from the specified db_path.
+//
+// On success, num_column_families will be updated with a non-zero
+// number indicating the number of column families.
+func LoadLatestOptions(path string, env *Env, ignoreUnknownOpts bool, cache *Cache) (lo *LatestOptions, err error) {
+	if env == nil || cache == nil {
+		return nil, fmt.Errorf("please specify env and cache")
+	}
+
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+
+	var env_ *C.rocksdb_env_t
+	if env != nil {
+		env_ = env.c
+	}
+
+	var cache_ *C.rocksdb_cache_t
+	if cache != nil {
+		cache_ = cache.c
+	}
+
+	var (
+		numCF   C.size_t
+		opts    *C.rocksdb_options_t
+		cfNames **C.char
+		cfOpts  **C.rocksdb_options_t
+		cErr    *C.char
+	)
+	C.rocksdb_load_latest_options(cPath, env_, C.bool(ignoreUnknownOpts), cache_, &opts, &numCF, &cfNames, &cfOpts, &cErr)
+
+	if err = fromCError(cErr); err == nil {
+		// convert **C.rocksdb_options_t into []Options
+		var cfOptions_ []*C.rocksdb_options_t
+		sH := (*reflect.SliceHeader)(unsafe.Pointer(&cfOptions_))
+		sH.Cap, sH.Len, sH.Data = int(numCF), int(numCF), uintptr(unsafe.Pointer(cfOpts))
+
+		cfOptions := make([]Options, int(numCF))
+		for i := range cfOptions {
+			cfOptions[i] = Options{c: cfOptions_[i]}
+		}
+
+		lo = &LatestOptions{
+			opts: Options{c: opts},
+
+			cfNames_: cfNames,
+			cfNames:  charSliceIntoStringSlice(cfNames, C.int(numCF)),
+
+			cfOptions_: cfOpts,
+			cfOptions:  cfOptions,
+		}
+	}
+
+	return
+}
+
+// Destroy release underlying db_options, column_family_names, and column_family_options.
+func (l *LatestOptions) Destroy() {
+	C.rocksdb_load_latest_options_destroy(l.opts.c, l.cfNames_, l.cfOptions_, C.size_t(len(l.cfNames)))
 }
