@@ -6,7 +6,6 @@ import "C"
 
 import (
 	"fmt"
-	"reflect"
 	"unsafe"
 )
 
@@ -2472,10 +2471,7 @@ func LoadLatestOptions(path string, env *Env, ignoreUnknownOpts bool, cache *Cac
 
 	if err = fromCError(cErr); err == nil {
 		// convert **C.rocksdb_options_t into []Options
-		var cfOptions_ []*C.rocksdb_options_t
-		sH := (*reflect.SliceHeader)(unsafe.Pointer(&cfOptions_))
-		sH.Cap, sH.Len, sH.Data = int(numCF), int(numCF), uintptr(unsafe.Pointer(cfOpts))
-
+		cfOptions_ := unsafe.Slice(cfOpts, int(numCF))
 		cfOptions := make([]Options, int(numCF))
 		for i := range cfOptions {
 			cfOptions[i] = Options{c: cfOptions_[i]}
