@@ -24,7 +24,7 @@ jobs:
         id: cache-prebuilt-static-libs
         uses: actions/cache@v3
         with:
-          path: ./dist 
+          path: ${GITHUB_WORKSPACE}/dist 
           key: ${{ hashFiles('**/build.sh') }} 
 
       - name: Get dependencies
