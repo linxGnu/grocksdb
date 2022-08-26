@@ -1,7 +1,7 @@
 package grocksdb
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 	"testing"
 
@@ -227,7 +227,7 @@ func newTestDBPathNames(t *testing.T, names []string, targetSizes []uint64, appl
 
 	paths := make([]string, len(names))
 	for i, name := range names {
-		directory, e := ioutil.TempDir(dir, "gorocksdb-"+name)
+		directory, e := os.MkdirTemp(dir, "gorocksdb-"+name)
 		require.Nil(t, e)
 		paths[i] = directory
 	}

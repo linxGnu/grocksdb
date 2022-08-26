@@ -1536,6 +1536,30 @@ func (db *DB) CompactRangeCFOpt(cf *ColumnFamilyHandle, r Range, opt *CompactRan
 	C.rocksdb_compact_range_cf_opt(db.c, cf.c, opt.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)))
 }
 
+// SuggestCompactRange only for leveled compaction.
+func (db *DB) SuggestCompactRange(r Range) (err error) {
+	cStart := byteToChar(r.Start)
+	cLimit := byteToChar(r.Limit)
+
+	var cErr *C.char
+	C.rocksdb_suggest_compact_range(db.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// SuggestCompactRangeCF only for leveled compaction.
+func (db *DB) SuggestCompactRangeCF(cf *ColumnFamilyHandle, r Range) (err error) {
+	cStart := byteToChar(r.Start)
+	cLimit := byteToChar(r.Limit)
+
+	var cErr *C.char
+	C.rocksdb_suggest_compact_range_cf(db.c, cf.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
 // Flush triggers a manual flush for the database.
 func (db *DB) Flush(opts *FlushOptions) (err error) {
 	var cErr *C.char

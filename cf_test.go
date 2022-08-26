@@ -225,22 +225,37 @@ func TestColumnFamilyMultiGet(t *testing.T) {
 	require.Nil(t, db.PutCF(wo, cfh[1], givenKey3, givenVal3))
 
 	// column family 0 only has givenKey1
-	values, err := db.MultiGetCF(ro, cfh[0], []byte("noexist"), givenKey1, givenKey2, givenKey3)
-	defer values.Destroy()
-	require.Nil(t, err)
-	require.EqualValues(t, len(values), 4)
+	{
+		values, err := db.MultiGetCF(ro, cfh[0], []byte("noexist"), givenKey1, givenKey2, givenKey3)
+		require.Nil(t, err)
+		require.EqualValues(t, len(values), 4)
+		require.EqualValues(t, values[0].Data(), []byte(nil))
+		require.EqualValues(t, values[1].Data(), givenVal1)
+		require.EqualValues(t, values[2].Data(), []byte(nil))
+		require.EqualValues(t, values[3].Data(), []byte(nil))
+		values.Destroy()
+	}
 
-	require.EqualValues(t, values[0].Data(), []byte(nil))
-	require.EqualValues(t, values[1].Data(), givenVal1)
-	require.EqualValues(t, values[2].Data(), []byte(nil))
-	require.EqualValues(t, values[3].Data(), []byte(nil))
+	// try to compact
+	require.NoError(t, db.SuggestCompactRangeCF(cfh[0], Range{}))
+	db.CompactRangeCF(cfh[0], Range{})
+
+	{
+		values, err := db.MultiGetCF(ro, cfh[0], []byte("noexist"), givenKey1, givenKey2, givenKey3)
+		require.Nil(t, err)
+		require.EqualValues(t, len(values), 4)
+		require.EqualValues(t, values[0].Data(), []byte(nil))
+		require.EqualValues(t, values[1].Data(), givenVal1)
+		require.EqualValues(t, values[2].Data(), []byte(nil))
+		require.EqualValues(t, values[3].Data(), []byte(nil))
+		values.Destroy()
+	}
 
 	// column family 1 only has givenKey2 and givenKey3
-	values, err = db.MultiGetCF(ro, cfh[1], []byte("noexist"), givenKey1, givenKey2, givenKey3)
+	values, err := db.MultiGetCF(ro, cfh[1], []byte("noexist"), givenKey1, givenKey2, givenKey3)
 	defer values.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 4)
-
 	require.EqualValues(t, values[0].Data(), []byte(nil))
 	require.EqualValues(t, values[1].Data(), []byte(nil))
 	require.EqualValues(t, values[2].Data(), givenVal2)
@@ -254,7 +269,6 @@ func TestColumnFamilyMultiGet(t *testing.T) {
 	defer values.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 3)
-
 	require.EqualValues(t, values[0].Data(), givenVal1)
 	require.EqualValues(t, values[1].Data(), givenVal2)
 	require.EqualValues(t, values[2].Data(), givenVal3)
