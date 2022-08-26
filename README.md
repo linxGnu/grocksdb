@@ -27,11 +27,9 @@ Please follow this guide: https://github.com/facebook/rocksdb/blob/master/INSTAL
 
 ### Build 
 
-After that, you can install and build `grocksdb` using the following commands:
+After installing both `rocksdb` and `grocksdb`, you can build your app using the following commands:
 
 ```
-go get -u github.com/linxGnu/grocksdb
-
 CGO_CFLAGS="-I/path/to/rocksdb/include" \
 CGO_LDFLAGS="-L/path/to/rocksdb -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" \
   go build
