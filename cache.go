@@ -79,6 +79,11 @@ func (l *LRUCacheOptions) SetCapacity(s uint) {
 	C.rocksdb_lru_cache_options_set_capacity(l.c, C.ulong(s))
 }
 
+// SetCapacity sets number of shards used for this lru cache.
+func (l *LRUCacheOptions) SetNumShardBits(n int) {
+	C.rocksdb_lru_cache_options_set_num_shard_bits(l.c, C.int(n))
+}
+
 // SetMemoryAllocator for this lru cache.
 func (l *LRUCacheOptions) SetMemoryAllocator(m *MemoryAllocator) {
 	C.rocksdb_lru_cache_options_set_memory_allocator(l.c, m.c)
