@@ -18,14 +18,14 @@ jobs:
         id: go
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       
       - name: Cache PreBuilt Static Libs 
         id: cache-prebuilt-static-libs
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/dist
-          key: ${{ hashFiles('**/build.sh') }} 
+          path: dist
+          key: prebuilt-${{ hashFiles('**/build.sh') }} 
 
       - name: Get dependencies
         run: |
@@ -36,7 +36,7 @@ jobs:
           fi
 
       - name: Build
-        if: steps.cache-built-rocksdb.outputs.cache-hit != 'true'
+        if: steps.cache-prebuilt-static-libs.outputs.cache-hit != 'true'
         run: make libs
 
       - name: Test Coverage
