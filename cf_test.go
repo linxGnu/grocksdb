@@ -1,6 +1,7 @@
 package grocksdb
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -110,8 +111,32 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 	require.Nil(t, db.FlushCF(cfh[0], NewDefaultFlushOptions()))
 
 	meta := db.GetColumnFamilyMetadataCF(cfh[0])
+
 	require.NotNil(t, meta)
-	defer meta.Destroy()
+	runtime.GC()
+
+	require.True(t, meta.Size() > 0)
+	require.True(t, meta.FileCount() > 0)
+	require.Equal(t, "default", meta.Name())
+	{
+		lms := meta.LevelMetas()
+		for _, lm := range lms {
+			require.True(t, lm.Level() >= 0)
+			require.Equal(t, lm.size, lm.Size())
+
+			sms := lm.SstMetas()
+			for _, sm := range sms {
+				require.True(t, len(sm.RelativeFileName()) > 0)
+				require.True(t, sm.Size() > 0)
+				require.True(t, len(sm.SmallestKey()) > 0)
+				require.True(t, len(sm.LargestKey()) > 0)
+			}
+		}
+	}
+
+	meta = db.GetColumnFamilyMetadataCF(cfh[1])
+	require.NotNil(t, meta)
+	require.Equal(t, "guide", meta.Name())
 }
 
 func TestColumnFamilyPutGetDelete(t *testing.T) {
@@ -281,8 +306,7 @@ func TestColumnFamilyMultiGet(t *testing.T) {
 func TestCFMetadata(t *testing.T) {
 	db := newTestDB(t, nil)
 	defer db.Close()
-
 	meta := db.GetColumnFamilyMetadata()
 	require.NotNil(t, meta)
-	meta.Destroy()
+	require.Equal(t, "default", meta.Name())
 }
