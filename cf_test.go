@@ -1,6 +1,7 @@
 package grocksdb
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -108,6 +109,32 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 
 	// trigger flush
 	require.Nil(t, db.FlushCF(cfh[0], NewDefaultFlushOptions()))
+
+	meta := db.GetColumnFamilyMetadataCF(cfh[0])
+	require.NotNil(t, meta)
+	runtime.GC()
+	require.True(t, meta.Size() > 0)
+	require.True(t, meta.FileCount() > 0)
+	require.Equal(t, "default", meta.Name())
+	{
+		lms := meta.LevelMetas()
+		for _, lm := range lms {
+			require.True(t, lm.Level() >= 0)
+			require.Equal(t, lm.size, lm.Size())
+
+			sms := lm.SstMetas()
+			for _, sm := range sms {
+				require.True(t, len(sm.RelativeFileName()) > 0)
+				require.True(t, sm.Size() > 0)
+				require.True(t, len(sm.SmallestKey()) > 0)
+				require.True(t, len(sm.LargestKey()) > 0)
+			}
+		}
+	}
+
+	meta = db.GetColumnFamilyMetadataCF(cfh[1])
+	require.NotNil(t, meta)
+	require.Equal(t, "guide", meta.Name())
 }
 
 func TestColumnFamilyPutGetDelete(t *testing.T) {
@@ -225,22 +252,37 @@ func TestColumnFamilyMultiGet(t *testing.T) {
 	require.Nil(t, db.PutCF(wo, cfh[1], givenKey3, givenVal3))
 
 	// column family 0 only has givenKey1
-	values, err := db.MultiGetCF(ro, cfh[0], []byte("noexist"), givenKey1, givenKey2, givenKey3)
-	defer values.Destroy()
-	require.Nil(t, err)
-	require.EqualValues(t, len(values), 4)
+	{
+		values, err := db.MultiGetCF(ro, cfh[0], []byte("noexist"), givenKey1, givenKey2, givenKey3)
+		require.Nil(t, err)
+		require.EqualValues(t, len(values), 4)
+		require.EqualValues(t, values[0].Data(), []byte(nil))
+		require.EqualValues(t, values[1].Data(), givenVal1)
+		require.EqualValues(t, values[2].Data(), []byte(nil))
+		require.EqualValues(t, values[3].Data(), []byte(nil))
+		values.Destroy()
+	}
 
-	require.EqualValues(t, values[0].Data(), []byte(nil))
-	require.EqualValues(t, values[1].Data(), givenVal1)
-	require.EqualValues(t, values[2].Data(), []byte(nil))
-	require.EqualValues(t, values[3].Data(), []byte(nil))
+	// try to compact
+	require.NoError(t, db.SuggestCompactRangeCF(cfh[0], Range{}))
+	db.CompactRangeCF(cfh[0], Range{})
+
+	{
+		values, err := db.MultiGetCF(ro, cfh[0], []byte("noexist"), givenKey1, givenKey2, givenKey3)
+		require.Nil(t, err)
+		require.EqualValues(t, len(values), 4)
+		require.EqualValues(t, values[0].Data(), []byte(nil))
+		require.EqualValues(t, values[1].Data(), givenVal1)
+		require.EqualValues(t, values[2].Data(), []byte(nil))
+		require.EqualValues(t, values[3].Data(), []byte(nil))
+		values.Destroy()
+	}
 
 	// column family 1 only has givenKey2 and givenKey3
-	values, err = db.MultiGetCF(ro, cfh[1], []byte("noexist"), givenKey1, givenKey2, givenKey3)
+	values, err := db.MultiGetCF(ro, cfh[1], []byte("noexist"), givenKey1, givenKey2, givenKey3)
 	defer values.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 4)
-
 	require.EqualValues(t, values[0].Data(), []byte(nil))
 	require.EqualValues(t, values[1].Data(), []byte(nil))
 	require.EqualValues(t, values[2].Data(), givenVal2)
@@ -254,8 +296,15 @@ func TestColumnFamilyMultiGet(t *testing.T) {
 	defer values.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 3)
-
 	require.EqualValues(t, values[0].Data(), givenVal1)
 	require.EqualValues(t, values[1].Data(), givenVal2)
 	require.EqualValues(t, values[2].Data(), givenVal3)
+}
+
+func TestCFMetadata(t *testing.T) {
+	db := newTestDB(t, nil)
+	defer db.Close()
+	meta := db.GetColumnFamilyMetadata()
+	require.NotNil(t, meta)
+	require.Equal(t, "default", meta.Name())
 }

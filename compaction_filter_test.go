@@ -36,7 +36,8 @@ func TestCompactionFilter(t *testing.T) {
 	require.Nil(t, db.Put(wo, deleteKey, changeValNew))
 
 	// trigger a compaction
-	db.CompactRange(Range{nil, nil})
+	db.CompactRange(Range{})
+	require.NoError(t, db.SuggestCompactRange(Range{}))
 
 	// ensure that the value is changed after compaction
 	ro := NewDefaultReadOptions()

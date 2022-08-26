@@ -1,7 +1,6 @@
 package grocksdb
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -17,7 +16,7 @@ func TestExternalFile(t *testing.T) {
 	w := NewSSTFileWriter(envOpts, opts)
 	defer w.Destroy()
 
-	filePath, err := ioutil.TempFile("", "sst-file-test")
+	filePath, err := os.CreateTemp("", "sst-file-test")
 	require.Nil(t, err)
 	defer os.Remove(filePath.Name())
 
@@ -68,7 +67,7 @@ func TestExternalFileWithTS(t *testing.T) {
 	w := NewSSTFileWriter(envOpts, opts)
 	defer w.Destroy()
 
-	filePath, err := ioutil.TempFile("", "sst-file-ts-test")
+	filePath, err := os.CreateTemp("", "sst-file-ts-test")
 	require.Nil(t, err)
 	defer os.Remove(filePath.Name())
 

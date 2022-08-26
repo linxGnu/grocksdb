@@ -138,10 +138,6 @@ func marshalTimestamp(ts uint64) []byte {
 	return b
 }
 
-func unmarshalTimestamp(ts []byte) uint64 {
-	return binary.BigEndian.Uint64(ts)
-}
-
 func extractUserKey(key []byte) []byte {
 	return key[:len(key)-timestampSize]
 }

@@ -158,6 +158,10 @@ func TestOptions(t *testing.T) {
 	opts.SetReportBackgroundIOStats(true)
 	require.EqualValues(t, true, opts.ReportBackgroundIOStats())
 
+	require.EqualValues(t, 0.0, opts.GetMempurgeThreshold())
+	opts.SetMempurgeThreshold(0.1)
+	require.EqualValues(t, 0.1, opts.GetMempurgeThreshold())
+
 	opts.SetMaxTotalWalSize(10 << 30)
 	require.EqualValues(t, 10<<30, opts.GetMaxTotalWalSize())
 

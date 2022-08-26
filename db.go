@@ -1536,6 +1536,30 @@ func (db *DB) CompactRangeCFOpt(cf *ColumnFamilyHandle, r Range, opt *CompactRan
 	C.rocksdb_compact_range_cf_opt(db.c, cf.c, opt.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)))
 }
 
+// SuggestCompactRange only for leveled compaction.
+func (db *DB) SuggestCompactRange(r Range) (err error) {
+	cStart := byteToChar(r.Start)
+	cLimit := byteToChar(r.Limit)
+
+	var cErr *C.char
+	C.rocksdb_suggest_compact_range(db.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
+// SuggestCompactRangeCF only for leveled compaction.
+func (db *DB) SuggestCompactRangeCF(cf *ColumnFamilyHandle, r Range) (err error) {
+	cStart := byteToChar(r.Start)
+	cLimit := byteToChar(r.Limit)
+
+	var cErr *C.char
+	C.rocksdb_suggest_compact_range_cf(db.c, cf.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
 // Flush triggers a manual flush for the database.
 func (db *DB) Flush(opts *FlushOptions) (err error) {
 	var cErr *C.char
@@ -1762,7 +1786,29 @@ func (db *DB) DisableManualCompaction() {
 	C.rocksdb_disable_manual_compaction(db.c)
 }
 
-// Close closes the database.
+// GetColumnFamilyMetadata returns the metadata of the default column family.
+//
+// Note that the caller is responsible to release the returned memory
+// using rocksdb_column_family_metadata_destroy.
+func (db *DB) GetColumnFamilyMetadata() (m *ColumnFamilyMetadata) {
+	if c := C.rocksdb_get_column_family_metadata(db.c); c != nil {
+		m = newColumnFamilyMetadata(c)
+	}
+	return
+}
+
+// GetColumnFamilyMetadataCF returns the metadata of the specified column family.
+//
+// Note that the caller is responsible to release the returned memory
+// using rocksdb_column_family_metadata_destroy.
+func (db *DB) GetColumnFamilyMetadataCF(cf *ColumnFamilyHandle) (m *ColumnFamilyMetadata) {
+	if c := C.rocksdb_get_column_family_metadata_cf(db.c, cf.c); c != nil {
+		m = newColumnFamilyMetadata(c)
+	}
+	return
+}
+
+// Close the database.
 func (db *DB) Close() {
 	C.rocksdb_close(db.c)
 	db.c = nil

@@ -20,6 +20,7 @@ func TestCache(t *testing.T) {
 func TestCacheWithOpts(t *testing.T) {
 	opts := NewLRUCacheOptions()
 	opts.SetCapacity(19)
+	opts.SetNumShardBits(2)
 	defer opts.Destroy()
 
 	cache := NewLRUCacheWithOptions(opts)
