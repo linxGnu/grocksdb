@@ -108,6 +108,10 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 
 	// trigger flush
 	require.Nil(t, db.FlushCF(cfh[0], NewDefaultFlushOptions()))
+
+	meta := db.GetColumnFamilyMetadataCF(cfh[0])
+	require.NotNil(t, meta)
+	defer meta.Destroy()
 }
 
 func TestColumnFamilyPutGetDelete(t *testing.T) {
@@ -272,4 +276,13 @@ func TestColumnFamilyMultiGet(t *testing.T) {
 	require.EqualValues(t, values[0].Data(), givenVal1)
 	require.EqualValues(t, values[1].Data(), givenVal2)
 	require.EqualValues(t, values[2].Data(), givenVal3)
+}
+
+func TestCFMetadata(t *testing.T) {
+	db := newTestDB(t, nil)
+	defer db.Close()
+
+	meta := db.GetColumnFamilyMetadata()
+	require.NotNil(t, meta)
+	meta.Destroy()
 }

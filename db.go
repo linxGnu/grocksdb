@@ -1786,7 +1786,31 @@ func (db *DB) DisableManualCompaction() {
 	C.rocksdb_disable_manual_compaction(db.c)
 }
 
-// Close closes the database.
+// GetColumnFamilyMetadata returns the metadata of the default column family.
+//
+// Note that the caller is responsible to release the returned memory
+// using rocksdb_column_family_metadata_destroy.
+func (db *DB) GetColumnFamilyMetadata() (m *ColumnFamilyMetadata) {
+	meta := C.rocksdb_get_column_family_metadata(db.c)
+	if meta != nil {
+		m = &ColumnFamilyMetadata{c: meta}
+	}
+	return
+}
+
+// GetColumnFamilyMetadataCF returns the metadata of the specified column family.
+//
+// Note that the caller is responsible to release the returned memory
+// using rocksdb_column_family_metadata_destroy.
+func (db *DB) GetColumnFamilyMetadataCF(cf *ColumnFamilyHandle) (m *ColumnFamilyMetadata) {
+	meta := C.rocksdb_get_column_family_metadata_cf(db.c, cf.c)
+	if meta != nil {
+		m = &ColumnFamilyMetadata{c: meta}
+	}
+	return
+}
+
+// Close the database.
 func (db *DB) Close() {
 	C.rocksdb_close(db.c)
 	db.c = nil
