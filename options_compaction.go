@@ -245,12 +245,15 @@ func (opts *UniversalCompactionOptions) GetMaxSizeAmplificationPercent() int {
 // When we are compacting to a new file, here is the criteria whether
 // it needs to be compressed: assuming here are the list of files sorted
 // by generation time:
-//    A1...An B1...Bm C1...Ct
+//
+//	A1...An B1...Bm C1...Ct
+//
 // where A1 is the newest and Ct is the oldest, and we are going to compact
 // B1...Bm, we calculate the total size of all the files as total_size, as
 // well as  the total size of C1...Ct as total_C, the compaction output file
 // will be compressed iff
-//   total_C / total_size < this percentage
+//
+//	total_C / total_size < this percentage
 //
 // Default: -1
 func (opts *UniversalCompactionOptions) SetCompressionSizePercent(value int) {
@@ -268,12 +271,15 @@ func (opts *UniversalCompactionOptions) SetCompressionSizePercent(value int) {
 // When we are compacting to a new file, here is the criteria whether
 // it needs to be compressed: assuming here are the list of files sorted
 // by generation time:
-//    A1...An B1...Bm C1...Ct
+//
+//	A1...An B1...Bm C1...Ct
+//
 // where A1 is the newest and Ct is the oldest, and we are going to compact
 // B1...Bm, we calculate the total size of all the files as total_size, as
 // well as  the total size of C1...Ct as total_C, the compaction output file
 // will be compressed iff
-//   total_C / total_size < this percentage
+//
+//	total_C / total_size < this percentage
 func (opts *UniversalCompactionOptions) GetCompressionSizePercent() int {
 	return int(C.rocksdb_universal_compaction_options_get_compression_size_percent(opts.c))
 }

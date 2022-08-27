@@ -1,4 +1,4 @@
-// +build !testing
+//go:build !testing
 
 package grocksdb
 
