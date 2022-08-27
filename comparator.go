@@ -4,16 +4,14 @@ package grocksdb
 // #include "grocksdb.h"
 import "C"
 
-import (
-	"bytes"
-)
-
 // Comparing functor.
 //
 // Three-way comparison. Returns value:
-//   < 0 iff "a" < "b",
-//   == 0 iff "a" == "b",
-//   > 0 iff "a" > "b"
+//
+//	< 0 iff "a" < "b",
+//	== 0 iff "a" == "b",
+//	> 0 iff "a" > "b"
+//
 // Note that Compare(a, b) also compares timestamp if timestamp size is
 // non-zero. For the same user key with different timestamps, larger (newer)
 // timestamp comes first.
@@ -22,9 +20,10 @@ type Comparing = func(a, b []byte) int
 // ComparingWithoutTimestamp functor.
 //
 // Three-way comparison. Returns value:
-//   < 0 if "a" < "b",
-//   == 0 if "a" == "b",
-//   > 0 if "a" > "b"
+//
+//	< 0 if "a" < "b",
+//	== 0 if "a" == "b",
+//	> 0 if "a" > "b"
 type ComparingWithoutTimestamp = func(a []byte, aHasTs bool, b []byte, bHasTs bool) int
 
 // NewComparator creates a Comparator object which contains native c-comparator pointer.
@@ -115,12 +114,3 @@ func gorocksdb_comparator_compare_without_ts(idx int, cKeyA *C.char, cKeyALen C.
 func gorocksdb_comparator_name(idx int) *C.char {
 	return comperators.Get(idx).(comperatorWrapper).name
 }
-
-// for testing purpose only
-type testBytesReverseComparator struct{}
-
-func (cmp *testBytesReverseComparator) Name() string { return "grocksdb.bytes-reverse" }
-func (cmp *testBytesReverseComparator) Compare(a, b []byte) int {
-	return bytes.Compare(a, b) * -1
-}
-func (cmp *testBytesReverseComparator) Destroy() {}

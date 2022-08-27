@@ -90,7 +90,7 @@ const (
 // Options represent all of the available options when opening a database with Open.
 type Options struct {
 	c   *C.rocksdb_options_t
-	env *Env
+	env *C.rocksdb_env_t
 
 	// Hold references for GC.
 	bbto *BlockBasedTableOptions
@@ -306,13 +306,16 @@ func (opts *Options) SetDBPaths(dbpaths []*DBPath) {
 // SetEnv sets the specified object to interact with the environment,
 // e.g. to read/write files, schedule background work, etc.
 //
-// Note: move semantic. Don't use env after calling this function
+// NOTE: move semantic. Don't use env after calling this function
 func (opts *Options) SetEnv(env *Env) {
 	if opts.env != nil {
-		opts.env.Destroy()
+		C.rocksdb_env_destroy(opts.env)
 	}
-	opts.env = env
+
 	C.rocksdb_options_set_env(opts.c, env.c)
+	opts.env = env.c
+
+	env.c = nil
 }
 
 // SetInfoLogLevel sets the info log level.
@@ -2421,9 +2424,9 @@ func (opts *Options) Destroy() {
 	opts.cmo = nil
 
 	if opts.env != nil {
-		opts.env.Destroy()
+		C.rocksdb_env_destroy(opts.env)
+		opts.env = nil
 	}
-	opts.env = nil
 
 	opts.bbto = nil
 }
@@ -2491,7 +2494,18 @@ func LoadLatestOptions(path string, env *Env, ignoreUnknownOpts bool, cache *Cac
 	return
 }
 
+// ColumnFamilyNames gets column family names.
+func (l *LatestOptions) ColumnFamilyNames() []string {
+	return l.cfNames
+}
+
+// ColumnFamilyOpts returns corresponding options of column families.
+func (l *LatestOptions) ColumnFamilyOpts() []Options {
+	return l.cfOptions
+}
+
 // Destroy release underlying db_options, column_family_names, and column_family_options.
 func (l *LatestOptions) Destroy() {
 	C.rocksdb_load_latest_options_destroy(l.opts.c, l.cfNames_, l.cfOptions_, C.size_t(len(l.cfNames)))
+	l.opts.c = nil
 }

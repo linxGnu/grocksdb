@@ -2,6 +2,7 @@ package grocksdb
 
 import (
 	"os"
+	"runtime"
 	"strconv"
 	"testing"
 
@@ -280,6 +281,36 @@ func TestDBMultiGet(t *testing.T) {
 	require.EqualValues(t, values[1].Data(), givenVal1)
 	require.EqualValues(t, values[2].Data(), givenVal2)
 	require.EqualValues(t, values[3].Data(), givenVal3)
+}
+
+func TestLoadLatestOpts(t *testing.T) {
+	dir := t.TempDir()
+
+	opts := NewDefaultOptions()
+	defer opts.Destroy()
+
+	opts.SetCreateIfMissing(true)
+	for i := 0; i < 100; i++ {
+		opts.SetEnv(NewDefaultEnv())
+	}
+
+	db, err := OpenDb(opts, dir)
+	require.NoError(t, err)
+	_, err = db.CreateColumnFamily(opts, "abc")
+	require.NoError(t, err)
+	require.NoError(t, db.Flush(NewDefaultFlushOptions()))
+	db.Close()
+
+	o, err := LoadLatestOptions(dir, NewDefaultEnv(), true, NewLRUCache(1))
+	runtime.GC()
+	require.NoError(t, err)
+	require.NotEmpty(t, o.ColumnFamilyNames())
+	require.NotEmpty(t, o.ColumnFamilyOpts())
+	o.Destroy()
+	runtime.GC()
+
+	_, err = LoadLatestOptions("", nil, true, nil)
+	require.Error(t, err)
 }
 
 func TestDBGetApproximateSizes(t *testing.T) {
