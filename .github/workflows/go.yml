@@ -45,7 +45,7 @@ jobs:
         run: go test -v -tags testing -count=1 -coverprofile=coverage.out
 
       - name: Convert coverage to lcov
-        uses: jandelgado/gcov2lcov-action@v1.0.8
+        uses: jandelgado/gcov2lcov-action@v1.0.9
         with:
           infile: coverage.out
           outfile: coverage.lcov
