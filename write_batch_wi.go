@@ -10,10 +10,10 @@ type WriteBatchWI struct {
 }
 
 // NewWriteBatchWI create a WriteBatchWI object.
-// - reserved_bytes: reserved bytes in underlying WriteBatch
-// - overwrite_key: if true, overwrite the key in the index when inserting
-//                the same key as previously, so iterator will never
-//                show two entries with the same key.
+//   - reserved_bytes: reserved bytes in underlying WriteBatch
+//   - overwrite_key: if true, overwrite the key in the index when inserting
+//     the same key as previously, so iterator will never
+//     show two entries with the same key.
 func NewWriteBatchWI(reservedBytes uint, overwriteKeys bool) *WriteBatchWI {
 	return NewNativeWriteBatchWI(C.rocksdb_writebatch_wi_create(C.size_t(reservedBytes), boolToChar(overwriteKeys)))
 }

@@ -1,4 +1,4 @@
-// +build !testing,jemalloc
+//go:build !testing && jemalloc
 
 package grocksdb
 
