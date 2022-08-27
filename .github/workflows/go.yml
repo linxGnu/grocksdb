@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ^1.17
         id: go
@@ -20,12 +20,18 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
       
+      - name: GOARCH
+        run: echo "GOARCH=$(go env GOARCH)" >> $GITHUB_ENV
+      
+      - name: GOHOSTOS
+        run: echo "GOHOSTOS=$(go env GOHOSTOS)" >> $GITHUB_ENV
+      
       - name: Cache PreBuilt Static Libs 
         id: cache-prebuilt-static-libs
         uses: actions/cache@v3
         with:
           path: dist
-          key: prebuilt-${{ hashFiles('**/build.sh') }} 
+          key: ${{ env.GOHOSTOS }}-${{ env.GOARCH }}-${{ hashFiles('**/build.sh') }}
 
       - name: Build static libs
         if: steps.cache-prebuilt-static-libs.outputs.cache-hit != 'true'
@@ -39,7 +45,7 @@ jobs:
         run: go test -v -tags testing -count=1 -coverprofile=coverage.out
 
       - name: Convert coverage to lcov
-        uses: jandelgado/gcov2lcov-action@v1.0.8
+        uses: jandelgado/gcov2lcov-action@v1.0.9
         with:
           infile: coverage.out
           outfile: coverage.lcov
