@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // WriteBatchWI is a batching with index of Puts, Merges and Deletes to implement read-your-own-write.
 // See also: https://rocksdb.org/blog/2015/02/27/write-batch-with-index.html
@@ -212,6 +213,46 @@ func (wb *WriteBatchWI) GetFromDBWithCF(db *DB, opts *ReadOptions, cf *ColumnFam
 	}
 
 	return
+}
+
+// NewIteratorWithBase will create a new Iterator that will use WBWIIterator as a delta and
+// base_iterator as base.
+//
+// This function is only supported if the WriteBatchWithIndex was
+// constructed with overwrite_key=true.
+//
+// The returned iterator should be deleted by the caller.
+// The base_iterator is now 'owned' by the returned iterator. Deleting the
+// returned iterator will also delete the base_iterator.
+//
+// Updating write batch with the current key of the iterator is not safe.
+// We strongly recommend users not to do it. It will invalidate the current
+// key() and value() of the iterator. This invalidation happens even before
+// the write batch update finishes. The state may recover after Next() is
+// called.
+func (wb *WriteBatchWI) NewIteratorWithBase(db *DB, baseIter *Iterator) *Iterator {
+	cIter := C.rocksdb_writebatch_wi_create_iterator_with_base(wb.c, baseIter.c)
+	return NewNativeIterator(unsafe.Pointer(cIter))
+}
+
+// NewIteratorWithBaseCF will create a new Iterator that will use WBWIIterator as a delta and
+// base_iterator as base.
+//
+// This function is only supported if the WriteBatchWithIndex was
+// constructed with overwrite_key=true.
+//
+// The returned iterator should be deleted by the caller.
+// The base_iterator is now 'owned' by the returned iterator. Deleting the
+// returned iterator will also delete the base_iterator.
+//
+// Updating write batch with the current key of the iterator is not safe.
+// We strongly recommend users not to do it. It will invalidate the current
+// key() and value() of the iterator. This invalidation happens even before
+// the write batch update finishes. The state may recover after Next() is
+// called.
+func (wb *WriteBatchWI) NewIteratorWithBaseCF(db *DB, baseIter *Iterator, cf *ColumnFamilyHandle) *Iterator {
+	cIter := C.rocksdb_writebatch_wi_create_iterator_with_base_cf(wb.c, baseIter.c, cf.c)
+	return NewNativeIterator(unsafe.Pointer(cIter))
 }
 
 // Clear removes all the enqueued Put and Deletes.
