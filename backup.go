@@ -59,6 +59,15 @@ func CreateBackupEngine(db *DB) (be *BackupEngine, err error) {
 	return
 }
 
+// CreateBackupEngineWithPath opens a backup engine from DB and path
+func CreateBackupEngineWithPath(db *DB, path string) (be *BackupEngine, err error) {
+	if be, err = OpenBackupEngine(db.opts, path); err == nil {
+		be.db = db
+	}
+	return
+}
+
+
 // CreateNewBackup takes a new backup from db.
 func (b *BackupEngine) CreateNewBackup() (err error) {
 	var cErr *C.char
