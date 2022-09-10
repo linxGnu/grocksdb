@@ -62,8 +62,8 @@ type PinnableSliceHandle struct {
 }
 
 // NewNativePinnableSliceHandle creates a PinnableSliceHandle object.
-func NewNativePinnableSliceHandle(c *C.rocksdb_pinnableslice_t) *PinnableSliceHandle {
-	return &PinnableSliceHandle{c}
+func newNativePinnableSliceHandle(c *C.rocksdb_pinnableslice_t) *PinnableSliceHandle {
+	return &PinnableSliceHandle{c: c}
 }
 
 // Exists returns if underlying data exists.

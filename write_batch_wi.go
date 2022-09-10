@@ -16,12 +16,13 @@ type WriteBatchWI struct {
 //     the same key as previously, so iterator will never
 //     show two entries with the same key.
 func NewWriteBatchWI(reservedBytes uint, overwriteKeys bool) *WriteBatchWI {
-	return NewNativeWriteBatchWI(C.rocksdb_writebatch_wi_create(C.size_t(reservedBytes), boolToChar(overwriteKeys)))
+	cWB := C.rocksdb_writebatch_wi_create(C.size_t(reservedBytes), boolToChar(overwriteKeys))
+	return NewNativeWriteBatchWI(cWB)
 }
 
 // NewNativeWriteBatchWI create a WriteBatchWI object.
 func NewNativeWriteBatchWI(c *C.rocksdb_writebatch_wi_t) *WriteBatchWI {
-	return &WriteBatchWI{c}
+	return &WriteBatchWI{c: c}
 }
 
 // Put queues a key-value pair.

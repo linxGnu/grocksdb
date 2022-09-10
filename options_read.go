@@ -31,11 +31,11 @@ type ReadOptions struct {
 
 // NewDefaultReadOptions creates a default ReadOptions object.
 func NewDefaultReadOptions() *ReadOptions {
-	return NewNativeReadOptions(C.rocksdb_readoptions_create())
+	return newNativeReadOptions(C.rocksdb_readoptions_create())
 }
 
 // NewNativeReadOptions creates a ReadOptions object.
-func NewNativeReadOptions(c *C.rocksdb_readoptions_t) *ReadOptions {
+func newNativeReadOptions(c *C.rocksdb_readoptions_t) *ReadOptions {
 	return &ReadOptions{c: c}
 }
 

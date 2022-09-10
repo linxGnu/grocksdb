@@ -15,8 +15,8 @@ type Transaction struct {
 }
 
 // NewNativeTransaction creates a Transaction object.
-func NewNativeTransaction(c *C.rocksdb_transaction_t) *Transaction {
-	return &Transaction{c}
+func newNativeTransaction(c *C.rocksdb_transaction_t) *Transaction {
+	return &Transaction{c: c}
 }
 
 // SetName of transaction.
@@ -90,7 +90,7 @@ func (transaction *Transaction) GetPinned(opts *ReadOptions, key []byte) (handle
 
 	cHandle := C.rocksdb_transaction_get_pinned(transaction.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -123,7 +123,7 @@ func (transaction *Transaction) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFam
 
 	cHandle := C.rocksdb_transaction_get_pinned_cf(transaction.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -161,7 +161,7 @@ func (transaction *Transaction) GetPinnedForUpdate(opts *ReadOptions, key []byte
 		C.uchar(byte(1)), /*exclusive*/
 		&cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -199,7 +199,7 @@ func (transaction *Transaction) GetPinnedForUpdateWithCF(opts *ReadOptions, cf *
 		C.uchar(byte(1)), /*exclusive*/
 		&cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -429,7 +429,7 @@ func (transaction *Transaction) RollbackToSavePoint() (err error) {
 
 // GetSnapshot returns the Snapshot created by the last call to SetSnapshot().
 func (transaction *Transaction) GetSnapshot() *Snapshot {
-	return NewNativeSnapshot(C.rocksdb_transaction_get_snapshot(transaction.c))
+	return newNativeSnapshot(C.rocksdb_transaction_get_snapshot(transaction.c))
 }
 
 // Destroy deallocates the transaction object.

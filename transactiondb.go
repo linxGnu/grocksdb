@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+
 import (
 	"fmt"
 	"unsafe"
@@ -89,7 +90,7 @@ func OpenTransactionDbColumnFamilies(
 		}
 		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
 		for i, c := range cHandles {
-			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+			cfHandles[i] = newNativeColumnFamilyHandle(c)
 		}
 	}
 
@@ -102,7 +103,7 @@ func OpenTransactionDbColumnFamilies(
 
 // NewSnapshot creates a new snapshot of the database.
 func (db *TransactionDB) NewSnapshot() *Snapshot {
-	return NewNativeSnapshot(C.rocksdb_transactiondb_create_snapshot(db.c))
+	return newNativeSnapshot(C.rocksdb_transactiondb_create_snapshot(db.c))
 }
 
 // ReleaseSnapshot releases the snapshot and its resources.
@@ -119,16 +120,17 @@ func (db *TransactionDB) TransactionBegin(
 	oldTransaction *Transaction,
 ) *Transaction {
 	if oldTransaction != nil {
-		return NewNativeTransaction(C.rocksdb_transaction_begin(
+		cTx := C.rocksdb_transaction_begin(
 			db.c,
 			opts.c,
 			transactionOpts.c,
 			oldTransaction.c,
-		))
+		)
+		return newNativeTransaction(cTx)
 	}
 
-	return NewNativeTransaction(C.rocksdb_transaction_begin(
-		db.c, opts.c, transactionOpts.c, nil))
+	cTx := C.rocksdb_transaction_begin(db.c, opts.c, transactionOpts.c, nil)
+	return newNativeTransaction(cTx)
 }
 
 // Get returns the data associated with the key from the database.
@@ -158,7 +160,7 @@ func (db *TransactionDB) GetPinned(opts *ReadOptions, key []byte) (handle *Pinna
 
 	cHandle := C.rocksdb_transactiondb_get_pinned(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -191,7 +193,7 @@ func (db *TransactionDB) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFamilyHand
 
 	cHandle := C.rocksdb_transactiondb_get_pinned_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -380,7 +382,7 @@ func (db *TransactionDB) NewCheckpoint() (cp *Checkpoint, err error) {
 		db.c, &cErr,
 	)
 	if err = fromCError(cErr); err == nil {
-		cp = NewNativeCheckpoint(cCheckpoint)
+		cp = newNativeCheckpoint(cCheckpoint)
 	}
 
 	return
@@ -395,7 +397,7 @@ func (db *TransactionDB) CreateColumnFamily(opts *Options, name string) (handle 
 
 	cHandle := C.rocksdb_transactiondb_create_column_family(db.c, opts.c, cName, &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativeColumnFamilyHandle(cHandle)
+		handle = newNativeColumnFamilyHandle(cHandle)
 	}
 
 	C.free(unsafe.Pointer(cName))

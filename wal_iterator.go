@@ -3,9 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
-import (
-	"unsafe"
-)
+import "unsafe"
 
 // WalIterator is iterator for WAL Files.
 type WalIterator struct {
@@ -14,7 +12,7 @@ type WalIterator struct {
 
 // NewNativeWalIterator returns new WalIterator.
 func NewNativeWalIterator(c unsafe.Pointer) *WalIterator {
-	return &WalIterator{(*C.rocksdb_wal_iterator_t)(c)}
+	return &WalIterator{c: (*C.rocksdb_wal_iterator_t)(c)}
 }
 
 // Valid check if current WAL is valid.

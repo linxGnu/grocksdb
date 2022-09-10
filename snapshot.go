@@ -10,8 +10,8 @@ type Snapshot struct {
 }
 
 // NewNativeSnapshot creates a Snapshot object.
-func NewNativeSnapshot(c *C.rocksdb_snapshot_t) *Snapshot {
-	return &Snapshot{c}
+func newNativeSnapshot(c *C.rocksdb_snapshot_t) *Snapshot {
+	return &Snapshot{c: c}
 }
 
 // Destroy deallocates the Snapshot object.

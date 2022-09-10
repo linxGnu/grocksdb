@@ -162,7 +162,7 @@ func OpenDbColumnFamilies(
 		}
 		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
 		for i, c := range cHandles {
-			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+			cfHandles[i] = newNativeColumnFamilyHandle(c)
 		}
 	}
 
@@ -234,7 +234,7 @@ func OpenDbColumnFamiliesWithTTL(
 		}
 		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
 		for i, c := range cHandles {
-			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+			cfHandles[i] = newNativeColumnFamilyHandle(c)
 		}
 	}
 
@@ -292,7 +292,7 @@ func OpenDbForReadOnlyColumnFamilies(
 		}
 		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
 		for i, c := range cHandles {
-			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+			cfHandles[i] = newNativeColumnFamilyHandle(c)
 		}
 	}
 
@@ -360,7 +360,7 @@ func OpenDbAsSecondaryColumnFamilies(
 		}
 		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
 		for i, c := range cHandles {
-			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+			cfHandles[i] = newNativeColumnFamilyHandle(c)
 		}
 	}
 
@@ -425,7 +425,7 @@ func OpenDbAndTrimHistory(opts *Options,
 		}
 		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
 		for i, c := range cHandles {
-			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+			cfHandles[i] = newNativeColumnFamilyHandle(c)
 		}
 	}
 
@@ -646,7 +646,7 @@ func (db *DB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHan
 
 	cHandle := C.rocksdb_get_pinned(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -661,7 +661,7 @@ func (db *DB) GetPinnedCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte)
 
 	cHandle := C.rocksdb_get_pinned_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -1202,7 +1202,7 @@ func (db *DB) GetLatestSequenceNumber() uint64 {
 // NewSnapshot creates a new snapshot of the database.
 func (db *DB) NewSnapshot() *Snapshot {
 	cSnap := C.rocksdb_create_snapshot(db.c)
-	return NewNativeSnapshot(cSnap)
+	return newNativeSnapshot(cSnap)
 }
 
 // ReleaseSnapshot releases the snapshot and its resources.
@@ -1262,7 +1262,7 @@ func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFami
 
 	cHandle := C.rocksdb_create_column_family(db.c, opts.c, cName, &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativeColumnFamilyHandle(cHandle)
+		handle = newNativeColumnFamilyHandle(cHandle)
 	}
 
 	C.free(unsafe.Pointer(cName))
@@ -1293,7 +1293,7 @@ func (db *DB) CreateColumnFamilyWithTTL(opts *Options, name string, ttl int) (ha
 
 	cHandle := C.rocksdb_create_column_family_with_ttl(db.c, opts.c, cName, C.int(ttl), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativeColumnFamilyHandle(cHandle)
+		handle = newNativeColumnFamilyHandle(cHandle)
 	}
 
 	C.free(unsafe.Pointer(cName))
@@ -1750,7 +1750,7 @@ func (db *DB) NewCheckpoint() (cp *Checkpoint, err error) {
 		db.c, &cErr,
 	)
 	if err = fromCError(cErr); err == nil {
-		cp = NewNativeCheckpoint(cCheckpoint)
+		cp = newNativeCheckpoint(cCheckpoint)
 	}
 	return
 }

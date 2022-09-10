@@ -14,14 +14,15 @@ type DBPath struct {
 // with the given path and target_size.
 func NewDBPath(path string, targetSize uint64) (dbPath *DBPath) {
 	cpath := C.CString(path)
-	dbPath = NewNativeDBPath(C.rocksdb_dbpath_create(cpath, C.uint64_t(targetSize)))
+	cDBPath := C.rocksdb_dbpath_create(cpath, C.uint64_t(targetSize))
+	dbPath = newNativeDBPath(cDBPath)
 	C.free(unsafe.Pointer(cpath))
 	return
 }
 
 // NewNativeDBPath creates a DBPath object.
-func NewNativeDBPath(c *C.rocksdb_dbpath_t) *DBPath {
-	return &DBPath{c}
+func newNativeDBPath(c *C.rocksdb_dbpath_t) *DBPath {
+	return &DBPath{c: c}
 }
 
 // Destroy deallocates the DBPath object.

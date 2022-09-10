@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // A SliceTransform can be used as a prefix extractor.
 type SliceTransform interface {
@@ -23,17 +24,17 @@ type SliceTransform interface {
 
 // NewFixedPrefixTransform creates a new fixed prefix transform.
 func NewFixedPrefixTransform(prefixLen int) SliceTransform {
-	return NewNativeSliceTransform(C.rocksdb_slicetransform_create_fixed_prefix(C.size_t(prefixLen)))
+	return NewNativeSliceTransform(unsafe.Pointer(C.rocksdb_slicetransform_create_fixed_prefix(C.size_t(prefixLen))))
 }
 
 // NewNoopPrefixTransform creates a new no-op prefix transform.
 func NewNoopPrefixTransform() SliceTransform {
-	return NewNativeSliceTransform(C.rocksdb_slicetransform_create_noop())
+	return NewNativeSliceTransform(unsafe.Pointer(C.rocksdb_slicetransform_create_noop()))
 }
 
 // NewNativeSliceTransform creates a SliceTransform object.
-func NewNativeSliceTransform(c *C.rocksdb_slicetransform_t) SliceTransform {
-	return &nativeSliceTransform{c}
+func NewNativeSliceTransform(c unsafe.Pointer) SliceTransform {
+	return &nativeSliceTransform{c: (*C.rocksdb_slicetransform_t)(c)}
 }
 
 type nativeSliceTransform struct {

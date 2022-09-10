@@ -15,7 +15,7 @@ func (fp *NativeFilterPolicy) Destroy() {
 
 // creates a FilterPolicy object.
 func newNativeFilterPolicy(c *C.rocksdb_filterpolicy_t) *NativeFilterPolicy {
-	return &NativeFilterPolicy{c}
+	return &NativeFilterPolicy{c: c}
 }
 
 // NewBloomFilter returns a new filter policy that uses a bloom filter with approximately
@@ -30,7 +30,8 @@ func newNativeFilterPolicy(c *C.rocksdb_filterpolicy_t) *NativeFilterPolicy {
 // FilterPolicy (like NewBloomFilterPolicy) that does not ignore
 // trailing spaces in keys.
 func NewBloomFilter(bitsPerKey float64) *NativeFilterPolicy {
-	return newNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom(C.double(bitsPerKey)))
+	cFilter := C.rocksdb_filterpolicy_create_bloom(C.double(bitsPerKey))
+	return newNativeFilterPolicy(cFilter)
 }
 
 // NewBloomFilterFull returns a new filter policy that uses a full bloom filter
@@ -45,7 +46,8 @@ func NewBloomFilter(bitsPerKey float64) *NativeFilterPolicy {
 // FilterPolicy (like NewBloomFilterPolicy) that does not ignore
 // trailing spaces in keys.
 func NewBloomFilterFull(bitsPerKey float64) *NativeFilterPolicy {
-	return newNativeFilterPolicy(C.rocksdb_filterpolicy_create_bloom_full(C.double(bitsPerKey)))
+	cFilter := C.rocksdb_filterpolicy_create_bloom_full(C.double(bitsPerKey))
+	return newNativeFilterPolicy(cFilter)
 }
 
 // NewRibbonFilterPolicy creates a new Bloom alternative that saves about
@@ -76,7 +78,8 @@ func NewBloomFilterFull(bitsPerKey float64) *NativeFilterPolicy {
 // Also consider using optimize_filters_for_memory to save filter
 // memory.
 func NewRibbonFilterPolicy(bloomEquivalentBitsPerKey float64) *NativeFilterPolicy {
-	return newNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon(C.double(bloomEquivalentBitsPerKey)))
+	cFilter := C.rocksdb_filterpolicy_create_ribbon(C.double(bloomEquivalentBitsPerKey))
+	return newNativeFilterPolicy(cFilter)
 }
 
 // NewRibbonHybridFilterPolicy similar to Ribbon.
@@ -92,5 +95,6 @@ func NewRibbonFilterPolicy(bloomEquivalentBitsPerKey float64) *NativeFilterPolic
 // bloom_before_level=-1 -> Always generate Ribbon filters (except in
 // some extreme or exceptional cases).
 func NewRibbonHybridFilterPolicy(bloomEquivalentBitsPerKey float64, bloomBeforeLevel int) *NativeFilterPolicy {
-	return newNativeFilterPolicy(C.rocksdb_filterpolicy_create_ribbon_hybrid(C.double(bloomEquivalentBitsPerKey), C.int(bloomBeforeLevel)))
+	cFilter := C.rocksdb_filterpolicy_create_ribbon_hybrid(C.double(bloomEquivalentBitsPerKey), C.int(bloomBeforeLevel))
+	return newNativeFilterPolicy(cFilter)
 }

@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // A CompactionFilter can be used to filter keys during compaction time.
 type CompactionFilter interface {
@@ -39,8 +40,8 @@ type CompactionFilter interface {
 }
 
 // NewNativeCompactionFilter creates a CompactionFilter object.
-func NewNativeCompactionFilter(c *C.rocksdb_compactionfilter_t) CompactionFilter {
-	return &nativeCompactionFilter{c}
+func NewNativeCompactionFilter(c unsafe.Pointer) CompactionFilter {
+	return &nativeCompactionFilter{c: (*C.rocksdb_compactionfilter_t)(c)}
 }
 
 type nativeCompactionFilter struct {
