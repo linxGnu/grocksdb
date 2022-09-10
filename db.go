@@ -1814,6 +1814,11 @@ func (db *DB) Close() {
 	db.c = nil
 }
 
+// Native returns native DB
+func (db *DB) Native() unsafe.Pointer {
+	return unsafe.Pointer(db.c)
+}
+
 // DestroyDb removes a database entirely, removing everything from the
 // filesystem.
 func DestroyDb(name string, opts *Options) (err error) {

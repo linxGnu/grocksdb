@@ -19,3 +19,8 @@ func (snapshot *Snapshot) Destroy() {
 	C.rocksdb_free(unsafe.Pointer(snapshot.c))
 	snapshot.c = nil
 }
+
+// Native returns native Snapshot
+func (snapshot *Snapshot) Native() unsafe.Pointer {
+	return unsafe.Pointer(snapshot.c)
+}

@@ -438,6 +438,11 @@ func (transaction *Transaction) Destroy() {
 	transaction.c = nil
 }
 
+// Native returns native Transaction
+func (iter *Transaction) Native() unsafe.Pointer {
+	return unsafe.Pointer(iter.c)
+}
+
 // GetWriteBatchWI returns underlying write batch wi.
 func (transaction *Transaction) GetWriteBatchWI() *WriteBatchWI {
 	wi := C.rocksdb_transaction_get_writebatch_wi(transaction.c)

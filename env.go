@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // Env is a system call environment used by a database.
 type Env struct {
@@ -113,4 +114,9 @@ func (env *Env) LowerHighPriorityThreadPoolCPUPriority() {
 func (env *Env) Destroy() {
 	C.rocksdb_env_destroy(env.c)
 	env.c = nil
+}
+
+// Native returns native Env
+func (env *Env) Native() unsafe.Pointer {
+	return unsafe.Pointer(env.c)
 }

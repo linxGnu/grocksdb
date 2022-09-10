@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // TransactionOptions represent all of the available options options for
 // a transaction on the database.
@@ -70,6 +71,11 @@ func (opts *TransactionOptions) Destroy() {
 	opts.c = nil
 }
 
+// Native returns native TransactionOptions
+func (opts *TransactionOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
+}
+
 // OptimisticTransactionOptions represent all of the available options options for
 // a optimistic transaction on the database.
 type OptimisticTransactionOptions struct {
@@ -96,4 +102,9 @@ func (opts *OptimisticTransactionOptions) SetSetSnapshot(value bool) {
 func (opts *OptimisticTransactionOptions) Destroy() {
 	C.rocksdb_optimistictransaction_options_destroy(opts.c)
 	opts.c = nil
+}
+
+// Native returns native OptimisticTransactionOptions
+func (opts *OptimisticTransactionOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }

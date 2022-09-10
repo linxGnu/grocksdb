@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // IngestExternalFileOptions represents available options when ingesting external files.
 type IngestExternalFileOptions struct {
@@ -62,4 +63,9 @@ func (opts *IngestExternalFileOptions) SetIngestionBehind(flag bool) {
 func (opts *IngestExternalFileOptions) Destroy() {
 	C.rocksdb_ingestexternalfileoptions_destroy(opts.c)
 	opts.c = nil
+}
+
+// Native returns native IngestExternalFileOptions
+func (opts *IngestExternalFileOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }

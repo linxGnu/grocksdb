@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // Cache is a cache used to store data read from data in memory.
 type Cache struct {
@@ -58,6 +59,11 @@ func (c *Cache) Destroy() {
 	c.c = nil
 }
 
+// Native returns native Cache
+func (c *Cache) Native() unsafe.Pointer {
+	return unsafe.Pointer(c.c)
+}
+
 // LRUCacheOptions are options for LRU Cache.
 type LRUCacheOptions struct {
 	c *C.rocksdb_lru_cache_options_t
@@ -87,4 +93,9 @@ func (l *LRUCacheOptions) SetNumShardBits(n int) {
 // SetMemoryAllocator for this lru cache.
 func (l *LRUCacheOptions) SetMemoryAllocator(m *MemoryAllocator) {
 	C.rocksdb_lru_cache_options_set_memory_allocator(l.c, m.c)
+}
+
+// Native returns native LRUCacheOptions
+func (l *LRUCacheOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(l.c)
 }

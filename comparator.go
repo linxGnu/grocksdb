@@ -3,6 +3,7 @@ package grocksdb
 // #include "rocksdb/c.h"
 // #include "grocksdb.h"
 import "C"
+import "unsafe"
 
 // Comparing functor.
 //
@@ -73,6 +74,11 @@ func (c *Comparator) TimestampSize() uint64 { return c.tsSize }
 func (c *Comparator) Destroy() {
 	C.rocksdb_comparator_destroy(c.c)
 	c.c = nil
+}
+
+// Native returns native Comparator
+func (c *Comparator) Native() unsafe.Pointer {
+	return unsafe.Pointer(c.c)
 }
 
 // Hold references to comperators.

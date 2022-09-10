@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // WriteOptions represent all of the available options when writing to a
 // database.
@@ -117,4 +118,9 @@ func (opts *WriteOptions) MemtableInsertHintPerBatch() bool {
 func (opts *WriteOptions) Destroy() {
 	C.rocksdb_writeoptions_destroy(opts.c)
 	opts.c = nil
+}
+
+// Native returns native WriteOptions
+func (opts *WriteOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }

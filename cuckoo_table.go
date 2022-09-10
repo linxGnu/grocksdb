@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // CuckooTableOptions are options for cuckoo table.
 type CuckooTableOptions struct {
@@ -70,4 +71,9 @@ func (opts *CuckooTableOptions) SetIdentityAsFirstHash(value bool) {
 // Default: true
 func (opts *CuckooTableOptions) SetUseModuleHash(value bool) {
 	C.rocksdb_cuckoo_options_set_use_module_hash(opts.c, boolToChar(value))
+}
+
+// Native returns native CuckooTableOptions
+func (opts *CuckooTableOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }

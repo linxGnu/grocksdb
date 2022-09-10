@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+
 import (
 	"unsafe"
 )
@@ -156,4 +157,9 @@ func (db *OptimisticTransactionDB) GetBaseDB() *DB {
 func (db *OptimisticTransactionDB) CloseBaseDB(base *DB) {
 	C.rocksdb_optimistictransactiondb_close_base_db(base.c)
 	base.c = nil
+}
+
+// Native returns native OptimisticTransactionDB
+func (db *OptimisticTransactionDB) Native() unsafe.Pointer {
+	return unsafe.Pointer(db.c)
 }

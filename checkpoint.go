@@ -48,3 +48,8 @@ func (checkpoint *Checkpoint) Destroy() {
 	C.rocksdb_checkpoint_object_destroy(checkpoint.c)
 	checkpoint.c = nil
 }
+
+// Native returns native Checkpoint
+func (checkpoint *Checkpoint) Native() unsafe.Pointer {
+	return unsafe.Pointer(checkpoint.c)
+}

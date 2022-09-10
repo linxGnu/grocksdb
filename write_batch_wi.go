@@ -267,3 +267,8 @@ func (wb *WriteBatchWI) Destroy() {
 		wb.c = nil
 	}
 }
+
+// Native returns native WriteBatchWI
+func (wb *WriteBatchWI) Native() unsafe.Pointer {
+	return unsafe.Pointer(wb.c)
+}

@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // EnvOptions represents options for env.
 type EnvOptions struct {
@@ -22,4 +23,9 @@ func NewNativeEnvOptions(c *C.rocksdb_envoptions_t) *EnvOptions {
 func (opts *EnvOptions) Destroy() {
 	C.rocksdb_envoptions_destroy(opts.c)
 	opts.c = nil
+}
+
+// Native returns native EnvOptions
+func (opts *EnvOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }

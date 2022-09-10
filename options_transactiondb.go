@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // TransactionDBOptions represent all of the available options when opening a transactional database
 // with OpenTransactionDb.
@@ -69,4 +70,9 @@ func (opts *TransactionDBOptions) SetDefaultLockTimeout(defaultLockTimeout int64
 func (opts *TransactionDBOptions) Destroy() {
 	C.rocksdb_transactiondb_options_destroy(opts.c)
 	opts.c = nil
+}
+
+// Native returns native TransactionDBOptions
+func (opts *TransactionDBOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }

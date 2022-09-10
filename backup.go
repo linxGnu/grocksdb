@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+
 import (
 	"unsafe"
 )
@@ -66,7 +67,6 @@ func CreateBackupEngineWithPath(db *DB, path string) (be *BackupEngine, err erro
 	}
 	return
 }
-
 
 // CreateNewBackup takes a new backup from db.
 func (b *BackupEngine) CreateNewBackup() (err error) {
@@ -156,4 +156,9 @@ func (b *BackupEngine) Close() {
 	C.rocksdb_backup_engine_close(b.c)
 	b.c = nil
 	b.db = nil
+}
+
+// Native returns native BackupEngine
+func (b *BackupEngine) Native() unsafe.Pointer {
+	return unsafe.Pointer(b.c)
 }

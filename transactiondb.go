@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+
 import (
 	"fmt"
 	"unsafe"
@@ -461,4 +462,9 @@ func (db *TransactionDB) NewIteratorCF(opts *ReadOptions, cf *ColumnFamilyHandle
 func (db *TransactionDB) Close() {
 	C.rocksdb_transactiondb_close(db.c)
 	db.c = nil
+}
+
+// Native returns native TransactionDB
+func (db *TransactionDB) Native() unsafe.Pointer {
+	return unsafe.Pointer(db.c)
 }

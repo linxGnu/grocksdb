@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+
 import (
 	"unsafe"
 )
@@ -47,4 +48,9 @@ func (iter *WalIterator) GetBatch() (*WriteBatch, uint64) {
 	var cSeq C.uint64_t
 	cB := C.rocksdb_wal_iter_get_batch(iter.c, &cSeq)
 	return NewNativeWriteBatch(cB), uint64(cSeq)
+}
+
+// Native returns native WalIterator
+func (iter *WalIterator) Native() unsafe.Pointer {
+	return unsafe.Pointer(iter.c)
 }

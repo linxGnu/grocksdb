@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // RateLimiter is used to control write rate of flush and
 // compaction.
@@ -28,4 +29,9 @@ func NewNativeRateLimiter(c *C.rocksdb_ratelimiter_t) *RateLimiter {
 func (r *RateLimiter) Destroy() {
 	C.rocksdb_ratelimiter_destroy(r.c)
 	r.c = nil
+}
+
+// Native returns native RateLimiter
+func (r *RateLimiter) Native() unsafe.Pointer {
+	return unsafe.Pointer(r.c)
 }

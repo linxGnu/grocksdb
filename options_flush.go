@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // FlushOptions represent all of the available options when manual flushing the
 // database.
@@ -35,4 +36,9 @@ func (opts *FlushOptions) SetWait(value bool) {
 func (opts *FlushOptions) Destroy() {
 	C.rocksdb_flushoptions_destroy(opts.c)
 	opts.c = nil
+}
+
+// Native returns native FlushOptions
+func (opts *FlushOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }

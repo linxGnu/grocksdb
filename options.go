@@ -2431,6 +2431,11 @@ func (opts *Options) Destroy() {
 	opts.bbto = nil
 }
 
+// Native returns native Options
+func (opts *Options) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
+}
+
 type LatestOptions struct {
 	opts Options
 

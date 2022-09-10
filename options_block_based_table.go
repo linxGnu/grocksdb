@@ -3,6 +3,7 @@ package grocksdb
 // #include "rocksdb/c.h"
 // #include "grocksdb.h"
 import "C"
+import "unsafe"
 
 // IndexType specifies the index type that will be used for this table.
 type IndexType uint
@@ -279,4 +280,9 @@ func (opts *BlockBasedTableOptions) SetCacheIndexAndFilterBlocksWithHighPriority
 // Default: true.
 func (opts *BlockBasedTableOptions) SetPinTopLevelIndexAndFilter(value bool) {
 	C.rocksdb_block_based_options_set_pin_top_level_index_and_filter(opts.c, boolToChar(value))
+}
+
+// Native returns native BlockBasedTableOptions
+func (iter *BlockBasedTableOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(iter.c)
 }

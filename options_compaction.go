@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // UniversalCompactionStopStyle describes a algorithm used to make a
 // compaction request stop picking new files into a single compaction run.
@@ -46,6 +47,11 @@ func NewCompactRangeOptions() *CompactRangeOptions {
 func (opts *CompactRangeOptions) Destroy() {
 	C.rocksdb_compactoptions_destroy(opts.c)
 	opts.c = nil
+}
+
+// Native returns native CompactRangeOptions
+func (opts *CompactRangeOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }
 
 // SetExclusiveManualCompaction if more than one thread calls manual compaction,
@@ -145,6 +151,11 @@ func (opts *FIFOCompactionOptions) GetMaxTableFilesSize() uint64 {
 func (opts *FIFOCompactionOptions) Destroy() {
 	C.rocksdb_fifo_compaction_options_destroy(opts.c)
 	opts.c = nil
+}
+
+// Native returns native FIFOCompactionOptions
+func (opts *FIFOCompactionOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }
 
 // UniversalCompactionOptions represent all of the available options for
@@ -300,4 +311,9 @@ func (opts *UniversalCompactionOptions) GetStopStyle() UniversalCompactionStopSt
 func (opts *UniversalCompactionOptions) Destroy() {
 	C.rocksdb_universal_compaction_options_destroy(opts.c)
 	opts.c = nil
+}
+
+// Native returns native UniversalCompactionOptions
+func (opts *UniversalCompactionOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }

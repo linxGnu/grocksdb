@@ -130,3 +130,8 @@ func (iter *Iterator) Close() {
 	C.rocksdb_iter_destroy(iter.c)
 	iter.c = nil
 }
+
+// Native returns native Iterator
+func (iter *Iterator) Native() unsafe.Pointer {
+	return unsafe.Pointer(iter.c)
+}

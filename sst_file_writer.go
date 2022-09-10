@@ -127,3 +127,8 @@ func (w *SSTFileWriter) Destroy() {
 	C.rocksdb_sstfilewriter_destroy(w.c)
 	w.c = nil
 }
+
+// Native returns native SSTFileWriter
+func (w *SSTFileWriter) Native() unsafe.Pointer {
+	return unsafe.Pointer(w.c)
+}

@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // ColumnFamilyHandle represents a handle to a ColumnFamily.
 type ColumnFamilyHandle struct {
@@ -18,6 +19,11 @@ func NewNativeColumnFamilyHandle(c *C.rocksdb_column_family_handle_t) *ColumnFam
 func (h *ColumnFamilyHandle) Destroy() {
 	C.rocksdb_column_family_handle_destroy(h.c)
 	h.c = nil
+}
+
+// Native returns native ColumnFamilyHandle
+func (h *ColumnFamilyHandle) Native() unsafe.Pointer {
+	return unsafe.Pointer(h.c)
 }
 
 // ColumnFamilyHandles represents collection of multiple column family handle.

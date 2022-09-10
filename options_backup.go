@@ -273,3 +273,8 @@ func (b *BackupEngineOptions) GetShareFilesWithChecksumNaming() ShareFilesNaming
 func (b *BackupEngineOptions) Destroy() {
 	C.rocksdb_backup_engine_options_destroy(b.c)
 }
+
+// Native returns native BackupEngineOptions
+func (opts *BackupEngineOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
+}

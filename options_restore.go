@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // RestoreOptions captures the options to be used during
 // restoration of a backup.
@@ -29,4 +30,9 @@ func (ro *RestoreOptions) SetKeepLogFiles(v int) {
 func (ro *RestoreOptions) Destroy() {
 	C.rocksdb_restore_options_destroy(ro.c)
 	ro.c = nil
+}
+
+// Native returns native RestoreOptions
+func (ro *RestoreOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(ro.c)
 }

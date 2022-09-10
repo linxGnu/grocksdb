@@ -2,6 +2,7 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
+import "unsafe"
 
 // ReadTier controls fetching of data during a read request.
 // An application can issue a read request (via Get/Iterators) and specify
@@ -302,6 +303,11 @@ func (opts *ReadOptions) Destroy() {
 	opts.iterLowerBound = nil
 	opts.timestamp = nil
 	opts.timestampStart = nil
+}
+
+// Native returns native ReadOptions
+func (opts *ReadOptions) Native() unsafe.Pointer {
+	return unsafe.Pointer(opts.c)
 }
 
 // SetTimestamp sets timestamp. Read should return the latest data visible to the

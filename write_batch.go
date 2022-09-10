@@ -6,6 +6,7 @@ import "C"
 import (
 	"errors"
 	"io"
+	"unsafe"
 )
 
 // WriteBatch is a batching of Puts, Merges and Deletes.
@@ -196,6 +197,11 @@ func (wb *WriteBatch) Destroy() {
 		C.rocksdb_writebatch_destroy(wb.c)
 		wb.c = nil
 	}
+}
+
+// Native returns native WriteBatch
+func (wb *WriteBatch) Native() unsafe.Pointer {
+	return unsafe.Pointer(wb.c)
 }
 
 // WriteBatchRecordType describes the type of a batch record.

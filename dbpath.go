@@ -30,6 +30,11 @@ func (dbpath *DBPath) Destroy() {
 	dbpath.c = nil
 }
 
+// Native returns native DBPath
+func (dbpath *DBPath) Native() unsafe.Pointer {
+	return unsafe.Pointer(dbpath.c)
+}
+
 // NewDBPathsFromData creates a slice with allocated DBPath objects
 // from paths and target_sizes.
 func NewDBPathsFromData(paths []string, targetSizes []uint64) []*DBPath {
