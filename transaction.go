@@ -6,7 +6,6 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
 )
 
 // Transaction is used with TransactionDB for transaction support.
@@ -391,8 +390,7 @@ func (transaction *Transaction) DeleteCF(cf *ColumnFamilyHandle, key []byte) (er
 //
 // Caller is responsible for deleting the returned Iterator.
 func (transaction *Transaction) NewIterator(opts *ReadOptions) *Iterator {
-	return NewNativeIterator(
-		unsafe.Pointer(C.rocksdb_transaction_create_iterator(transaction.c, opts.c)))
+	return newNativeIterator(C.rocksdb_transaction_create_iterator(transaction.c, opts.c))
 }
 
 // NewIteratorCF returns an iterator that will iterate on all keys in the specific
@@ -406,8 +404,7 @@ func (transaction *Transaction) NewIterator(opts *ReadOptions) *Iterator {
 //
 // Caller is responsible for deleting the returned Iterator.
 func (transaction *Transaction) NewIteratorCF(opts *ReadOptions, cf *ColumnFamilyHandle) *Iterator {
-	return NewNativeIterator(
-		unsafe.Pointer(C.rocksdb_transaction_create_iterator_cf(transaction.c, opts.c, cf.c)))
+	return newNativeIterator(C.rocksdb_transaction_create_iterator_cf(transaction.c, opts.c, cf.c))
 }
 
 // SetSavePoint records the state of the transaction for future calls to
@@ -441,7 +438,7 @@ func (transaction *Transaction) Destroy() {
 // GetWriteBatchWI returns underlying write batch wi.
 func (transaction *Transaction) GetWriteBatchWI() *WriteBatchWI {
 	wi := C.rocksdb_transaction_get_writebatch_wi(transaction.c)
-	return NewNativeWriteBatchWI(wi)
+	return newNativeWriteBatchWI(wi)
 }
 
 // RebuildFromWriteBatch rebuilds transaction from write_batch.

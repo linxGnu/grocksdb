@@ -2,7 +2,6 @@ package grocksdb
 
 // #include "rocksdb/c.h"
 import "C"
-import "unsafe"
 
 // WriteBatchWI is a batching with index of Puts, Merges and Deletes to implement read-your-own-write.
 // See also: https://rocksdb.org/blog/2015/02/27/write-batch-with-index.html
@@ -17,11 +16,11 @@ type WriteBatchWI struct {
 //     show two entries with the same key.
 func NewWriteBatchWI(reservedBytes uint, overwriteKeys bool) *WriteBatchWI {
 	cWB := C.rocksdb_writebatch_wi_create(C.size_t(reservedBytes), boolToChar(overwriteKeys))
-	return NewNativeWriteBatchWI(cWB)
+	return newNativeWriteBatchWI(cWB)
 }
 
 // NewNativeWriteBatchWI create a WriteBatchWI object.
-func NewNativeWriteBatchWI(c *C.rocksdb_writebatch_wi_t) *WriteBatchWI {
+func newNativeWriteBatchWI(c *C.rocksdb_writebatch_wi_t) *WriteBatchWI {
 	return &WriteBatchWI{c: c}
 }
 
@@ -233,7 +232,7 @@ func (wb *WriteBatchWI) GetFromDBWithCF(db *DB, opts *ReadOptions, cf *ColumnFam
 // called.
 func (wb *WriteBatchWI) NewIteratorWithBase(db *DB, baseIter *Iterator) *Iterator {
 	cIter := C.rocksdb_writebatch_wi_create_iterator_with_base(wb.c, baseIter.c)
-	return NewNativeIterator(unsafe.Pointer(cIter))
+	return newNativeIterator(cIter)
 }
 
 // NewIteratorWithBaseCF will create a new Iterator that will use WBWIIterator as a delta and
@@ -253,7 +252,7 @@ func (wb *WriteBatchWI) NewIteratorWithBase(db *DB, baseIter *Iterator) *Iterato
 // called.
 func (wb *WriteBatchWI) NewIteratorWithBaseCF(db *DB, baseIter *Iterator, cf *ColumnFamilyHandle) *Iterator {
 	cIter := C.rocksdb_writebatch_wi_create_iterator_with_base_cf(wb.c, baseIter.c, cf.c)
-	return NewNativeIterator(unsafe.Pointer(cIter))
+	return newNativeIterator(cIter)
 }
 
 // Clear removes all the enqueued Put and Deletes.

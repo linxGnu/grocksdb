@@ -449,14 +449,14 @@ func (db *TransactionDB) FlushWAL(sync bool) (err error) {
 // ReadOptions given.
 func (db *TransactionDB) NewIterator(opts *ReadOptions) *Iterator {
 	cIter := C.rocksdb_transactiondb_create_iterator(db.c, opts.c)
-	return NewNativeIterator(unsafe.Pointer(cIter))
+	return newNativeIterator(cIter)
 }
 
 // NewIteratorCF returns an Iterator over the the database and column family
 // that uses the ReadOptions given.
 func (db *TransactionDB) NewIteratorCF(opts *ReadOptions, cf *ColumnFamilyHandle) *Iterator {
 	cIter := C.rocksdb_transactiondb_create_iterator_cf(db.c, opts.c, cf.c)
-	return NewNativeIterator(unsafe.Pointer(cIter))
+	return newNativeIterator(cIter)
 }
 
 // Close closes the database.
