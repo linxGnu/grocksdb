@@ -10,18 +10,18 @@ type Env struct {
 
 // NewDefaultEnv creates a default environment.
 func NewDefaultEnv() *Env {
-	return NewNativeEnv(C.rocksdb_create_default_env())
+	return newNativeEnv(C.rocksdb_create_default_env())
 }
 
 // NewMemEnv returns a new environment that stores its data in memory and delegates
 // all non-file-storage tasks to base_env.
 func NewMemEnv() *Env {
-	return NewNativeEnv(C.rocksdb_create_mem_env())
+	return newNativeEnv(C.rocksdb_create_mem_env())
 }
 
 // NewNativeEnv creates a Environment object.
-func NewNativeEnv(c *C.rocksdb_env_t) *Env {
-	return &Env{c}
+func newNativeEnv(c *C.rocksdb_env_t) *Env {
+	return &Env{c: c}
 }
 
 // SetBackgroundThreads sets the number of background worker threads

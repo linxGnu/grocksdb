@@ -6,7 +6,6 @@ import "C"
 
 import (
 	"bytes"
-	"unsafe"
 )
 
 // Iterator provides a way to seek to specific keys and iterate through
@@ -30,8 +29,8 @@ type Iterator struct {
 }
 
 // NewNativeIterator creates a Iterator object.
-func NewNativeIterator(c unsafe.Pointer) *Iterator {
-	return &Iterator{(*C.rocksdb_iterator_t)(c)}
+func newNativeIterator(c *C.rocksdb_iterator_t) *Iterator {
+	return &Iterator{c: c}
 }
 
 // Valid returns false only when an Iterator has iterated past either the

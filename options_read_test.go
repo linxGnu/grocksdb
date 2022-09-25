@@ -18,7 +18,7 @@ func TestReadOptions(t *testing.T) {
 	ro.SetFillCache(false)
 	require.EqualValues(t, false, ro.FillCache())
 
-	ro.SetSnapshot(NewNativeSnapshot(nil))
+	ro.SetSnapshot(newNativeSnapshot(nil))
 
 	ro.SetIterateUpperBound([]byte{1, 2, 3})
 	ro.SetIterateLowerBound([]byte{1, 1, 1})

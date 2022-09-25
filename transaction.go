@@ -6,7 +6,6 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
 )
 
 // Transaction is used with TransactionDB for transaction support.
@@ -15,8 +14,8 @@ type Transaction struct {
 }
 
 // NewNativeTransaction creates a Transaction object.
-func NewNativeTransaction(c *C.rocksdb_transaction_t) *Transaction {
-	return &Transaction{c}
+func newNativeTransaction(c *C.rocksdb_transaction_t) *Transaction {
+	return &Transaction{c: c}
 }
 
 // SetName of transaction.
@@ -90,7 +89,7 @@ func (transaction *Transaction) GetPinned(opts *ReadOptions, key []byte) (handle
 
 	cHandle := C.rocksdb_transaction_get_pinned(transaction.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -123,7 +122,7 @@ func (transaction *Transaction) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFam
 
 	cHandle := C.rocksdb_transaction_get_pinned_cf(transaction.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -161,7 +160,7 @@ func (transaction *Transaction) GetPinnedForUpdate(opts *ReadOptions, key []byte
 		C.uchar(byte(1)), /*exclusive*/
 		&cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -199,7 +198,7 @@ func (transaction *Transaction) GetPinnedForUpdateWithCF(opts *ReadOptions, cf *
 		C.uchar(byte(1)), /*exclusive*/
 		&cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = NewNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
 	return
@@ -391,8 +390,7 @@ func (transaction *Transaction) DeleteCF(cf *ColumnFamilyHandle, key []byte) (er
 //
 // Caller is responsible for deleting the returned Iterator.
 func (transaction *Transaction) NewIterator(opts *ReadOptions) *Iterator {
-	return NewNativeIterator(
-		unsafe.Pointer(C.rocksdb_transaction_create_iterator(transaction.c, opts.c)))
+	return newNativeIterator(C.rocksdb_transaction_create_iterator(transaction.c, opts.c))
 }
 
 // NewIteratorCF returns an iterator that will iterate on all keys in the specific
@@ -406,8 +404,7 @@ func (transaction *Transaction) NewIterator(opts *ReadOptions) *Iterator {
 //
 // Caller is responsible for deleting the returned Iterator.
 func (transaction *Transaction) NewIteratorCF(opts *ReadOptions, cf *ColumnFamilyHandle) *Iterator {
-	return NewNativeIterator(
-		unsafe.Pointer(C.rocksdb_transaction_create_iterator_cf(transaction.c, opts.c, cf.c)))
+	return newNativeIterator(C.rocksdb_transaction_create_iterator_cf(transaction.c, opts.c, cf.c))
 }
 
 // SetSavePoint records the state of the transaction for future calls to
@@ -429,7 +426,7 @@ func (transaction *Transaction) RollbackToSavePoint() (err error) {
 
 // GetSnapshot returns the Snapshot created by the last call to SetSnapshot().
 func (transaction *Transaction) GetSnapshot() *Snapshot {
-	return NewNativeSnapshot(C.rocksdb_transaction_get_snapshot(transaction.c))
+	return newNativeSnapshot(C.rocksdb_transaction_get_snapshot(transaction.c))
 }
 
 // Destroy deallocates the transaction object.
@@ -441,7 +438,7 @@ func (transaction *Transaction) Destroy() {
 // GetWriteBatchWI returns underlying write batch wi.
 func (transaction *Transaction) GetWriteBatchWI() *WriteBatchWI {
 	wi := C.rocksdb_transaction_get_writebatch_wi(transaction.c)
-	return NewNativeWriteBatchWI(wi)
+	return newNativeWriteBatchWI(wi)
 }
 
 // RebuildFromWriteBatch rebuilds transaction from write_batch.

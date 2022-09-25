@@ -11,12 +11,12 @@ type TransactionDBOptions struct {
 
 // NewDefaultTransactionDBOptions creates a default TransactionDBOptions object.
 func NewDefaultTransactionDBOptions() *TransactionDBOptions {
-	return NewNativeTransactionDBOptions(C.rocksdb_transactiondb_options_create())
+	return newNativeTransactionDBOptions(C.rocksdb_transactiondb_options_create())
 }
 
 // NewNativeTransactionDBOptions creates a TransactionDBOptions from native object.
-func NewNativeTransactionDBOptions(c *C.rocksdb_transactiondb_options_t) *TransactionDBOptions {
-	return &TransactionDBOptions{c}
+func newNativeTransactionDBOptions(c *C.rocksdb_transactiondb_options_t) *TransactionDBOptions {
+	return &TransactionDBOptions{c: c}
 }
 
 // SetMaxNumLocks sets the maximum number of keys that can be locked at the same time

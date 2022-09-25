@@ -10,8 +10,8 @@ type ColumnFamilyHandle struct {
 }
 
 // NewNativeColumnFamilyHandle creates a ColumnFamilyHandle object.
-func NewNativeColumnFamilyHandle(c *C.rocksdb_column_family_handle_t) *ColumnFamilyHandle {
-	return &ColumnFamilyHandle{c}
+func newNativeColumnFamilyHandle(c *C.rocksdb_column_family_handle_t) *ColumnFamilyHandle {
+	return &ColumnFamilyHandle{c: c}
 }
 
 // Destroy calls the destructor of the underlying column family handle.

@@ -3,9 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
-import (
-	"unsafe"
-)
+import "unsafe"
 
 // WalIterator is iterator for WAL Files.
 type WalIterator struct {
@@ -13,8 +11,8 @@ type WalIterator struct {
 }
 
 // NewNativeWalIterator returns new WalIterator.
-func NewNativeWalIterator(c unsafe.Pointer) *WalIterator {
-	return &WalIterator{(*C.rocksdb_wal_iterator_t)(c)}
+func newNativeWalIterator(c unsafe.Pointer) *WalIterator {
+	return &WalIterator{c: (*C.rocksdb_wal_iterator_t)(c)}
 }
 
 // Valid check if current WAL is valid.
@@ -46,5 +44,5 @@ func (iter *WalIterator) Destroy() {
 func (iter *WalIterator) GetBatch() (*WriteBatch, uint64) {
 	var cSeq C.uint64_t
 	cB := C.rocksdb_wal_iter_get_batch(iter.c, &cSeq)
-	return NewNativeWriteBatch(cB), uint64(cSeq)
+	return newNativeWriteBatch(cB), uint64(cSeq)
 }

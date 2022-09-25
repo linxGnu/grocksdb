@@ -10,17 +10,19 @@ type Cache struct {
 
 // NewLRUCache creates a new LRU Cache object with the capacity given.
 func NewLRUCache(capacity uint64) *Cache {
-	return NewNativeCache(C.rocksdb_cache_create_lru(C.size_t(capacity)))
+	cCache := C.rocksdb_cache_create_lru(C.size_t(capacity))
+	return newNativeCache(cCache)
 }
 
 // NewLRUCacheWithOptions creates a new LRU Cache from options.
 func NewLRUCacheWithOptions(opt *LRUCacheOptions) *Cache {
-	return NewNativeCache(C.rocksdb_cache_create_lru_opts(opt.c))
+	cCache := C.rocksdb_cache_create_lru_opts(opt.c)
+	return newNativeCache(cCache)
 }
 
 // NewNativeCache creates a Cache object.
-func NewNativeCache(c *C.rocksdb_cache_t) *Cache {
-	return &Cache{c}
+func newNativeCache(c *C.rocksdb_cache_t) *Cache {
+	return &Cache{c: c}
 }
 
 // GetUsage returns the Cache memory usage.

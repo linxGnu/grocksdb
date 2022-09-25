@@ -10,11 +10,11 @@ type IngestExternalFileOptions struct {
 
 // NewDefaultIngestExternalFileOptions creates a default IngestExternalFileOptions object.
 func NewDefaultIngestExternalFileOptions() *IngestExternalFileOptions {
-	return NewNativeIngestExternalFileOptions(C.rocksdb_ingestexternalfileoptions_create())
+	return newNativeIngestExternalFileOptions(C.rocksdb_ingestexternalfileoptions_create())
 }
 
 // NewNativeIngestExternalFileOptions creates a IngestExternalFileOptions object.
-func NewNativeIngestExternalFileOptions(c *C.rocksdb_ingestexternalfileoptions_t) *IngestExternalFileOptions {
+func newNativeIngestExternalFileOptions(c *C.rocksdb_ingestexternalfileoptions_t) *IngestExternalFileOptions {
 	return &IngestExternalFileOptions{c: c}
 }
 

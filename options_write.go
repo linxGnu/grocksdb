@@ -11,12 +11,12 @@ type WriteOptions struct {
 
 // NewDefaultWriteOptions creates a default WriteOptions object.
 func NewDefaultWriteOptions() *WriteOptions {
-	return NewNativeWriteOptions(C.rocksdb_writeoptions_create())
+	return newNativeWriteOptions(C.rocksdb_writeoptions_create())
 }
 
 // NewNativeWriteOptions creates a WriteOptions object.
-func NewNativeWriteOptions(c *C.rocksdb_writeoptions_t) *WriteOptions {
-	return &WriteOptions{c}
+func newNativeWriteOptions(c *C.rocksdb_writeoptions_t) *WriteOptions {
+	return &WriteOptions{c: c}
 }
 
 // SetSync sets the sync mode. If true, the write will be flushed

@@ -11,12 +11,12 @@ type TransactionOptions struct {
 
 // NewDefaultTransactionOptions creates a default TransactionOptions object.
 func NewDefaultTransactionOptions() *TransactionOptions {
-	return NewNativeTransactionOptions(C.rocksdb_transaction_options_create())
+	return newNativeTransactionOptions(C.rocksdb_transaction_options_create())
 }
 
 // NewNativeTransactionOptions creates a TransactionOptions object.
-func NewNativeTransactionOptions(c *C.rocksdb_transaction_options_t) *TransactionOptions {
-	return &TransactionOptions{c}
+func newNativeTransactionOptions(c *C.rocksdb_transaction_options_t) *TransactionOptions {
+	return &TransactionOptions{c: c}
 }
 
 // SetSetSnapshot to true is the same as calling
@@ -78,12 +78,12 @@ type OptimisticTransactionOptions struct {
 
 // NewDefaultOptimisticTransactionOptions creates a default TransactionOptions object.
 func NewDefaultOptimisticTransactionOptions() *OptimisticTransactionOptions {
-	return NewNativeOptimisticTransactionOptions(C.rocksdb_optimistictransaction_options_create())
+	return newNativeOptimisticTransactionOptions(C.rocksdb_optimistictransaction_options_create())
 }
 
 // NewNativeOptimisticTransactionOptions creates a OptimisticTransactionOptions object.
-func NewNativeOptimisticTransactionOptions(c *C.rocksdb_optimistictransaction_options_t) *OptimisticTransactionOptions {
-	return &OptimisticTransactionOptions{c}
+func newNativeOptimisticTransactionOptions(c *C.rocksdb_optimistictransaction_options_t) *OptimisticTransactionOptions {
+	return &OptimisticTransactionOptions{c: c}
 }
 
 // SetSetSnapshot to true is the same as calling

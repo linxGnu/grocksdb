@@ -10,11 +10,11 @@ type EnvOptions struct {
 
 // NewDefaultEnvOptions creates a default EnvOptions object.
 func NewDefaultEnvOptions() *EnvOptions {
-	return NewNativeEnvOptions(C.rocksdb_envoptions_create())
+	return newNativeEnvOptions(C.rocksdb_envoptions_create())
 }
 
 // NewNativeEnvOptions creates a EnvOptions object.
-func NewNativeEnvOptions(c *C.rocksdb_envoptions_t) *EnvOptions {
+func newNativeEnvOptions(c *C.rocksdb_envoptions_t) *EnvOptions {
 	return &EnvOptions{c: c}
 }
 

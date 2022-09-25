@@ -63,11 +63,11 @@ type BlockBasedTableOptions struct {
 
 // NewDefaultBlockBasedTableOptions creates a default BlockBasedTableOptions object.
 func NewDefaultBlockBasedTableOptions() *BlockBasedTableOptions {
-	return NewNativeBlockBasedTableOptions(C.rocksdb_block_based_options_create())
+	return newNativeBlockBasedTableOptions(C.rocksdb_block_based_options_create())
 }
 
 // NewNativeBlockBasedTableOptions creates a BlockBasedTableOptions object.
-func NewNativeBlockBasedTableOptions(c *C.rocksdb_block_based_table_options_t) *BlockBasedTableOptions {
+func newNativeBlockBasedTableOptions(c *C.rocksdb_block_based_table_options_t) *BlockBasedTableOptions {
 	return &BlockBasedTableOptions{c: c}
 }
 

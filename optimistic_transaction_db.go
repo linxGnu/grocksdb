@@ -3,6 +3,7 @@ package grocksdb
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
+
 import (
 	"unsafe"
 )
@@ -82,7 +83,7 @@ func OpenOptimisticTransactionDbColumnFamilies(
 		}
 		cfHandles = make([]*ColumnFamilyHandle, numColumnFamilies)
 		for i, c := range cHandles {
-			cfHandles[i] = NewNativeColumnFamilyHandle(c)
+			cfHandles[i] = newNativeColumnFamilyHandle(c)
 		}
 	}
 
@@ -101,16 +102,17 @@ func (db *OptimisticTransactionDB) TransactionBegin(
 	oldTransaction *Transaction,
 ) *Transaction {
 	if oldTransaction != nil {
-		return NewNativeTransaction(C.rocksdb_optimistictransaction_begin(
+		cTx := C.rocksdb_optimistictransaction_begin(
 			db.c,
 			opts.c,
 			transactionOpts.c,
 			oldTransaction.c,
-		))
+		)
+		return newNativeTransaction(cTx)
 	}
 
-	return NewNativeTransaction(C.rocksdb_optimistictransaction_begin(
-		db.c, opts.c, transactionOpts.c, nil))
+	cTx := C.rocksdb_optimistictransaction_begin(db.c, opts.c, transactionOpts.c, nil)
+	return newNativeTransaction(cTx)
 }
 
 // NewCheckpoint creates a new Checkpoint for this db.
@@ -121,7 +123,7 @@ func (db *OptimisticTransactionDB) NewCheckpoint() (cp *Checkpoint, err error) {
 		db.c, &cErr,
 	)
 	if err = fromCError(cErr); err == nil {
-		cp = NewNativeCheckpoint(cCheckpoint)
+		cp = newNativeCheckpoint(cCheckpoint)
 	}
 
 	return

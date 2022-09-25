@@ -15,8 +15,8 @@ type Checkpoint struct {
 }
 
 // NewNativeCheckpoint creates a new checkpoint.
-func NewNativeCheckpoint(c *C.rocksdb_checkpoint_t) *Checkpoint {
-	return &Checkpoint{c}
+func newNativeCheckpoint(c *C.rocksdb_checkpoint_t) *Checkpoint {
+	return &Checkpoint{c: c}
 }
 
 // CreateCheckpoint builds an openable snapshot of RocksDB on the same disk, which

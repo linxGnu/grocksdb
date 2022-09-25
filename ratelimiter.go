@@ -12,16 +12,17 @@ type RateLimiter struct {
 
 // NewRateLimiter creates a default RateLimiter object.
 func NewRateLimiter(rateBytesPerSec, refillPeriodMicros int64, fairness int32) *RateLimiter {
-	return NewNativeRateLimiter(C.rocksdb_ratelimiter_create(
+	cR := C.rocksdb_ratelimiter_create(
 		C.int64_t(rateBytesPerSec),
 		C.int64_t(refillPeriodMicros),
 		C.int32_t(fairness),
-	))
+	)
+	return newNativeRateLimiter(cR)
 }
 
 // NewNativeRateLimiter creates a native RateLimiter object.
-func NewNativeRateLimiter(c *C.rocksdb_ratelimiter_t) *RateLimiter {
-	return &RateLimiter{c}
+func newNativeRateLimiter(c *C.rocksdb_ratelimiter_t) *RateLimiter {
+	return &RateLimiter{c: c}
 }
 
 // Destroy deallocates the RateLimiter object.
