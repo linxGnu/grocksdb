@@ -8,8 +8,7 @@ import (
 	"unsafe"
 )
 
-// Checkpoint provides Checkpoint functionality.
-// Checkpoints provide persistent snapshots of RocksDB databases.
+// Checkpoint provides persistent snapshots of RocksDB databases.
 type Checkpoint struct {
 	c *C.rocksdb_checkpoint_t
 }
