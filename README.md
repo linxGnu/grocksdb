@@ -22,6 +22,7 @@ convention of how/when to free c-mem, thus break the rule of [tecbot/gorocksdb](
 - libz
 - liblz4
 - libzstd
+- libbz2 (optional)
 
 Please follow this guide: https://github.com/facebook/rocksdb/blob/master/INSTALL.md to build above libs.
 
@@ -29,15 +30,21 @@ Please follow this guide: https://github.com/facebook/rocksdb/blob/master/INSTAL
 
 After installing both `rocksdb` and `grocksdb`, you can build your app using the following commands:
 
-```
+```bash
 CGO_CFLAGS="-I/path/to/rocksdb/include" \
 CGO_LDFLAGS="-L/path/to/rocksdb -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" \
   go build
 ```
 
 Or just:
-```
+```bash
 go build // if prerequisites are in linker paths
+```
+
+If your rocksdb was linked with bz2:
+```bash
+CGO_LDFLAGS="-L/path/to/rocksdb -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd -lbz2" \
+  go build
 ```
 
 ## Usage
