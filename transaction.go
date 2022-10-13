@@ -33,9 +33,9 @@ func (transaction *Transaction) SetName(name string) (err error) {
 
 // GetName of transaction.
 func (transaction *Transaction) GetName() string {
-	var nameSize C.size_t
-	name := C.rocksdb_transaction_get_name(transaction.c, &nameSize)
-	return C.GoString(name)
+	var len C.size_t
+	cValue := C.rocksdb_transaction_get_name(transaction.c, &len)
+	return toString(cValue, C.int(len))
 }
 
 // Prepare transaction.

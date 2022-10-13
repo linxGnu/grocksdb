@@ -1511,9 +1511,9 @@ func (opts *Options) SetFIFOCompactionOptions(value *FIFOCompactionOptions) {
 
 // GetStatisticsString returns the statistics as a string.
 func (opts *Options) GetStatisticsString() (stats string) {
-	sString := C.rocksdb_options_statistics_get_string(opts.c)
-	stats = C.GoString(sString)
-	C.rocksdb_free(unsafe.Pointer(sString))
+	cValue := C.rocksdb_options_statistics_get_string(opts.c)
+	stats = C.GoString(cValue)
+	C.rocksdb_free(unsafe.Pointer(cValue))
 	return
 }
 
