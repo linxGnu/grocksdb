@@ -78,7 +78,7 @@ func (l *LRUCacheOptions) Destroy() {
 
 // SetCapacity sets capacity for this lru cache.
 func (l *LRUCacheOptions) SetCapacity(s uint) {
-	C.rocksdb_lru_cache_options_set_capacity(l.c, C.ulong(s))
+	C.rocksdb_lru_cache_options_set_capacity(l.c, C.size_t(s))
 }
 
 // SetCapacity sets number of shards used for this lru cache.
