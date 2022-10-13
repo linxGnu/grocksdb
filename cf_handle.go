@@ -14,6 +14,18 @@ func newNativeColumnFamilyHandle(c *C.rocksdb_column_family_handle_t) *ColumnFam
 	return &ColumnFamilyHandle{c: c}
 }
 
+// ID returned id of Column family.
+func (h *ColumnFamilyHandle) ID() uint32 {
+	return uint32(C.rocksdb_column_family_handle_get_id(h.c))
+}
+
+// Name returned name of Column family.
+func (h *ColumnFamilyHandle) Name() string {
+	var len C.size_t
+	cValue := C.rocksdb_column_family_handle_get_name(h.c, &len)
+	return toString(cValue, C.int(len))
+}
+
 // Destroy calls the destructor of the underlying column family handle.
 func (h *ColumnFamilyHandle) Destroy() {
 	C.rocksdb_column_family_handle_destroy(h.c)

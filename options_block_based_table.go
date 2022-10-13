@@ -79,6 +79,19 @@ func (opts *BlockBasedTableOptions) Destroy() {
 	opts.compCache = nil
 }
 
+// SetChecksum sets checksum types.
+//
+//	enum ChecksumType : char {
+//	  kNoChecksum = 0x0,
+//	  kCRC32c = 0x1,
+//	  kxxHash = 0x2,
+//	  kxxHash64 = 0x3,
+//	  kXXH3 = 0x4,  // Supported since RocksDB 6.27
+//	};
+func (opts *BlockBasedTableOptions) SetChecksum(csType int8) {
+	C.rocksdb_block_based_options_set_checksum(opts.c, C.char(csType))
+}
+
 // SetCacheIndexAndFilterBlocks is indicating if we'd put index/filter blocks to the block cache.
 // If not specified, each "table reader" object will pre-load index/filter
 // block during table initialization.
