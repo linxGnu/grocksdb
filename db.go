@@ -1787,9 +1787,6 @@ func (db *DB) DisableManualCompaction() {
 }
 
 // GetColumnFamilyMetadata returns the metadata of the default column family.
-//
-// Note that the caller is responsible to release the returned memory
-// using rocksdb_column_family_metadata_destroy.
 func (db *DB) GetColumnFamilyMetadata() (m *ColumnFamilyMetadata) {
 	if c := C.rocksdb_get_column_family_metadata(db.c); c != nil {
 		m = newColumnFamilyMetadata(c)
@@ -1798,9 +1795,6 @@ func (db *DB) GetColumnFamilyMetadata() (m *ColumnFamilyMetadata) {
 }
 
 // GetColumnFamilyMetadataCF returns the metadata of the specified column family.
-//
-// Note that the caller is responsible to release the returned memory
-// using rocksdb_column_family_metadata_destroy.
 func (db *DB) GetColumnFamilyMetadataCF(cf *ColumnFamilyHandle) (m *ColumnFamilyMetadata) {
 	if c := C.rocksdb_get_column_family_metadata_cf(db.c, cf.c); c != nil {
 		m = newColumnFamilyMetadata(c)
