@@ -1566,7 +1566,7 @@ func (opts *Options) SetRowCache(cache *Cache) {
 // entries in any "N" consecutive entries or the ratio of tombstone
 // entries in the whole file >= the specified deletion ratio.
 func (opts *Options) AddCompactOnDeletionCollectorFactory(windowSize, numDelsTrigger uint) {
-	C.rocksdb_options_add_compact_on_deletion_collector_factory(opts.c, C.ulong(windowSize), C.ulong(numDelsTrigger))
+	C.rocksdb_options_add_compact_on_deletion_collector_factory(opts.c, C.size_t(windowSize), C.size_t(numDelsTrigger))
 }
 
 // SetManualWALFlush if true WAL is not flushed automatically after each write. Instead it

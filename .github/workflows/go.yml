@@ -8,8 +8,15 @@ on:
 
 jobs:
   build:
-    name: Build
-    runs-on: ubuntu-latest
+    name: CI
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node-version: [12.x]
+
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v3
