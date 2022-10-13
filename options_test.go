@@ -369,6 +369,10 @@ func TestOptions(t *testing.T) {
 	opts.SetBlobFileStartingLevel(1)
 	require.Equal(t, 1, opts.GetBlobFileStartingLevel())
 
+	require.Equal(t, PrepopulateBlobDisable, opts.GetPrepopulateBlobCache())
+	opts.SetPrepopulateBlobCache(PrepopulateBlobFlushOnly)
+	require.Equal(t, PrepopulateBlobFlushOnly, opts.GetPrepopulateBlobCache())
+
 	// cloning
 	cl := opts.Clone()
 	require.EqualValues(t, 5, cl.GetTableCacheNumshardbits())

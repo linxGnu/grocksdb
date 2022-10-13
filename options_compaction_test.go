@@ -12,9 +12,9 @@ func TestOptionCompactions(t *testing.T) {
 
 	co.SetFullHistoryTsLow([]byte{1, 2, 3})
 
-	require.EqualValues(t, true, co.GetExclusiveManualCompaction())
-	co.SetExclusiveManualCompaction(false)
 	require.EqualValues(t, false, co.GetExclusiveManualCompaction())
+	co.SetExclusiveManualCompaction(true)
+	require.EqualValues(t, true, co.GetExclusiveManualCompaction())
 
 	require.EqualValues(t, KIfHaveCompactionFilter, co.BottommostLevelCompaction())
 	co.SetBottommostLevelCompaction(KForce)
