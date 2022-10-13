@@ -2106,6 +2106,11 @@ func (opts *Options) GetBlobFileStartingLevel() int {
 	return int(C.rocksdb_options_get_blob_file_starting_level(opts.c))
 }
 
+// SetBlobCache caches blob.
+func (opts *Options) SetBlobCache(cache *Cache) {
+	C.rocksdb_options_set_blob_cache(opts.c, cache.c)
+}
+
 // SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
 // to maintain in memory including copies of buffers that have already been flushed.
 // Unlike max_write_buffer_number, this parameter does not affect flushing.

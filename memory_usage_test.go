@@ -20,9 +20,13 @@ func TestMemoryUsage(t *testing.T) {
 	rowCache := NewLRUCache(8 * 1024 * 1024)
 	defer rowCache.Destroy()
 
+	blobCache := NewLRUCache(8 * 1024 * 1024)
+	defer blobCache.Destroy()
+
 	applyOpts := func(opts *Options) {
 		opts.SetBlockBasedTableFactory(bbto)
 		opts.SetRowCache(rowCache)
+		opts.SetBlobCache(blobCache)
 	}
 
 	db := newTestDB(t, applyOpts)
