@@ -108,6 +108,16 @@ func (w *SSTFileWriter) DeleteWithTS(key, ts []byte) (err error) {
 	return
 }
 
+// DeleteRange deletes keys that are between [startKey, endKey)
+func (w *SSTFileWriter) DeleteRange(startKey, endKey []byte) (err error) {
+	cStartKey := byteToChar(startKey)
+	cEndKey := byteToChar(endKey)
+	var cErr *C.char
+	C.rocksdb_sstfilewriter_delete_range(w.c, cStartKey, C.size_t(len(startKey)), cEndKey, C.size_t(len(endKey)), &cErr)
+	err = fromCError(cErr)
+	return
+}
+
 // FileSize returns size of currently opened file.
 func (w *SSTFileWriter) FileSize() (size uint64) {
 	C.rocksdb_sstfilewriter_file_size(w.c, (*C.uint64_t)(&size))

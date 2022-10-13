@@ -87,6 +87,17 @@ const (
 	SkipAnyCorruptedRecordsRecovery = WALRecoveryMode(3)
 )
 
+// PrepopulateBlob represents strategy for prepopulate warm/hot blobs which are already in memory into
+// blob cache at the time of flush.
+type PrepopulateBlob int
+
+const (
+	// PrepopulateBlobDisable disables prepopulate blob cache.
+	PrepopulateBlobDisable = PrepopulateBlob(0)
+	// PrepopulateBlobFlushOnly prepopulates blobs during flush only.
+	PrepopulateBlobFlushOnly = PrepopulateBlob(1)
+)
+
 // Options represent all of the available options when opening a database with Open.
 type Options struct {
 	c   *C.rocksdb_options_t
@@ -2109,6 +2120,29 @@ func (opts *Options) GetBlobFileStartingLevel() int {
 // SetBlobCache caches blob.
 func (opts *Options) SetBlobCache(cache *Cache) {
 	C.rocksdb_options_set_blob_cache(opts.c, cache.c)
+}
+
+// SetPrepopulateBlobCache sets strategy for prepopulate blob caching strategy.
+//
+// If enabled, prepopulate warm/hot blobs which are already in memory into
+// blob cache at the time of flush. On a flush, the blob that is in memory (in
+// memtables) get flushed to the device. If using Direct IO, additional IO is
+// incurred to read this blob back into memory again, which is avoided by
+// enabling this option. This further helps if the workload exhibits high
+// temporal locality, where most of the reads go to recently written data.
+// This also helps in case of the remote file system since it involves network
+// traffic and higher latencies.
+//
+// Default: disabled
+//
+// Dynamically changeable through this API
+func (opts *Options) SetPrepopulateBlobCache(strategy PrepopulateBlob) {
+	C.rocksdb_options_set_prepopulate_blob_cache(opts.c, C.int(strategy))
+}
+
+// GetPrepopulateBlobCache gets prepopulate blob caching strategy
+func (opts *Options) GetPrepopulateBlobCache() PrepopulateBlob {
+	return PrepopulateBlob(C.rocksdb_options_get_prepopulate_blob_cache(opts.c))
 }
 
 // SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
