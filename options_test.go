@@ -373,6 +373,10 @@ func TestOptions(t *testing.T) {
 	opts.SetPrepopulateBlobCache(PrepopulateBlobFlushOnly)
 	require.Equal(t, PrepopulateBlobFlushOnly, opts.GetPrepopulateBlobCache())
 
+	require.False(t, opts.GetAvoidUnnecessaryBlockingIOFlag())
+	opts.AvoidUnnecessaryBlockingIO(true)
+	require.True(t, opts.GetAvoidUnnecessaryBlockingIOFlag())
+
 	// cloning
 	cl := opts.Clone()
 	require.EqualValues(t, 5, cl.GetTableCacheNumshardbits())

@@ -2356,6 +2356,21 @@ func (opts *Options) ReportBackgroundIOStats() bool {
 	return charToBool(C.rocksdb_options_get_report_bg_io_stats(opts.c))
 }
 
+// AvoidUnnecessaryBlockingIO if true, working thread may avoid doing unnecessary and long-latency
+// operation (such as deleting obsolete files directly or deleting memtable)
+// and will instead schedule a background job to do it.
+// Use it if you're latency-sensitive.
+//
+// If set to true, takes precedence over ReadOptions::background_purge_on_iterator_cleanup.
+func (opts *Options) AvoidUnnecessaryBlockingIO(v bool) {
+	C.rocksdb_options_set_avoid_unnecessary_blocking_io(opts.c, boolToChar(v))
+}
+
+// GetAvoidUnnecessaryBlockingIOFlag returns value of avoid unnecessary blocking io flag.
+func (opts *Options) GetAvoidUnnecessaryBlockingIOFlag() bool {
+	return charToBool(C.rocksdb_options_get_avoid_unnecessary_blocking_io(opts.c))
+}
+
 // SetMempurgeThreshold is experimental function to set mempurge threshold.
 //
 // It is used to activate or deactive the Mempurge feature (memtable garbage
