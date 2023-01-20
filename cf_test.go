@@ -222,6 +222,17 @@ func newTestDBCF(t *testing.T) (db *DB, cfh []*ColumnFamilyHandle, cleanup func(
 	opts.SetCompression(ZLibCompression)
 	db, cfh, err := OpenDbColumnFamilies(opts, dir, givenNames, []*Options{opts, opts})
 	require.Nil(t, err)
+
+	for i := 0; i < 5; i++ {
+		require.Equal(t, "default", cfh[0].Name())
+		require.EqualValues(t, 0, cfh[0].ID())
+
+		require.Equal(t, "guide", cfh[1].Name())
+		require.EqualValues(t, 1, cfh[1].ID())
+
+		runtime.GC()
+	}
+
 	cleanup = func() {
 		for _, cf := range cfh {
 			cf.Destroy()
