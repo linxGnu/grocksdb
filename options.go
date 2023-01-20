@@ -714,27 +714,27 @@ func (opts *Options) SetBottommostCompressionOptionsMaxDictBufferBytes(value uin
 	)
 }
 
-// // SetBottommostCompressionOptionsZstdDictTrainer uses/not use zstd trainer to generate dictionaries.
-// // When this option is set to true, zstd_max_train_bytes of training data sampled from
-// // max_dict_buffer_bytes buffered data will be passed to zstd dictionary trainer to generate a
-// // dictionary of size max_dict_bytes.
-// //
-// // When this option is false, zstd's API ZDICT_finalizeDictionary() will be
-// // called to generate dictionaries. zstd_max_train_bytes of training sampled
-// // data will be passed to this API. Using this API should save CPU time on
-// // dictionary training, but the compression ratio may not be as good as using
-// // a dictionary trainer.
-// //
-// // Default: true
-// func (opts *Options) SetBottommostCompressionOptionsZstdDictTrainer(enabled bool) {
-// 	c := boolToChar(enabled)
-// 	C.rocksdb_options_set_bottommost_compression_options_use_zstd_dict_trainer(opts.c, c, c)
-// }
+// SetBottommostCompressionOptionsZstdDictTrainer uses/not use zstd trainer to generate dictionaries.
+// When this option is set to true, zstd_max_train_bytes of training data sampled from
+// max_dict_buffer_bytes buffered data will be passed to zstd dictionary trainer to generate a
+// dictionary of size max_dict_bytes.
+//
+// When this option is false, zstd's API ZDICT_finalizeDictionary() will be
+// called to generate dictionaries. zstd_max_train_bytes of training sampled
+// data will be passed to this API. Using this API should save CPU time on
+// dictionary training, but the compression ratio may not be as good as using
+// a dictionary trainer.
+//
+// Default: true
+func (opts *Options) SetBottommostCompressionOptionsZstdDictTrainer(enabled bool) {
+	c := boolToChar(enabled)
+	C.rocksdb_options_set_bottommost_compression_options_use_zstd_dict_trainer(opts.c, c, c)
+}
 
-// // GetBottommostCompressionOptionsZstdDictTrainer returns if zstd dict trainer is used or not.
-// func (opts *Options) GetBottommostCompressionOptionsZstdDictTrainer() bool {
-// 	return charToBool(C.rocksdb_options_get_bottommost_compression_options_use_zstd_dict_trainer(opts.c))
-// }
+// GetBottommostCompressionOptionsZstdDictTrainer returns if zstd dict trainer is used or not.
+func (opts *Options) GetBottommostCompressionOptionsZstdDictTrainer() bool {
+	return charToBool(C.rocksdb_options_get_bottommost_compression_options_use_zstd_dict_trainer(opts.c))
+}
 
 // SetMinLevelToCompress sets the start level to use compression.
 func (opts *Options) SetMinLevelToCompress(value int) {
@@ -2354,6 +2354,21 @@ func (opts *Options) SetReportBackgroundIOStats(value bool) {
 // flushes is turned on.
 func (opts *Options) ReportBackgroundIOStats() bool {
 	return charToBool(C.rocksdb_options_get_report_bg_io_stats(opts.c))
+}
+
+// AvoidUnnecessaryBlockingIO if true, working thread may avoid doing unnecessary and long-latency
+// operation (such as deleting obsolete files directly or deleting memtable)
+// and will instead schedule a background job to do it.
+// Use it if you're latency-sensitive.
+//
+// If set to true, takes precedence over ReadOptions::background_purge_on_iterator_cleanup.
+func (opts *Options) AvoidUnnecessaryBlockingIO(v bool) {
+	C.rocksdb_options_set_avoid_unnecessary_blocking_io(opts.c, boolToChar(v))
+}
+
+// GetAvoidUnnecessaryBlockingIOFlag returns value of avoid unnecessary blocking io flag.
+func (opts *Options) GetAvoidUnnecessaryBlockingIOFlag() bool {
+	return charToBool(C.rocksdb_options_get_avoid_unnecessary_blocking_io(opts.c))
 }
 
 // SetMempurgeThreshold is experimental function to set mempurge threshold.
