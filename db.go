@@ -1235,24 +1235,6 @@ func (db *DB) GetPropertyCF(propName string, cf *ColumnFamilyHandle) (value stri
 	return
 }
 
-// GetIntProperty similar to `GetProperty`, but only works for a subset of properties whose
-// return value is an integer. Return the value by integer.
-func (db *DB) GetIntProperty(propName string) (value uint64, success bool) {
-	cProp := C.CString(propName)
-	success = C.rocksdb_property_int(db.c, cProp, (*C.uint64_t)(&value)) == 0
-	C.free(unsafe.Pointer(cProp))
-	return
-}
-
-// GetIntPropertyCF similar to `GetProperty`, but only works for a subset of properties whose
-// return value is an integer. Return the value by integer.
-func (db *DB) GetIntPropertyCF(propName string, cf *ColumnFamilyHandle) (value uint64, success bool) {
-	cProp := C.CString(propName)
-	success = C.rocksdb_property_int_cf(db.c, cf.c, cProp, (*C.uint64_t)(&value)) == 0
-	C.free(unsafe.Pointer(cProp))
-	return
-}
-
 // CreateColumnFamily create a new column family.
 func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFamilyHandle, err error) {
 	var (
