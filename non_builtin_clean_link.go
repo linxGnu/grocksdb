@@ -1,4 +1,4 @@
-//go:build !testing && grocksdb_clean_link
+//go:build !grocksdb_no_link && grocksdb_clean_link
 
 package grocksdb
 
