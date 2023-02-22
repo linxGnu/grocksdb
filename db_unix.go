@@ -3,6 +3,10 @@
 
 package grocksdb
 
+// #include <stdlib.h>
+// #include "rocksdb/c.h"
+import "C"
+
 import "unsafe"
 
 // GetIntProperty similar to `GetProperty`, but only works for a subset of properties whose
