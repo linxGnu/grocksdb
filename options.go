@@ -2548,6 +2548,11 @@ func LoadLatestOptions(path string, env *Env, ignoreUnknownOpts bool, cache *Cac
 	return
 }
 
+// Options gets the latest options.
+func (l *LatestOptions) Options() *Options {
+	return &l.opts
+}
+
 // ColumnFamilyNames gets column family names.
 func (l *LatestOptions) ColumnFamilyNames() []string {
 	return l.cfNames
