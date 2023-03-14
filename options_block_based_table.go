@@ -238,6 +238,43 @@ func (opts *BlockBasedTableOptions) SetPartitionFilters(value bool) {
 	C.rocksdb_block_based_options_set_partition_filters(opts.c, boolToChar(value))
 }
 
+// SetOptimizeFiltersForMemory to generate Bloom/Ribbon filters that minimize memory
+// internal fragmentation.
+//
+// When false, malloc_usable_size is not available, or format_version < 5,
+// filters are generated without regard to internal fragmentation when
+// loaded into memory (historical behavior). When true (and
+// malloc_usable_size is available and format_version >= 5), then
+// filters are generated to "round up" and "round down" their sizes to
+// minimize internal fragmentation when loaded into memory, assuming the
+// reading DB has the same memory allocation characteristics as the
+// generating DB. This option does not break forward or backward
+// compatibility.
+//
+// While individual filters will vary in bits/key and false positive rate
+// when setting is true, the implementation attempts to maintain a weighted
+// average FP rate for filters consistent with this option set to false.
+//
+// With Jemalloc for example, this setting is expected to save about 10% of
+// the memory footprint and block cache charge of filters, while increasing
+// disk usage of filters by about 1-2% due to encoding efficiency losses
+// with variance in bits/key.
+//
+// NOTE: Because some memory counted by block cache might be unmapped pages
+// within internal fragmentation, this option can increase observed RSS
+// memory usage. With cache_index_and_filter_blocks=true, this option makes
+// the block cache better at using space it is allowed. (These issues
+// should not arise with partitioned filters.)
+//
+// NOTE: Do not set to true if you do not trust malloc_usable_size. With
+// this option, RocksDB might access an allocated memory object beyond its
+// original size if malloc_usable_size says it is safe to do so. While this
+// can be considered bad practice, it should not produce undefined behavior
+// unless malloc_usable_size is buggy or broken.
+func (opts *BlockBasedTableOptions) SetOptimizeFiltersForMemory(value bool) {
+	C.rocksdb_block_based_options_set_optimize_filters_for_memory(opts.c, boolToChar(value))
+}
+
 // SetUseDeltaEncoding uses delta encoding to compress keys in blocks.
 // ReadOptions::pin_data requires this option to be disabled.
 //

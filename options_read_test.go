@@ -68,4 +68,8 @@ func TestReadOptions(t *testing.T) {
 	require.EqualValues(t, 0, ro.GetIOTimeout())
 	ro.SetIOTimeout(1212)
 	require.EqualValues(t, 1212, ro.GetIOTimeout())
+
+	require.False(t, ro.IsAsyncIO())
+	ro.SetAsyncIO(true)
+	require.True(t, ro.IsAsyncIO())
 }
