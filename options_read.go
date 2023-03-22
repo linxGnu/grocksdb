@@ -286,6 +286,24 @@ func (opts *ReadOptions) SetIOTimeout(microseconds uint64) {
 	C.rocksdb_readoptions_set_io_timeout(opts.c, C.uint64_t(microseconds))
 }
 
+// SetAsyncIO toggles async_io flag.
+//
+// If async_io is enabled, RocksDB will prefetch some of data asynchronously.
+// RocksDB apply it if reads are sequential and its internal automatic
+// prefetching.
+//
+// Default: false
+//
+// Note: Experimental
+func (opts *ReadOptions) SetAsyncIO(value bool) {
+	C.rocksdb_readoptions_set_async_io(opts.c, boolToChar(value))
+}
+
+// IsAsyncIO checks if async_io flag is on.
+func (opts *ReadOptions) IsAsyncIO() bool {
+	return charToBool(C.rocksdb_readoptions_get_async_io(opts.c))
+}
+
 // GetIOTimeout gets timeout in microseconds to be passed to the underlying FileSystem for
 // reads. As opposed to deadline, this determines the timeout for each
 // individual file read request. If a MultiGet/Get/Seek/Next etc call
