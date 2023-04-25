@@ -11,7 +11,7 @@ CMAKE_REQUIRED_PARAMS="-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREF
 snappy_version="1.1.10"
 cd $BUILD_PATH && wget https://github.com/google/snappy/archive/${snappy_version}.tar.gz && tar xzf ${snappy_version}.tar.gz && cd snappy-${snappy_version} && \
     mkdir -p build_place && cd build_place && \
-    CXXFLAGS='-fPIC -O3 -pipe -Wno-uninitialized -Werror,--warn-no-sign-compare' cmake $CMAKE_REQUIRED_PARAMS -DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF .. && make install/strip -j16 && \
+    CXXFLAGS='-fPIC -O3 -pipe -Wno-uninitialized -Wno-sign-compare' cmake $CMAKE_REQUIRED_PARAMS -DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF .. && make install/strip -j16 && \
     cd $BUILD_PATH && rm -rf *
 
 export CFLAGS='-fPIC -O3 -pipe' 
