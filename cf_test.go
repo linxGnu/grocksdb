@@ -109,6 +109,7 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 
 	// trigger flush
 	require.Nil(t, db.FlushCF(cfh[0], NewDefaultFlushOptions()))
+	require.Nil(t, db.FlushCFs(cfh, NewDefaultFlushOptions()))
 
 	meta := db.GetColumnFamilyMetadataCF(cfh[0])
 	require.NotNil(t, meta)

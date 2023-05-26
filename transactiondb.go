@@ -434,6 +434,21 @@ func (db *TransactionDB) FlushCF(cf *ColumnFamilyHandle, opts *FlushOptions) (er
 	return
 }
 
+// FlushCFs triggers a manual flush for the database on specific column families.
+func (db *TransactionDB) FlushCFs(cfs []*ColumnFamilyHandle, opts *FlushOptions) (err error) {
+	if n := len(cfs); n > 0 {
+		_cfs := make([]*C.rocksdb_column_family_handle_t, n)
+		for i := range _cfs {
+			_cfs[i] = cfs[i].c
+		}
+
+		var cErr *C.char
+		C.rocksdb_transactiondb_flush_cfs(db.c, opts.c, &_cfs[0], C.int(n), &cErr)
+		err = fromCError(cErr)
+	}
+	return
+}
+
 // FlushWAL flushes the WAL memory buffer to the file. If sync is true, it calls SyncWAL
 // afterwards.
 func (db *TransactionDB) FlushWAL(sync bool) (err error) {
