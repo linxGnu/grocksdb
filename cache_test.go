@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCache(t *testing.T) {
+func TestLRUCache(t *testing.T) {
 	cache := NewLRUCache(19)
 	defer cache.Destroy()
 
@@ -17,13 +17,41 @@ func TestCache(t *testing.T) {
 	cache.DisownData()
 }
 
-func TestCacheWithOpts(t *testing.T) {
+func TestHyperClockCache(t *testing.T) {
+	cache := NewHyperClockCache(100, 10)
+	defer cache.Destroy()
+
+	require.EqualValues(t, 100, cache.GetCapacity())
+	cache.SetCapacity(128)
+	require.EqualValues(t, 128, cache.GetCapacity())
+
+	cache.DisownData()
+}
+
+func TestLRUCacheWithOpts(t *testing.T) {
 	opts := NewLRUCacheOptions()
 	opts.SetCapacity(19)
 	opts.SetNumShardBits(2)
 	defer opts.Destroy()
 
 	cache := NewLRUCacheWithOptions(opts)
+	defer cache.Destroy()
+
+	require.EqualValues(t, 19, cache.GetCapacity())
+	cache.SetCapacity(128)
+	require.EqualValues(t, 128, cache.GetCapacity())
+
+	cache.DisownData()
+}
+
+func TestHyperClockCacheWithOpts(t *testing.T) {
+	opts := NewHyperClockCacheOptions(100, 10)
+	opts.SetCapacity(19)
+	opts.SetEstimatedEntryCharge(10)
+	opts.SetNumShardBits(2)
+	defer opts.Destroy()
+
+	cache := NewHyperClockCacheWithOpts(opts)
 	defer cache.Destroy()
 
 	require.EqualValues(t, 19, cache.GetCapacity())
