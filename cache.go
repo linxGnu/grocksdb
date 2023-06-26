@@ -47,6 +47,20 @@ func (c *Cache) GetPinnedUsage() uint64 {
 	return uint64(C.rocksdb_cache_get_pinned_usage(c.c))
 }
 
+// GetTableAddressCount returns the number of ways the hash function is divided for addressing
+// entries. Zero means "not supported." This is used for inspecting the load
+// factor, along with GetOccupancyCount().
+func (c *Cache) GetTableAddressCount() int {
+	return int(rocksdb_cache_get_table_address_count(c.c))
+}
+
+// GetOccupancyCount returns the number of entries currently tracked in the table. SIZE_MAX
+// means "not supported." This is used for inspecting the load factor, along
+// with GetTableAddressCount().
+func (c *Cache) GetOccupancyCount() int {
+	return int(rocksdb_cache_get_occupancy_count(c.c))
+}
+
 // SetCapacity sets capacity of the cache.
 func (c *Cache) SetCapacity(value uint64) {
 	C.rocksdb_cache_set_capacity(c.c, C.size_t(value))
