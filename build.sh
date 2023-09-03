@@ -8,10 +8,11 @@ mkdir -p $BUILD_PATH
 
 CMAKE_REQUIRED_PARAMS="-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}"
 
-snappy_version="1.1.10"
+snappy_version="1.1.9"
 cd $BUILD_PATH && wget https://github.com/google/snappy/archive/${snappy_version}.tar.gz && tar xzf ${snappy_version}.tar.gz && cd snappy-${snappy_version} && \
     mkdir -p build_place && cd build_place && \
-    CXXFLAGS='-fPIC -O3 -pipe -Wno-uninitialized -Wno-sign-compare' cmake $CMAKE_REQUIRED_PARAMS -DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF .. && make install/strip -j16 && \
+    cmake $CMAKE_REQUIRED_PARAMS -DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF .. && \
+    make install/strip -j16 && \
     cd $BUILD_PATH && rm -rf *
 
 export CFLAGS='-fPIC -O3 -pipe' 
@@ -35,9 +36,8 @@ cd $BUILD_PATH && wget https://github.com/facebook/zstd/archive/v${zstd_version}
     cd $BUILD_PATH && rm -rf * && ldconfig
 
 # Note: if you don't have a good reason, please do not set -DPORTABLE=ON
-#
 # This one is set here on purpose of compatibility with github action runtime processor
-rocksdb_version="8.3.2"
+rocksdb_version="8.3.3"
 cd $BUILD_PATH && wget https://github.com/facebook/rocksdb/archive/v${rocksdb_version}.tar.gz && tar xzf v${rocksdb_version}.tar.gz && cd rocksdb-${rocksdb_version}/ && \
     mkdir -p build_place && cd build_place && cmake -DCMAKE_BUILD_TYPE=Release $CMAKE_REQUIRED_PARAMS -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX -DWITH_TESTS=OFF -DWITH_GFLAGS=OFF \
     -DWITH_BENCHMARK_TOOLS=OFF -DWITH_TOOLS=OFF -DWITH_MD_LIBRARY=OFF -DWITH_RUNTIME_DEBUG=OFF -DROCKSDB_BUILD_SHARED=OFF -DWITH_SNAPPY=ON -DWITH_LZ4=ON -DWITH_ZLIB=ON -DWITH_LIBURING=OFF \
