@@ -243,6 +243,7 @@ func TestOptions(t *testing.T) {
 	require.EqualValues(t, 12, opts.GetCompressionOptionsParallelThreads())
 
 	opts.AddCompactOnDeletionCollectorFactory(12, 13)
+	opts.AddCompactOnDeletionCollectorFactoryWithRatio(12, 13, 5.5)
 
 	require.EqualValues(t, 0, opts.GetCompressionOptionsMaxDictBufferBytes())
 	opts.SetCompressionOptionsMaxDictBufferBytes(213 << 10)
