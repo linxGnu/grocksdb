@@ -47,7 +47,7 @@ func (c *Cache) GetPinnedUsage() uint64 {
 	return uint64(C.rocksdb_cache_get_pinned_usage(c.c))
 }
 
-// TODO: try to re-enable at next release of RocksDB
+// TODO: try to re-enable later, along with next release of RocksDB
 
 // // GetTableAddressCount returns the number of ways the hash function is divided for addressing
 // // entries. Zero means "not supported." This is used for inspecting the load
