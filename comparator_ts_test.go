@@ -9,6 +9,8 @@ import (
 )
 
 func TestComparatorWithTS(t *testing.T) {
+	t.Parallel()
+
 	db, opts := newTestDBAndOpts(t, func(opts *Options) {
 		comp := newComparatorWithTimeStamp(
 			"rev",

@@ -7,6 +7,8 @@ import (
 )
 
 func TestOptions(t *testing.T) {
+	t.Parallel()
+
 	opts := NewDefaultOptions()
 	defer opts.Destroy()
 
@@ -310,7 +312,7 @@ func TestOptions(t *testing.T) {
 	opts.SetMemtableVectorRep()
 	opts.SetHashLinkListRep(12)
 	opts.SetHashSkipListRep(1, 2, 3)
-	opts.SetPlainTableFactory(1, 2, 3.1, 12)
+	opts.SetPlainTableFactory(1, 2, 3.1, 12, 58922, EncodingTypePlain, true, true)
 	opts.SetUint64AddMergeOperator()
 	opts.SetDumpMallocStats(true)
 	opts.SetMemtableWholeKeyFiltering(true)
@@ -384,14 +386,20 @@ func TestOptions(t *testing.T) {
 }
 
 func TestOptions2(t *testing.T) {
-	t.Run("SetUniversalCompactionOpts", func(*testing.T) {
+	t.Parallel()
+
+	t.Run("SetUniversalCompactionOpts", func(t *testing.T) {
+		t.Parallel()
+
 		opts := NewDefaultOptions()
 		defer opts.Destroy()
 
 		opts.SetUniversalCompactionOptions(NewDefaultUniversalCompactionOptions())
 	})
 
-	t.Run("SetFifoCompactionOpts", func(*testing.T) {
+	t.Run("SetFifoCompactionOpts", func(t *testing.T) {
+		t.Parallel()
+
 		opts := NewDefaultOptions()
 		defer opts.Destroy()
 
@@ -399,6 +407,8 @@ func TestOptions2(t *testing.T) {
 	})
 
 	t.Run("StatisticString", func(t *testing.T) {
+		t.Parallel()
+
 		opts := NewDefaultOptions()
 		defer opts.Destroy()
 

@@ -8,6 +8,8 @@ import (
 )
 
 func TestIterator(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -32,6 +34,8 @@ func TestIterator(t *testing.T) {
 }
 
 func TestIteratorWriteManyThenIter(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -61,6 +65,8 @@ func TestIteratorWriteManyThenIter(t *testing.T) {
 }
 
 func TestIteratorCF(t *testing.T) {
+	t.Parallel()
+
 	db, cfs, cleanup := newTestDBMultiCF(t, []string{"default", "c1", "c2", "c3"}, nil)
 	defer cleanup()
 

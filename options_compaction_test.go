@@ -7,6 +7,8 @@ import (
 )
 
 func TestOptionCompactions(t *testing.T) {
+	t.Parallel()
+
 	co := NewCompactRangeOptions()
 	defer co.Destroy()
 
@@ -30,6 +32,8 @@ func TestOptionCompactions(t *testing.T) {
 }
 
 func TestFifoCompactOption(t *testing.T) {
+	t.Parallel()
+
 	fo := NewDefaultFIFOCompactionOptions()
 	defer fo.Destroy()
 
@@ -42,6 +46,8 @@ func TestFifoCompactOption(t *testing.T) {
 }
 
 func TestUniversalCompactOption(t *testing.T) {
+	t.Parallel()
+
 	uo := NewDefaultUniversalCompactionOptions()
 	defer uo.Destroy()
 

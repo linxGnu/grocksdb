@@ -7,6 +7,8 @@ import (
 )
 
 func TestWriteBatchWI(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -86,6 +88,8 @@ func TestWriteBatchWI(t *testing.T) {
 }
 
 func TestWriteBatchWIIterator(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -119,6 +123,8 @@ func TestWriteBatchWIIterator(t *testing.T) {
 }
 
 func TestWriteBatchWIIteratorWithBase(t *testing.T) {
+	t.Parallel()
+
 	db, cfs, closeup := newTestDBMultiCF(t, []string{"default", "custom"}, nil)
 	defer closeup()
 

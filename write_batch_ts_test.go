@@ -7,6 +7,8 @@ import (
 )
 
 func TestWriteBatchWithTS(t *testing.T) {
+	t.Parallel()
+
 	db, cfs, cleanup := newTestDBMultiCF(t, []string{"default"}, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})
@@ -55,6 +57,8 @@ func TestWriteBatchWithTS(t *testing.T) {
 }
 
 func TestWriteBatchIteratorWithTS(t *testing.T) {
+	t.Parallel()
+
 	_, cfs, cleanup := newTestDBMultiCF(t, []string{"default"}, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})

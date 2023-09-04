@@ -8,6 +8,8 @@ import (
 )
 
 func TestExternalFile(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -56,6 +58,8 @@ func TestExternalFile(t *testing.T) {
 }
 
 func TestExternalFileWithTS(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})

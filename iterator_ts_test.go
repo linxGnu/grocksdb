@@ -8,6 +8,8 @@ import (
 )
 
 func TestIteratorWithTS(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})
@@ -86,6 +88,8 @@ func TestIteratorWithTS(t *testing.T) {
 }
 
 func TestIteratorWriteManyThenIterWithTS(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})
@@ -120,6 +124,8 @@ func TestIteratorWriteManyThenIterWithTS(t *testing.T) {
 }
 
 func TestIteratorCFWithTS(t *testing.T) {
+	t.Parallel()
+
 	db, cfs, cleanup := newTestDBMultiCF(t, []string{"default", "c1", "c2", "c3"}, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})
@@ -186,6 +192,8 @@ func TestIteratorCFWithTS(t *testing.T) {
 }
 
 func TestIteratorRangeWithTS(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})

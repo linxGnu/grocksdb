@@ -7,6 +7,8 @@ import (
 )
 
 func TestEnv(t *testing.T) {
+	t.Parallel()
+
 	env := NewDefaultEnv()
 	defer env.Destroy()
 

@@ -7,6 +7,8 @@ import (
 )
 
 func TestWriteOptions(t *testing.T) {
+	t.Parallel()
+
 	wo := NewDefaultWriteOptions()
 	defer wo.Destroy()
 

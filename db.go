@@ -1269,6 +1269,39 @@ func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFami
 	return
 }
 
+// CreateColumnFamilies creates new column families.
+func (db *DB) CreateColumnFamilies(opts *Options, names []string) (handles []*ColumnFamilyHandle, err error) {
+	if len(names) == 0 {
+		return nil, nil
+	}
+
+	var cErr *C.char
+
+	n := len(names)
+	cNames := make([]*C.char, 0, n)
+	cSizes := make([]C.size_t, 0, n)
+	for i := range names {
+		cNames = append(cNames, C.CString(names[i]))
+		cSizes = append(cSizes, C.size_t(len(names[i])))
+	}
+
+	cHandles := C.rocksdb_create_column_families(db.c, opts.c, C.int(n), &cNames[0], &cSizes[0], &cErr)
+	if err = fromCError(cErr); err == nil {
+		tmp := unsafe.Slice(cHandles, n)
+
+		handles = make([]*ColumnFamilyHandle, 0, n)
+		for i := range tmp {
+			handles = append(handles, newNativeColumnFamilyHandle(tmp[i]))
+		}
+	}
+
+	for i := range cNames {
+		C.free(unsafe.Pointer(cNames[i]))
+	}
+
+	return
+}
+
 // CreateColumnFamilyWithTTL create a new column family along with its ttl.
 //
 // BEHAVIOUR:

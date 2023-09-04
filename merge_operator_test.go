@@ -7,6 +7,8 @@ import (
 )
 
 func TestMergeOperator(t *testing.T) {
+	t.Parallel()
+
 	var (
 		givenKey    = []byte("hello")
 		givenVal1   = []byte("foo")
@@ -41,6 +43,8 @@ func TestMergeOperator(t *testing.T) {
 }
 
 func TestPartialMergeOperator(t *testing.T) {
+	t.Parallel()
+
 	var (
 		givenKey     = []byte("hello")
 		startingVal  = []byte("foo")
@@ -91,10 +95,11 @@ func TestPartialMergeOperator(t *testing.T) {
 	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), fMergeResult)
-
 }
 
 func TestMergeMultiOperator(t *testing.T) {
+	t.Parallel()
+
 	var (
 		givenKey     = []byte("hello")
 		startingVal  = []byte("foo")
@@ -166,6 +171,7 @@ func (m *mockMergeMultiOperator) Name() string { return "grocksdb.multi" }
 func (m *mockMergeMultiOperator) FullMerge(key, existingValue []byte, operands [][]byte) ([]byte, bool) {
 	return m.fullMerge(key, existingValue, operands)
 }
+
 func (m *mockMergeMultiOperator) PartialMergeMulti(key []byte, operands [][]byte) ([]byte, bool) {
 	return m.partialMergeMulti(key, operands)
 }
@@ -179,6 +185,7 @@ func (m *mockMergePartialOperator) Name() string { return "grocksdb.partial" }
 func (m *mockMergePartialOperator) FullMerge(key, existingValue []byte, operands [][]byte) ([]byte, bool) {
 	return m.fullMerge(key, existingValue, operands)
 }
+
 func (m *mockMergePartialOperator) PartialMerge(key, leftOperand, rightOperand []byte) ([]byte, bool) {
 	return m.partialMerge(key, leftOperand, rightOperand)
 }
