@@ -7,6 +7,8 @@ import (
 )
 
 func TestOptionBlobFile(t *testing.T) {
+	t.Parallel()
+
 	opt := NewDefaultOptions()
 	defer opt.Destroy()
 

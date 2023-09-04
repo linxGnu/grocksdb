@@ -112,6 +112,40 @@ func (db *TransactionDB) ReleaseSnapshot(snapshot *Snapshot) {
 	snapshot.c = nil
 }
 
+// GetProperty returns the value of a database property.
+func (db *TransactionDB) GetProperty(propName string) (value string) {
+	cprop := C.CString(propName)
+	cValue := C.rocksdb_transactiondb_property_value(db.c, cprop)
+
+	value = C.GoString(cValue)
+
+	C.rocksdb_free(unsafe.Pointer(cValue))
+	C.free(unsafe.Pointer(cprop))
+	return
+}
+
+// GetIntProperty similar to `GetProperty`, but only works for a subset of properties whose
+// return value is an integer. Return the value by integer.
+func (db *TransactionDB) GetIntProperty(propName string) (value uint64, success bool) {
+	cProp := C.CString(propName)
+	success = C.rocksdb_transactiondb_property_int(db.c, cProp, (*C.uint64_t)(&value)) == 0
+	C.free(unsafe.Pointer(cProp))
+	return
+}
+
+// GetBaseDB gets base db.
+func (db *TransactionDB) GetBaseDB() *DB {
+	base := C.rocksdb_transactiondb_get_base_db(db.c)
+	return &DB{c: base}
+}
+
+// CloseBaseDBOfTransactionDB closes base db of TransactionDB.
+func CloseBaseDBOfTransactionDB(db *DB) {
+	if db != nil && db.c != nil {
+		C.rocksdb_transactiondb_close_base_db(db.c)
+	}
+}
+
 // TransactionBegin begins a new transaction
 // with the WriteOptions and TransactionOptions given.
 func (db *TransactionDB) TransactionBegin(

@@ -7,6 +7,8 @@ import (
 )
 
 func TestWriteBatch(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -54,6 +56,8 @@ func TestWriteBatch(t *testing.T) {
 }
 
 func TestWriteBatchIterator(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 

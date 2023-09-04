@@ -8,6 +8,8 @@ import (
 )
 
 func TestCompactionFilter(t *testing.T) {
+	t.Parallel()
+
 	var (
 		changeKey    = []byte("change")
 		changeValOld = []byte("old")

@@ -9,6 +9,8 @@ import (
 )
 
 func TestCOWList(t *testing.T) {
+	t.Parallel()
+
 	cl := NewCOWList()
 	cl.Append("hello")
 	cl.Append("world")
@@ -19,6 +21,8 @@ func TestCOWList(t *testing.T) {
 }
 
 func TestCOWListMT(t *testing.T) {
+	t.Parallel()
+
 	cl := NewCOWList()
 	expectedRes := make([]int, 3)
 	var wg sync.WaitGroup

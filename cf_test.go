@@ -8,6 +8,8 @@ import (
 )
 
 func TestColumnFamilyOpen(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 
 	givenNames := []string{"default", "guide"}
@@ -22,12 +24,18 @@ func TestColumnFamilyOpen(t *testing.T) {
 	cfh[0].Destroy()
 	cfh[1].Destroy()
 
-	actualNames, err := ListColumnFamilies(opts, dir)
-	require.Nil(t, err)
-	require.EqualValues(t, actualNames, givenNames)
+	for i := 0; i < 10; i++ {
+		actualNames, err := ListColumnFamilies(opts, dir)
+		require.Nil(t, err)
+		require.EqualValues(t, actualNames, givenNames)
+
+		runtime.GC()
+	}
 }
 
 func TestColumnFamilyCreateDrop(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 
 	opts := NewDefaultOptions()
@@ -53,6 +61,8 @@ func TestColumnFamilyCreateDrop(t *testing.T) {
 }
 
 func TestColumnFamilyBatchPutGet(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 
 	givenNames := []string{"default", "guide"}
@@ -139,6 +149,8 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 }
 
 func TestColumnFamilyPutGetDelete(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 
 	givenNames := []string{"default", "guide"}
@@ -244,6 +256,8 @@ func newTestDBCF(t *testing.T) (db *DB, cfh []*ColumnFamilyHandle, cleanup func(
 }
 
 func TestColumnFamilyMultiGet(t *testing.T) {
+	t.Parallel()
+
 	db, cfh, cleanup := newTestDBCF(t)
 	defer cleanup()
 
@@ -314,6 +328,8 @@ func TestColumnFamilyMultiGet(t *testing.T) {
 }
 
 func TestCFMetadata(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 	meta := db.GetColumnFamilyMetadata()

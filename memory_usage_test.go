@@ -9,6 +9,8 @@ import (
 )
 
 func TestMemoryUsage(t *testing.T) {
+	t.Parallel()
+
 	// create database with cache
 	cache := NewLRUCache(8 * 1024 * 1024)
 	cache.SetCapacity(90)

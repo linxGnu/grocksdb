@@ -9,6 +9,8 @@ import (
 )
 
 func TestDBCRUDWithTS(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})
@@ -85,6 +87,8 @@ func TestDBCRUDWithTS(t *testing.T) {
 }
 
 func TestDBMultiGetWithTS(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})

@@ -5,6 +5,8 @@ import (
 )
 
 func TestBBT(t *testing.T) {
+	t.Parallel()
+
 	b := NewDefaultBlockBasedTableOptions()
 	defer b.Destroy()
 

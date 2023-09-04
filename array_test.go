@@ -7,6 +7,8 @@ import (
 )
 
 func TestBytesToCSlice(t *testing.T) {
+	t.Parallel()
+
 	v, err := byteSlicesToCSlices(nil)
 	require.Nil(t, v)
 	require.Nil(t, err)

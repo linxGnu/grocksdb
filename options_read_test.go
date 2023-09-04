@@ -7,6 +7,8 @@ import (
 )
 
 func TestReadOptions(t *testing.T) {
+	t.Parallel()
+
 	ro := NewDefaultReadOptions()
 	defer ro.Destroy()
 

@@ -7,6 +7,8 @@ import (
 )
 
 func TestSliceTransform(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, func(opts *Options) {
 		opts.SetPrefixExtractor(&testSliceTransform{})
 	})
@@ -29,6 +31,8 @@ func TestSliceTransform(t *testing.T) {
 }
 
 func TestFixedPrefixTransformOpen(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, func(opts *Options) {
 		opts.SetPrefixExtractor(NewFixedPrefixTransform(3))
 	})
@@ -36,14 +40,15 @@ func TestFixedPrefixTransformOpen(t *testing.T) {
 }
 
 func TestNewNoopPrefixTransform(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, func(opts *Options) {
 		opts.SetPrefixExtractor(NewNoopPrefixTransform())
 	})
 	defer db.Close()
 }
 
-type testSliceTransform struct {
-}
+type testSliceTransform struct{}
 
 func (st *testSliceTransform) Name() string                { return "grocksdb.test" }
 func (st *testSliceTransform) Transform(src []byte) []byte { return src[0:3] }

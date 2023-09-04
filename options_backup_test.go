@@ -8,6 +8,8 @@ import (
 )
 
 func TestBackupableDBOptions(t *testing.T) {
+	t.Parallel()
+
 	opts := NewBackupableDBOptions("/tmp/v1")
 	defer opts.Destroy()
 

@@ -10,6 +10,8 @@ import (
 )
 
 func TestOpenDb(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -20,6 +22,8 @@ func TestOpenDb(t *testing.T) {
 }
 
 func TestDBCRUD(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -81,6 +85,8 @@ func TestDBCRUD(t *testing.T) {
 }
 
 func TestDBCRUDDBPaths(t *testing.T) {
+	t.Parallel()
+
 	names := make([]string, 4)
 	targetSizes := make([]uint64, len(names))
 
@@ -253,6 +259,8 @@ func newTestDBPathNames(t *testing.T, names []string, targetSizes []uint64, appl
 }
 
 func TestDBMultiGet(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -285,6 +293,8 @@ func TestDBMultiGet(t *testing.T) {
 }
 
 func TestLoadLatestOpts(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 
 	opts := NewDefaultOptions()
@@ -315,6 +325,8 @@ func TestLoadLatestOpts(t *testing.T) {
 }
 
 func TestDBGetApproximateSizes(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -335,6 +347,8 @@ func TestDBGetApproximateSizes(t *testing.T) {
 }
 
 func TestDBGetApproximateSizesCF(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -356,5 +370,27 @@ func TestDBGetApproximateSizesCF(t *testing.T) {
 	// valid range
 	sizes, err = db.GetApproximateSizesCF(cf, []Range{{Start: []byte{0x00}, Limit: []byte{0xFF}}})
 	require.EqualValues(t, sizes, []uint64{0})
+	require.NoError(t, err)
+}
+
+func TestCreateCFs(t *testing.T) {
+	t.Parallel()
+
+	db := newTestDB(t, nil)
+	defer db.Close()
+
+	o := NewDefaultOptions()
+
+	cfs, err := db.CreateColumnFamilies(o, []string{"other1", "other2"})
+	require.Nil(t, err)
+	require.Len(t, cfs, 2)
+
+	err = db.PutCF(NewDefaultWriteOptions(), cfs[0], []byte{1, 2, 3}, []byte{4, 5, 6})
+	require.NoError(t, err)
+
+	_, err = db.CreateColumnFamilies(o, nil)
+	require.NoError(t, err)
+
+	_, err = db.CreateColumnFamilies(o, []string{})
 	require.NoError(t, err)
 }

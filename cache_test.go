@@ -7,6 +7,8 @@ import (
 )
 
 func TestLRUCache(t *testing.T) {
+	t.Parallel()
+
 	cache := NewLRUCache(19)
 	defer cache.Destroy()
 
@@ -18,6 +20,8 @@ func TestLRUCache(t *testing.T) {
 }
 
 func TestHyperClockCache(t *testing.T) {
+	t.Parallel()
+
 	cache := NewHyperClockCache(100, 10)
 	defer cache.Destroy()
 
@@ -29,6 +33,8 @@ func TestHyperClockCache(t *testing.T) {
 }
 
 func TestLRUCacheWithOpts(t *testing.T) {
+	t.Parallel()
+
 	opts := NewLRUCacheOptions()
 	opts.SetCapacity(19)
 	opts.SetNumShardBits(2)
@@ -45,6 +51,8 @@ func TestLRUCacheWithOpts(t *testing.T) {
 }
 
 func TestHyperClockCacheWithOpts(t *testing.T) {
+	t.Parallel()
+
 	opts := NewHyperClockCacheOptions(100, 10)
 	opts.SetCapacity(19)
 	opts.SetEstimatedEntryCharge(10)

@@ -7,6 +7,8 @@ import (
 )
 
 func TestColumnFamilyPutGetDeleteWithTS(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 
 	givenNames := []string{"default", "guide"}
@@ -96,6 +98,8 @@ func TestColumnFamilyPutGetDeleteWithTS(t *testing.T) {
 }
 
 func TestColumnFamilyMultiGetWithTS(t *testing.T) {
+	t.Parallel()
+
 	db, cfh, cleanup := newTestDBMultiCF(t, []string{"default", "custom"}, func(opts *Options) {
 		opts.SetComparator(newDefaultComparatorWithTS())
 	})

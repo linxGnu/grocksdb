@@ -7,11 +7,15 @@ import (
 )
 
 func TestOpenTransactionDb(t *testing.T) {
+	t.Parallel()
+
 	db := newTestTransactionDB(t, nil)
 	defer db.Close()
 }
 
 func TestTransactionDBCRUD(t *testing.T) {
+	t.Parallel()
+
 	db := newTestTransactionDB(t, nil)
 	defer db.Close()
 
@@ -141,6 +145,8 @@ func TestTransactionDBCRUD(t *testing.T) {
 }
 
 func TestTransactionDBGetForUpdate(t *testing.T) {
+	t.Parallel()
+
 	lockTimeoutMilliSec := int64(50)
 	applyOpts := func(_ *Options, transactionDBOpts *TransactionDBOptions) {
 		transactionDBOpts.SetTransactionLockTimeout(lockTimeoutMilliSec)
@@ -167,6 +173,9 @@ func TestTransactionDBGetForUpdate(t *testing.T) {
 	if err := db.Put(wo, givenKey, givenVal); err == nil {
 		t.Error("expect locktime out error, got nil error")
 	}
+
+	base := db.GetBaseDB()
+	defer CloseBaseDBOfTransactionDB(base)
 }
 
 func newTestTransactionDB(t *testing.T, applyOpts func(opts *Options, transactionDBOpts *TransactionDBOptions)) *TransactionDB {
@@ -185,6 +194,8 @@ func newTestTransactionDB(t *testing.T, applyOpts func(opts *Options, transactio
 }
 
 func TestTransactionDBColumnFamilyBatchPutGet(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 
 	givenNames := []string{"default", "guide"}

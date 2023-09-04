@@ -8,6 +8,7 @@ import (
 )
 
 func TestCheckpoint(t *testing.T) {
+	t.Parallel()
 
 	dir := t.TempDir()
 	err := os.RemoveAll(dir)

@@ -7,6 +7,8 @@ import (
 )
 
 func TestBackupEngine(t *testing.T) {
+	t.Parallel()
+
 	db := newTestDB(t, nil)
 	defer db.Close()
 
@@ -63,7 +65,7 @@ func TestBackupEngine(t *testing.T) {
 		opts.Destroy()
 	}()
 
-	t.Run("createBackupAndVerify", func(t *testing.T) {
+	{
 		infos := engine.GetInfo()
 		require.Empty(t, infos)
 
@@ -80,25 +82,25 @@ func TestBackupEngine(t *testing.T) {
 			require.True(t, infos[i].Size > 0)
 			require.True(t, infos[i].NumFiles > 0)
 		}
-	})
+	}
 
-	t.Run("purge", func(t *testing.T) {
+	{
 		require.Nil(t, engine.PurgeOldBackups(1))
 
 		infos := engine.GetInfo()
 		require.Equal(t, 1, len(infos))
-	})
+	}
 
-	t.Run("restoreFromLatest", func(t *testing.T) {
+	{
 		dir := t.TempDir()
 
 		ro := NewRestoreOptions()
 		defer ro.Destroy()
 		require.Nil(t, engine.RestoreDBFromLatestBackup(dir, dir, ro))
 		require.Nil(t, engine.RestoreDBFromLatestBackup(dir, dir, ro))
-	})
+	}
 
-	t.Run("restoreFromBackup", func(t *testing.T) {
+	{
 		infos := engine.GetInfo()
 		require.Equal(t, 1, len(infos))
 
@@ -127,5 +129,5 @@ func TestBackupEngine(t *testing.T) {
 			require.False(t, v4.Exists())
 			v4.Destroy()
 		}
-	})
+	}
 }
