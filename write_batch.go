@@ -344,9 +344,11 @@ func (iter *WriteBatchIterator) decodeRecType() WriteBatchRecordType {
 
 func (iter *WriteBatchIterator) decodeVarint() uint64 {
 	v, n := binary.Uvarint(iter.data)
-	if n == 0 {
+	if n > 0 {
+		iter.data = iter.data[n:]
+	} else if n == 0 {
 		iter.err = io.ErrShortBuffer
-	} else if n < 0 {
+	} else {
 		iter.err = errors.New("malformed varint")
 	}
 	return v
