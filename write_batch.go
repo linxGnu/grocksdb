@@ -4,6 +4,7 @@ package grocksdb
 import "C"
 
 import (
+	"encoding/binary"
 	"errors"
 	"io"
 )
@@ -342,21 +343,13 @@ func (iter *WriteBatchIterator) decodeRecType() WriteBatchRecordType {
 }
 
 func (iter *WriteBatchIterator) decodeVarint() uint64 {
-	var n int
-	var x uint64
-	for shift := uint(0); shift < 64 && n < len(iter.data); shift += 7 {
-		b := uint64(iter.data[n])
-		n++
-		x |= (b & 0x7F) << shift
-		if (b & 0x80) == 0 {
-			iter.data = iter.data[n:]
-			return x
-		}
-	}
-	if n == len(iter.data) {
+	v, n := binary.Uvarint(iter.data)
+	if n > 0 {
+		iter.data = iter.data[n:]
+	} else if n == 0 {
 		iter.err = io.ErrShortBuffer
 	} else {
 		iter.err = errors.New("malformed varint")
 	}
-	return 0
+	return v
 }
