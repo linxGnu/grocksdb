@@ -89,3 +89,10 @@ func TestWriteBatchIterator(t *testing.T) {
 	// there shouldn't be any left
 	require.False(t, iter.Next())
 }
+
+func TestDecodeVarint(t *testing.T) {
+	t.Parallel()
+
+	wbi := &WriteBatchIterator{data: []byte{0xd7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f}}
+	require.EqualValues(t, 0, wbi.decodeVarint())
+}
