@@ -1,6 +1,7 @@
 package grocksdb
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -90,9 +91,55 @@ func TestWriteBatchIterator(t *testing.T) {
 	require.False(t, iter.Next())
 }
 
-func TestDecodeVarint(t *testing.T) {
+func TestDecodeVarint_ISSUE131(t *testing.T) {
 	t.Parallel()
 
-	wbi := &WriteBatchIterator{data: []byte{0xd7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f}}
-	require.EqualValues(t, 0, wbi.decodeVarint())
+	tests := []struct {
+		name      string
+		in        []byte
+		wantValue uint64
+		expectErr bool
+	}{
+		{
+			name:      "invalid: 10th byte",
+			in:        []byte{0xd7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f},
+			wantValue: 0,
+			expectErr: true,
+		},
+		{
+			name:      "valid: math.MaxUint64-40",
+			in:        []byte{0xd7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01},
+			wantValue: math.MaxUint64 - 40,
+			expectErr: false,
+		},
+		{
+			name:      "invalid: with more than MaxVarintLen64 bytes",
+			in:        []byte{0xd7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01},
+			wantValue: 0,
+			expectErr: true,
+		},
+		{
+			name: "invalid: 1000 bytes",
+			in: func() []byte {
+				b := make([]byte, 1000)
+				for i := range b {
+					b[i] = 0xff
+				}
+				b[999] = 0
+				return b
+			}(),
+			wantValue: 0,
+			expectErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		wbi := &WriteBatchIterator{data: test.in}
+		require.EqualValues(t, test.wantValue, wbi.decodeVarint(), test.name)
+		if test.expectErr {
+			require.Error(t, wbi.err, test.name)
+		} else {
+			require.NoError(t, wbi.err, test.name)
+		}
+	}
 }
