@@ -1517,6 +1517,29 @@ func (opts *Options) GetStatisticsString() (stats string) {
 	return
 }
 
+func (opts *Options) GetTickerCount(tickerType TickerType) uint64 {
+	return uint64(C.rocksdb_options_statistics_get_ticker_count(opts.c, C.uint32_t(tickerType)))
+}
+
+func (opts *Options) GetHistogramData(histogramType HistogramType) (histogram HistogramData) {
+	hData := C.rocksdb_statistics_histogram_data_create()
+	C.rocksdb_options_statistics_get_histogram_data(opts.c, C.uint32_t(histogramType), hData)
+
+	histogram.Median = float64(C.rocksdb_statistics_histogram_data_get_median(hData))
+	histogram.P95 = float64(C.rocksdb_statistics_histogram_data_get_p95(hData))
+	histogram.P99 = float64(C.rocksdb_statistics_histogram_data_get_p99(hData))
+	histogram.Average = float64(C.rocksdb_statistics_histogram_data_get_average(hData))
+	histogram.StdDev = float64(C.rocksdb_statistics_histogram_data_get_std_dev(hData))
+	histogram.Max = float64(C.rocksdb_statistics_histogram_data_get_max(hData))
+	histogram.Min = float64(C.rocksdb_statistics_histogram_data_get_min(hData))
+	histogram.Count = uint64(C.rocksdb_statistics_histogram_data_get_count(hData))
+	histogram.Sum = uint64(C.rocksdb_statistics_histogram_data_get_sum(hData))
+
+	C.rocksdb_statistics_histogram_data_destroy(hData)
+
+	return
+}
+
 // SetRateLimiter sets the rate limiter of the options.
 // Use to control write rate of flush and compaction. Flush has higher
 // priority than compaction. Rate limiting is disabled if nullptr.
@@ -1742,6 +1765,16 @@ func (opts *Options) GetMaxSuccessiveMerges() uint {
 // EnableStatistics enable statistics.
 func (opts *Options) EnableStatistics() {
 	C.rocksdb_options_enable_statistics(opts.c)
+}
+
+// SetStatisticsLevel set statistics level.
+func (opts *Options) SetStatisticsLevel(level StatisticsLevel) {
+	C.rocksdb_options_set_statistics_level(opts.c, C.int(level))
+}
+
+// GetStatisticsLevel get statistics level.
+func (opts *Options) GetStatisticsLevel() StatisticsLevel {
+	return StatisticsLevel(C.rocksdb_options_get_statistics_level(opts.c))
 }
 
 // PrepareForBulkLoad prepare the DB for bulk loading.

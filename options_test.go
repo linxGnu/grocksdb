@@ -380,6 +380,14 @@ func TestOptions(t *testing.T) {
 	opts.AvoidUnnecessaryBlockingIO(true)
 	require.True(t, opts.GetAvoidUnnecessaryBlockingIOFlag())
 
+	require.Equal(t, StatisticsLevelExceptDetailedTimers, opts.GetStatisticsLevel())
+	opts.SetStatisticsLevel(StatisticsLevelExceptHistogramOrTimers)
+	require.Equal(t, StatisticsLevelExceptHistogramOrTimers, opts.GetStatisticsLevel())
+
+	require.EqualValues(t, 0, opts.GetTickerCount(TickerType_BACKUP_WRITE_BYTES))
+	hData := opts.GetHistogramData(HistogramType_BLOB_DB_MULTIGET_MICROS)
+	require.EqualValues(t, 0, hData.P99)
+
 	// cloning
 	cl := opts.Clone()
 	require.EqualValues(t, 5, cl.GetTableCacheNumshardbits())
