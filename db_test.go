@@ -181,7 +181,7 @@ func newTestDBAndOpts(t *testing.T, applyOpts func(opts *Options)) (*DB, *Option
 
 	opts := NewDefaultOptions()
 	// test the ratelimiter
-	rateLimiter := NewRateLimiter(1024, 100*1000, 10)
+	rateLimiter := NewAutoTunedRateLimiter(1024, 100*1000, 10)
 	opts.SetRateLimiter(rateLimiter)
 	opts.SetCreateIfMissing(true)
 	opts.SetCompression(ZSTDCompression)
@@ -245,6 +245,8 @@ func newTestDBPathNames(t *testing.T, names []string, targetSizes []uint64, appl
 
 	opts := NewDefaultOptions()
 	opts.SetDBPaths(dbpaths)
+	opts.SetCFPaths(dbpaths)
+
 	// test the ratelimiter
 	rateLimiter := NewRateLimiter(1024, 100*1000, 10)
 	opts.SetRateLimiter(rateLimiter)

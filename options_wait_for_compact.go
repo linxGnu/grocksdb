@@ -13,6 +13,7 @@ func NewWaitForCompactOptions() *WaitForCompactOptions {
 	}
 }
 
+// Destroy the object.
 func (w *WaitForCompactOptions) Destroy() {
 	C.rocksdb_wait_for_compact_options_destroy(w.p)
 	w.p = nil
