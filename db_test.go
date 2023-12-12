@@ -290,6 +290,12 @@ func TestDBMultiGet(t *testing.T) {
 	require.EqualValues(t, values[1].Data(), givenVal1)
 	require.EqualValues(t, values[2].Data(), givenVal2)
 	require.EqualValues(t, values[3].Data(), givenVal3)
+
+	waitForCompactOpts := NewWaitForCompactOptions()
+	defer waitForCompactOpts.Destroy()
+
+	err = db.WaitForCompact(waitForCompactOpts)
+	require.NoError(t, err)
 }
 
 func TestLoadLatestOpts(t *testing.T) {
