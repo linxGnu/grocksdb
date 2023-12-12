@@ -74,4 +74,6 @@ func TestReadOptions(t *testing.T) {
 	require.False(t, ro.IsAsyncIO())
 	ro.SetAsyncIO(true)
 	require.True(t, ro.IsAsyncIO())
+
+	ro.SetAutoReadaheadSize(true)
 }
