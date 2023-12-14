@@ -221,31 +221,47 @@ func TestTransactionDBColumnFamilyBatchPutGet(t *testing.T) {
 	givenVal0 := []byte("world0")
 	givenKey1 := []byte("hello1")
 	givenVal1 := []byte("world1")
+	givenKey2 := []byte("hello2")
+	givenVal2 := []byte("world2")
 
-	b0 := NewWriteBatch()
-	defer b0.Destroy()
-	b0.PutCF(cfh[0], givenKey0, givenVal0)
-	require.Nil(t, db.Write(wo, b0))
-	actualVal0, err := db.GetCF(ro, cfh[0], givenKey0)
-	defer actualVal0.Free()
-	require.Nil(t, err)
-	require.EqualValues(t, actualVal0.Data(), givenVal0)
+	writeReadBatch := func(cf *ColumnFamilyHandle, keys [][]byte, values [][]byte) {
+		b := NewWriteBatch()
+		defer b.Destroy()
+		for i := range keys {
+			b.PutCF(cf, keys[i], values[i])
+		}
+		require.Nil(t, db.Write(wo, b))
 
-	b1 := NewWriteBatch()
-	defer b1.Destroy()
-	b1.PutCF(cfh[1], givenKey1, givenVal1)
-	require.Nil(t, db.Write(wo, b1))
-	actualVal1, err := db.GetCF(ro, cfh[1], givenKey1)
-	defer actualVal1.Free()
-	require.Nil(t, err)
-	require.EqualValues(t, actualVal1.Data(), givenVal1)
+		for i := range keys {
+			actualVal, err := db.GetCF(ro, cf, keys[i])
+			require.Nil(t, err)
+			require.EqualValues(t, actualVal.Data(), values[i])
+			actualVal.Free()
+		}
+	}
 
+	writeReadBatch(cfh[0], [][]byte{givenKey0}, [][]byte{givenVal0})
+
+	writeReadBatch(cfh[1], [][]byte{givenKey1, givenKey2}, [][]byte{givenVal1, givenVal2})
+
+	// check read from wrong CF returns nil
 	actualVal, err := db.GetCF(ro, cfh[0], givenKey1)
 	require.Nil(t, err)
 	require.EqualValues(t, actualVal.Size(), 0)
+	actualVal.Free()
+
 	actualVal, err = db.GetCF(ro, cfh[1], givenKey0)
 	require.Nil(t, err)
 	require.EqualValues(t, actualVal.Size(), 0)
+	actualVal.Free()
+
+	// check batch read is correct
+	actualVals, err := db.MultiGetWithCF(ro, cfh[1], givenKey1, givenKey2)
+	require.Nil(t, err)
+	require.EqualValues(t, len(actualVals), 2)
+	require.EqualValues(t, actualVals[0].Data(), givenVal1)
+	require.EqualValues(t, actualVals[1].Data(), givenVal2)
+	actualVals.Destroy()
 
 	// trigger flush
 	require.Nil(t, db.FlushCF(cfh[0], NewDefaultFlushOptions()))
