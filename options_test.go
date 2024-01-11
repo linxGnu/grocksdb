@@ -9,6 +9,9 @@ import (
 func TestOptions(t *testing.T) {
 	t.Parallel()
 
+	wbm := NewWriteBufferManager(123456, true)
+	defer wbm.Destroy()
+
 	opts := NewDefaultOptions()
 	defer opts.Destroy()
 
@@ -387,6 +390,12 @@ func TestOptions(t *testing.T) {
 	require.EqualValues(t, 0, opts.GetTickerCount(TickerType_BACKUP_WRITE_BYTES))
 	hData := opts.GetHistogramData(HistogramType_BLOB_DB_MULTIGET_MICROS)
 	require.EqualValues(t, 0, hData.P99)
+
+	require.EqualValues(t, uint64(0xfffffffffffffffe), opts.GetPeriodicCompactionSeconds())
+	opts.SetPeriodicCompactionSeconds(123)
+	require.EqualValues(t, 123, opts.GetPeriodicCompactionSeconds())
+
+	opts.SetWriteBufferManager(wbm)
 
 	// cloning
 	cl := opts.Clone()
