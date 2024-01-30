@@ -1461,6 +1461,12 @@ func (db *DB) SetOptions(keys, values []string) (err error) {
 	)
 	err = fromCError(cErr)
 
+	// free before return
+	for i := range cKeys {
+		C.free(unsafe.Pointer(cKeys[i]))
+		C.free(unsafe.Pointer(cValues[i]))
+	}
+
 	return
 }
 
@@ -1489,6 +1495,12 @@ func (db *DB) SetOptionsCF(cf *ColumnFamilyHandle, keys, values []string) (err e
 		&cErr,
 	)
 	err = fromCError(cErr)
+
+	// free before return
+	for i := range cKeys {
+		C.free(unsafe.Pointer(cKeys[i]))
+		C.free(unsafe.Pointer(cValues[i]))
+	}
 
 	return
 }
