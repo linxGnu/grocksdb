@@ -2665,7 +2665,6 @@ func LoadLatestOptions(path string, env *Env, ignoreUnknownOpts bool, cache *Cac
 	}
 
 	cPath := C.CString(path)
-	defer C.free(unsafe.Pointer(cPath))
 
 	var env_ *C.rocksdb_env_t
 	if env != nil {
@@ -2705,6 +2704,7 @@ func LoadLatestOptions(path string, env *Env, ignoreUnknownOpts bool, cache *Cac
 		}
 	}
 
+	C.free(unsafe.Pointer(cPath))
 	return
 }
 

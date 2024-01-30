@@ -320,13 +320,15 @@ func TestLoadLatestOpts(t *testing.T) {
 	require.NoError(t, db.Flush(NewDefaultFlushOptions()))
 	db.Close()
 
-	o, err := LoadLatestOptions(dir, NewDefaultEnv(), true, NewLRUCache(1))
-	runtime.GC()
-	require.NoError(t, err)
-	require.NotEmpty(t, o.ColumnFamilyNames())
-	require.NotEmpty(t, o.ColumnFamilyOpts())
-	o.Destroy()
-	runtime.GC()
+	for i := 0; i < 10; i++ {
+		o, err := LoadLatestOptions(dir, NewDefaultEnv(), true, NewLRUCache(1))
+		runtime.GC()
+		require.NoError(t, err)
+		require.NotEmpty(t, o.ColumnFamilyNames())
+		require.NotEmpty(t, o.ColumnFamilyOpts())
+		o.Destroy()
+		runtime.GC()
+	}
 
 	_, err = LoadLatestOptions("", nil, true, nil)
 	require.Error(t, err)
