@@ -21,6 +21,30 @@ func TestOpenDb(t *testing.T) {
 	require.True(t, success)
 }
 
+func TestSetOptions(t *testing.T) {
+	t.Parallel()
+
+	db := newTestDB(t, nil)
+	defer db.Close()
+
+	for i := 0; i < 100; i++ {
+		require.Error(t, db.SetOptions([]string{"a"}, []string{"b"}))
+		runtime.GC()
+	}
+}
+
+func TestSetOptionsCF(t *testing.T) {
+	t.Parallel()
+
+	db, cfh, cleanup := newTestDBMultiCF(t, []string{"default", "custom"}, nil)
+	defer cleanup()
+
+	for i := 0; i < 100; i++ {
+		require.Error(t, db.SetOptionsCF(cfh[1], []string{"a"}, []string{"b"}))
+		runtime.GC()
+	}
+}
+
 func TestDBCRUD(t *testing.T) {
 	t.Parallel()
 
