@@ -395,6 +395,10 @@ func TestOptions(t *testing.T) {
 	opts.SetPeriodicCompactionSeconds(123)
 	require.EqualValues(t, 123, opts.GetPeriodicCompactionSeconds())
 
+	require.EqualValues(t, uint64(0xfffffffffffffffe), opts.GetTTL())
+	opts.SetTTL(123)
+	require.EqualValues(t, uint64(123), opts.GetTTL())
+
 	opts.SetWriteBufferManager(wbm)
 
 	// cloning
