@@ -184,7 +184,7 @@ func newTestDB(t *testing.T, applyOpts func(opts *Options)) *DB {
 
 	opts := NewDefaultOptions()
 	// test the ratelimiter
-	rateLimiter := NewRateLimiter(1024, 100*1000, 10)
+	rateLimiter := NewRateLimiter(1024, 100*1000, 10, RateLimiterModeReadsOnly)
 	opts.SetRateLimiter(rateLimiter)
 	opts.SetCreateIfMissing(true)
 	opts.SetCompression(ZSTDCompression)

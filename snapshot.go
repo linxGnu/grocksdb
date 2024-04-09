@@ -19,3 +19,8 @@ func (snapshot *Snapshot) Destroy() {
 	C.rocksdb_free(unsafe.Pointer(snapshot.c))
 	snapshot.c = nil
 }
+
+// GetSequenceNumber returns the sequence number of the snapshot
+func (snapshot *Snapshot) GetSequenceNumber() uint64 {
+	return C.rocksdb_snapshot_get_sequence_number(snapshot.c)
+}

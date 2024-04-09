@@ -1451,21 +1451,6 @@ func (opts *Options) GetDbWriteBufferSize() uint64 {
 	return uint64(C.rocksdb_options_get_db_write_buffer_size(opts.c))
 }
 
-// SetAccessHintOnCompactionStart specifies the file access pattern
-// once a compaction is started.
-//
-// It will be applied to all input files of a compaction.
-// Default: NormalCompactionAccessPattern
-func (opts *Options) SetAccessHintOnCompactionStart(value CompactionAccessPattern) {
-	C.rocksdb_options_set_access_hint_on_compaction_start(opts.c, C.int(value))
-}
-
-// GetAccessHintOnCompactionStart returns the file access pattern
-// once a compaction is started.
-func (opts *Options) GetAccessHintOnCompactionStart() CompactionAccessPattern {
-	return CompactionAccessPattern(C.rocksdb_options_get_access_hint_on_compaction_start(opts.c))
-}
-
 // SetUseAdaptiveMutex enable/disable adaptive mutex, which spins
 // in the user space before resorting to kernel.
 //

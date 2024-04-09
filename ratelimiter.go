@@ -1,5 +1,11 @@
 package grocksdb
 
+const (
+	RateLimiterModeReadsOnly = iota
+	RateLimiterModeWritesOnly
+	RateLimiterModeAllIo
+)
+
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"
@@ -31,25 +37,32 @@ type RateLimiter struct {
 // continuously. This fairness parameter grants low-pri requests permission by
 // 1/fairness chance even though high-pri requests exist to avoid starvation.
 // You should be good by leaving it at default 10.
-func NewRateLimiter(rateBytesPerSec, refillPeriodMicros int64, fairness int32) *RateLimiter {
-	cR := C.rocksdb_ratelimiter_create(
+//
+// @mode: Mode indicates which types of operations count against the limit.
+//
+// @auto_tuned: Enables dynamic adjustment of rate limit within the range
+// `[rate_bytes_per_sec / 20, rate_bytes_per_sec]`, according to
+// the recent demand for background I/O.
+func NewGenericRateLimiter(
+	rateBytesPerSec, refillPeriodMicros int64, fairness int32,
+	int mode, bool autoTuned,
+) *RateLimiter {
+	cR := C.rocksdb_ratelimiter_create_with_mode(
 		C.int64_t(rateBytesPerSec),
 		C.int64_t(refillPeriodMicros),
 		C.int32_t(fairness),
+		C.int(mode),
+		C.bool(autoTuned),
 	)
 	return newNativeRateLimiter(cR)
 }
 
-// NewAutoTunedRateLimiter similar to NewRateLimiter, enables dynamic adjustment of rate
-// limit within the range `[rate_bytes_per_sec / 20, rate_bytes_per_sec]`, according to
-// the recent demand for background I/O.
+func NewRateLimiter(rateBytesPerSec, refillPeriodMicros int64, fairness int32) *RateLimiter {
+	return NewGenericRateLimiter(rateBytesPerSec, refillPeriodMicros, fairness, RateLimiterModeWritesOnly, false)
+}
+
 func NewAutoTunedRateLimiter(rateBytesPerSec, refillPeriodMicros int64, fairness int32) *RateLimiter {
-	cR := C.rocksdb_ratelimiter_create_auto_tuned(
-		C.int64_t(rateBytesPerSec),
-		C.int64_t(refillPeriodMicros),
-		C.int32_t(fairness),
-	)
-	return newNativeRateLimiter(cR)
+	return NewGenericRateLimiter(rateBytesPerSec, refillPeriodMicros, fairness, RateLimiterModeWritesOnly, true)
 }
 
 // NewNativeRateLimiter creates a native RateLimiter object.
