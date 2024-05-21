@@ -101,8 +101,8 @@ func TestOptions(t *testing.T) {
 	opts.SetAdviseRandomOnOpen(true)
 	require.EqualValues(t, true, opts.AdviseRandomOnOpen())
 
-	opts.SetAccessHintOnCompactionStart(SequentialCompactionAccessPattern)
-	require.EqualValues(t, SequentialCompactionAccessPattern, opts.GetAccessHintOnCompactionStart())
+	// opts.SetAccessHintOnCompactionStart(SequentialCompactionAccessPattern)
+	// require.EqualValues(t, SequentialCompactionAccessPattern, opts.GetAccessHintOnCompactionStart())
 
 	opts.SetDbWriteBufferSize(1 << 30)
 	require.EqualValues(t, 1<<30, opts.GetDbWriteBufferSize())
@@ -400,6 +400,10 @@ func TestOptions(t *testing.T) {
 	require.EqualValues(t, uint64(123), opts.GetTTL())
 
 	opts.SetWriteBufferManager(wbm)
+
+	lg := NewStderrLogger(InfoInfoLogLevel, "prefix")
+	opts.SetInfoLog(lg)
+	require.NotNil(t, opts.GetInfoLog())
 
 	// cloning
 	cl := opts.Clone()

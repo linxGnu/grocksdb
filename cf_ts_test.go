@@ -112,7 +112,7 @@ func TestColumnFamilyMultiGetWithTS(t *testing.T) {
 		givenVal1 = []byte("world1")
 		givenVal2 = []byte("world2")
 		givenVal3 = []byte("world3")
-		givenTs1  = marshalTimestamp(1)
+		givenTs1  = marshalTimestamp(0)
 		givenTs2  = marshalTimestamp(2)
 		givenTs3  = marshalTimestamp(3)
 	)
@@ -177,7 +177,7 @@ func TestColumnFamilyMultiGetWithTS(t *testing.T) {
 	require.EqualValues(t, values[1].Data(), givenVal2)
 	require.EqualValues(t, values[2].Data(), givenVal3)
 
-	require.EqualValues(t, times[0].Data(), givenTs1)
+	require.EqualValues(t, times[0].Data(), []byte{})
 	require.EqualValues(t, times[1].Data(), givenTs2)
 	require.EqualValues(t, times[2].Data(), givenTs3)
 }

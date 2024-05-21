@@ -222,6 +222,8 @@ func newTestDBMultiCF(t *testing.T, columns []string, applyOpts func(opts *Optio
 	dir := t.TempDir()
 
 	opts := NewDefaultOptions()
+	rateLimiter := NewGenericRateLimiter(1024, 100*1000, 10, RateLimiterModeAllIo, true)
+	opts.SetRateLimiter(rateLimiter)
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
 	opts.SetCompression(ZSTDCompression)
