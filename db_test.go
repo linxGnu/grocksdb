@@ -59,6 +59,9 @@ func TestDBCRUD(t *testing.T) {
 		ro        = NewDefaultReadOptions()
 	)
 
+	df := db.GetDefaultColumnFamily()
+	require.NotNil(t, df)
+
 	// create
 	require.Nil(t, db.Put(wo, givenKey, givenVal1))
 
@@ -67,6 +70,13 @@ func TestDBCRUD(t *testing.T) {
 	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
+
+	{
+		_v1, err := db.GetCF(ro, df, givenKey)
+		defer _v1.Free()
+		require.Nil(t, err)
+		require.EqualValues(t, _v1.Data(), givenVal1)
+	}
 
 	// retrieve bytes
 	_v1, err := db.GetBytes(ro, givenKey)

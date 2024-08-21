@@ -124,6 +124,21 @@ func (iter *Iterator) Err() (err error) {
 	return
 }
 
+// Refresh if supported, the DB state that the iterator reads from is updated to
+// the latest state. The iterator will be invalidated after the call.
+// Regardless of whether the iterator was created/refreshed previously
+// with or without a snapshot, the iterator will be reading the
+// latest DB state after this call.
+// Note that you will need to call a Seek*() function to get the iterator
+// back into a valid state before calling a function that assumes the
+// state is already valid, like Next().
+func (iter *Iterator) Refresh() (err error) {
+	var cErr *C.char
+	C.rocksdb_iter_refresh(iter.c, &cErr)
+	err = fromCError(cErr)
+	return
+}
+
 // Close closes the iterator.
 func (iter *Iterator) Close() {
 	C.rocksdb_iter_destroy(iter.c)

@@ -297,6 +297,14 @@ func TestOptions(t *testing.T) {
 	opts.SetMaxSubcompactions(3)
 	require.EqualValues(t, 3, opts.GetMaxSubcompactions())
 
+	require.False(t, opts.IsDBIDWrittenToManifest())
+	opts.WriteDBIDToManifest(true)
+	require.True(t, opts.IsDBIDWrittenToManifest())
+
+	require.False(t, opts.TrackAndVerifyWALsInManifestFlag())
+	opts.ToggleTrackAndVerifyWALsInManifestFlag(true)
+	require.True(t, opts.TrackAndVerifyWALsInManifestFlag())
+
 	opts.SetMaxBytesForLevelMultiplierAdditional([]int{2 << 20})
 
 	opts.SetDbLogDir("./abc")

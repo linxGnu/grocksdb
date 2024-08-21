@@ -19,6 +19,17 @@ func NewWriteBatchWI(reservedBytes uint, overwriteKeys bool) *WriteBatchWI {
 	return newNativeWriteBatchWI(cWB)
 }
 
+// NewWriteBatchWIWithParams with params.
+func NewWriteBatchWIWithParams(cp *Comparator, reservedBytes int, overwriteKey bool, maxBytes, protectionBytesPerKey int) *WriteBatchWI {
+	return newNativeWriteBatchWI(C.rocksdb_writebatch_wi_create_with_params(
+		cp.c,
+		C.size_t(reservedBytes),
+		boolToChar(overwriteKey),
+		C.size_t(maxBytes),
+		C.size_t(protectionBytesPerKey),
+	))
+}
+
 // NewNativeWriteBatchWI create a WriteBatchWI object.
 func newNativeWriteBatchWI(c *C.rocksdb_writebatch_wi_t) *WriteBatchWI {
 	return &WriteBatchWI{c: c}
@@ -99,7 +110,7 @@ func (wb *WriteBatchWI) SingleDeleteCF(cf *ColumnFamilyHandle, key []byte) {
 }
 
 // DeleteRange deletes keys that are between [startKey, endKey)
-func (wb *WriteBatchWI) DeleteRange(startKey []byte, endKey []byte) {
+func (wb *WriteBatchWI) DeleteRange(startKey, endKey []byte) {
 	cStartKey := refGoBytes(startKey)
 	cEndKey := refGoBytes(endKey)
 	C.rocksdb_writebatch_wi_delete_range(wb.c, cStartKey, C.size_t(len(startKey)), cEndKey, C.size_t(len(endKey)))
@@ -107,7 +118,7 @@ func (wb *WriteBatchWI) DeleteRange(startKey []byte, endKey []byte) {
 
 // DeleteRangeCF deletes keys that are between [startKey, endKey) and
 // belong to a given column family
-func (wb *WriteBatchWI) DeleteRangeCF(cf *ColumnFamilyHandle, startKey []byte, endKey []byte) {
+func (wb *WriteBatchWI) DeleteRangeCF(cf *ColumnFamilyHandle, startKey, endKey []byte) {
 	cStartKey := refGoBytes(startKey)
 	cEndKey := refGoBytes(endKey)
 	C.rocksdb_writebatch_wi_delete_range_cf(wb.c, cf.c, cStartKey, C.size_t(len(startKey)), cEndKey, C.size_t(len(endKey)))

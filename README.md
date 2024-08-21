@@ -72,3 +72,5 @@ Almost C API, excepts:
 - [ ] compaction_filter/compaction_filter_factory/compaction_filter_context
 - [ ] transactiondb_property_value/transactiondb_property_int
 - [ ] optimistictransactiondb_property_value/optimistictransactiondb_property_int
+- [ ] writebatch_update_timestamps/writebatch_wi_update_timestamps
+

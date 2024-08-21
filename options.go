@@ -2044,6 +2044,50 @@ func (opts *Options) SetPlainTableFactory(
 	)
 }
 
+// WriteDBIDToManifest writes/does not write historically DB ID has always been stored in Identity File in DB folder.
+// If this flag is true, the DB ID is written to Manifest file in addition
+// to the Identity file. By doing this 2 problems are solved
+//  1. We don't checksum the Identity file where as Manifest file is.
+//  2. Since the source of truth for DB is Manifest file DB ID will sit with
+//     the source of truth. Previously the Identity file could be copied
+//     independent of Manifest and that can result in wrong DB ID.
+//
+// We recommend setting this flag to true.
+//
+// Default: false
+func (opts *Options) WriteDBIDToManifest(v bool) {
+	C.rocksdb_options_set_write_dbid_to_manifest(opts.c, boolToChar(v))
+}
+
+// IsDBIDWrittenToManifest returns if historically DB ID has always been stored in Identity File in DB folder.
+func (opts *Options) IsDBIDWrittenToManifest() bool {
+	return charToBool(C.rocksdb_options_get_write_dbid_to_manifest(opts.c))
+}
+
+// ToggleTrackAndVerifyWALsInManifestFlag if true, the log numbers and sizes of the synced WALs are tracked
+// in MANIFEST. During DB recovery, if a synced WAL is missing
+// from disk, or the WAL's size does not match the recorded size in
+// MANIFEST, an error will be reported and the recovery will be aborted.
+//
+// This is one additional protection against WAL corruption besides the
+// per-WAL-entry checksum.
+//
+// Note that this option does not work with secondary instance.
+// Currently, only syncing closed WALs are tracked. Calling `DB::SyncWAL()`,
+// etc. or writing with `WriteOptions::sync=true` to sync the live WAL is not
+// tracked for performance/efficiency reasons.
+//
+// Default: false
+func (opts *Options) ToggleTrackAndVerifyWALsInManifestFlag(v bool) {
+	C.rocksdb_options_set_track_and_verify_wals_in_manifest(opts.c, boolToChar(v))
+}
+
+// TrackAndVerifyWALsInManifestFlag checks if the log numbers and sizes of the synced WALs are tracked
+// in MANIFEST.
+func (opts *Options) TrackAndVerifyWALsInManifestFlag() bool {
+	return charToBool(C.rocksdb_options_get_track_and_verify_wals_in_manifest(opts.c))
+}
+
 // SetWriteBufferManager binds with a WriteBufferManager.
 //
 // The memory usage of memtable will report to this object. The same object
