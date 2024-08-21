@@ -387,6 +387,10 @@ func TestOptions(t *testing.T) {
 	opts.SetStatisticsLevel(StatisticsLevelExceptHistogramOrTimers)
 	require.Equal(t, StatisticsLevelExceptHistogramOrTimers, opts.GetStatisticsLevel())
 
+	require.EqualValues(t, KMinOverlappingRatioCompactionPri, opts.GetCompactionPri())
+	opts.SetCompactionPri(KRoundRobinCompactionPri)
+	require.EqualValues(t, KRoundRobinCompactionPri, opts.GetCompactionPri())
+
 	require.EqualValues(t, 0, opts.GetTickerCount(TickerType_BACKUP_WRITE_BYTES))
 	hData := opts.GetHistogramData(HistogramType_BLOB_DB_MULTIGET_MICROS)
 	require.EqualValues(t, 0, hData.P99)
