@@ -12,4 +12,7 @@ func TestBBT(t *testing.T) {
 
 	b.SetBlockSize(123)
 	b.SetOptimizeFiltersForMemory(true)
+	b.SetTopLevelIndexPinningTier(KFallbackPinningTier)
+	b.SetPartitionPinningTier(KNonePinningTier)
+	b.SetUnpartitionedPinningTier(KAllPinningTier)
 }

@@ -1677,6 +1677,30 @@ func (opts *Options) GetWALCompression() CompressionType {
 	return CompressionType(C.rocksdb_options_get_wal_compression(opts.c))
 }
 
+// CompactionPri is in Level-based compaction, it Determines which file from a level to be
+// picked to merge to the next level. We suggest people try KMinOverlappingRatio first when you tune your database.
+type CompactionPri int
+
+const (
+	KByCompensatedSizeCompactionPri      CompactionPri = 0
+	KOldestLargestSeqFirstCompactionPri                = 1
+	KOldestSmallestSeqFirstCompactionPri               = 2
+	KMinOverlappingRatioCompactionPri                  = 3
+	KRoundRobinCompactionPri                           = 4
+)
+
+// SetCompactionPri sets in level-based compaction.
+//
+// Default: KMinOverlappingRatioCompactionPri
+func (opts *Options) SetCompactionPri(pri CompactionPri) {
+	C.rocksdb_options_set_compaction_pri(opts.c, C.int(pri))
+}
+
+// GetCompactionPri gets in level-based compaction.
+func (opts *Options) GetCompactionPri() CompactionPri {
+	return CompactionPri(C.rocksdb_options_get_compaction_pri(opts.c))
+}
+
 // SetMaxSequentialSkipInIterations specifies whether an iteration->Next()
 // sequentially skips over keys with the same user-key or not.
 //
