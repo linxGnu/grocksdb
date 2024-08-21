@@ -68,6 +68,7 @@ See also: [doc](https://godoc.org/github.com/linxGnu/grocksdb)
 ## API Support
 
 Almost C API, excepts:
+- [ ] get_db_identity
 - [ ] putv/mergev/deletev/delete_rangev
 - [ ] compaction_filter/compaction_filter_factory/compaction_filter_context
 - [ ] transactiondb_property_value/transactiondb_property_int
