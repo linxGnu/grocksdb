@@ -1269,6 +1269,11 @@ func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFami
 	return
 }
 
+// GetDefaultColumnFamily gets default column family handle.
+func (db *DB) GetDefaultColumnFamily() *ColumnFamilyHandle {
+	return newNativeColumnFamilyHandle(C.rocksdb_get_default_column_family_handle(db.c))
+}
+
 // CreateColumnFamilies creates new column families.
 func (db *DB) CreateColumnFamilies(opts *Options, names []string) (handles []*ColumnFamilyHandle, err error) {
 	if len(names) == 0 {

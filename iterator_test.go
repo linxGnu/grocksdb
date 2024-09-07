@@ -31,6 +31,8 @@ func TestIterator(t *testing.T) {
 	}
 	require.Nil(t, iter.Err())
 	require.EqualValues(t, actualKeys, givenKeys)
+
+	require.NoError(t, iter.Refresh())
 }
 
 func TestIteratorWriteManyThenIter(t *testing.T) {
