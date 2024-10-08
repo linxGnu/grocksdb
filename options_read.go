@@ -17,6 +17,12 @@ const (
 	ReadAllTier = ReadTier(0)
 	// BlockCacheTier reads data in memtable or block cache.
 	BlockCacheTier = ReadTier(1)
+	// PersistedTier reads data in memtable or block cache persisted data.
+	// When WAL is disabled, this option will skip data in memtable.
+	// Note that this ReadTier currently only supports Get and MultiGet and does not support iterators.
+	PersistedTier = ReadTier(2)
+	// MemtableTier reads data in memtable. Used for memtable-only iterators.
+	MemtableTier = ReadTier(3)
 )
 
 // ReadOptions represent all of the available options when reading from a
