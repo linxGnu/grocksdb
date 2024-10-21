@@ -34,14 +34,14 @@ func TestWriteBatch(t *testing.T) {
 	// check changes
 	ro := NewDefaultReadOptions()
 	v1, err := db.Get(ro, givenKey1)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
+	v1.Free()
 
 	v2, err := db.Get(ro, givenKey2)
-	defer v2.Free()
 	require.Nil(t, err)
 	require.True(t, v2.Data() == nil)
+	v2.Free()
 
 	// DeleteRange test
 	wb.Clear()
@@ -51,9 +51,9 @@ func TestWriteBatch(t *testing.T) {
 	require.Nil(t, db.Write(wo, wb))
 
 	v1, err = db.Get(ro, givenKey1)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.True(t, v1.Data() == nil)
+	v1.Free()
 }
 
 func TestWriteBatchWithParams(t *testing.T) {
@@ -83,14 +83,14 @@ func TestWriteBatchWithParams(t *testing.T) {
 	// check changes
 	ro := NewDefaultReadOptions()
 	v1, err := db.Get(ro, givenKey1)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
+	v1.Free()
 
 	v2, err := db.Get(ro, givenKey2)
-	defer v2.Free()
 	require.Nil(t, err)
 	require.True(t, v2.Data() == nil)
+	v2.Free()
 
 	// DeleteRange test
 	wb.Clear()
@@ -100,9 +100,9 @@ func TestWriteBatchWithParams(t *testing.T) {
 	require.Nil(t, db.Write(wo, wb))
 
 	v1, err = db.Get(ro, givenKey1)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.True(t, v1.Data() == nil)
+	v1.Free()
 }
 
 func TestWriteBatchIterator(t *testing.T) {

@@ -35,11 +35,11 @@ func TestDBCRUDWithTS(t *testing.T) {
 
 	// retrieve
 	v1, t1, err := db.GetWithTS(ro, givenKey)
-	defer v1.Free()
-	defer t1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
 	require.EqualValues(t, t1.Data(), givenTs1)
+	v1.Free()
+	t1.Free()
 
 	// retrieve bytes
 	_v1, _ts1, err := db.GetBytesWithTS(ro, givenKey)
@@ -51,39 +51,39 @@ func TestDBCRUDWithTS(t *testing.T) {
 	require.Nil(t, db.PutWithTS(wo, givenKey, givenTs2, givenVal2))
 	ro.SetTimestamp(givenTs2)
 	v2, t2, err := db.GetWithTS(ro, givenKey)
-	defer v2.Free()
-	defer t2.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v2.Data(), givenVal2)
 	require.EqualValues(t, t2.Data(), givenTs2)
+	v2.Free()
+	t2.Free()
 
 	// delete
 	require.Nil(t, db.DeleteWithTS(wo, givenKey, givenTs3))
 	ro.SetTimestamp(givenTs3)
 	v3, t3, err := db.GetWithTS(ro, givenKey)
-	defer v3.Free()
-	defer t3.Free()
 	require.Nil(t, err)
 	require.True(t, v3.Data() == nil)
 	require.True(t, t3.Data() == nil)
+	v3.Free()
+	t3.Free()
 
 	// ts2 should read deleted data
 	ro.SetTimestamp(givenTs2)
 	v2, t2, err = db.GetWithTS(ro, givenKey)
-	defer v2.Free()
-	defer t2.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v2.Data(), givenVal2)
 	require.EqualValues(t, t2.Data(), givenTs2)
+	v2.Free()
+	t2.Free()
 
 	// ts1 should read old data
 	ro.SetTimestamp(givenTs1)
 	v1, t1, err = db.GetWithTS(ro, givenKey)
-	defer v1.Free()
-	defer t1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
 	require.EqualValues(t, t1.Data(), givenTs1)
+	v1.Free()
+	t1.Free()
 }
 
 func TestDBMultiGetWithTS(t *testing.T) {
