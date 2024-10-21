@@ -42,58 +42,58 @@ func TestColumnFamilyPutGetDeleteWithTS(t *testing.T) {
 
 		require.Nil(t, db.PutCFWithTS(wo, cfh[0], givenKey0, givenTs0, givenVal0))
 		actualVal0, actualTs0, err := db.GetCFWithTS(ro, cfh[0], givenKey0)
-		defer actualVal0.Free()
-		defer actualTs0.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal0.Data(), givenVal0)
 		require.EqualValues(t, actualTs0.Data(), givenTs0)
+		actualVal0.Free()
+		actualTs0.Free()
 
 		require.Nil(t, db.PutCFWithTS(wo, cfh[1], givenKey1, givenTs1, givenVal1))
 		actualVal1, actualTs1, err := db.GetCFWithTS(ro, cfh[1], givenKey1)
-		defer actualVal1.Free()
-		defer actualTs1.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal1.Data(), givenVal1)
 		require.EqualValues(t, actualTs1.Data(), givenTs1)
+		actualVal1.Free()
+		actualTs1.Free()
 
 		actualVal, actualTs, err := db.GetCFWithTS(ro, cfh[0], givenKey1)
-		defer actualVal.Free()
-		defer actualTs.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal.Size(), 0)
 		require.EqualValues(t, actualTs.Size(), 0)
+		actualVal.Free()
+		actualTs.Free()
 
 		actualVal, actualTs, err = db.GetCFWithTS(ro, cfh[1], givenKey0)
-		defer actualVal.Free()
-		defer actualTs.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal.Size(), 0)
 		require.EqualValues(t, actualTs.Size(), 0)
+		actualVal.Free()
+		actualTs.Free()
 
 		require.Nil(t, db.DeleteCFWithTS(wo, cfh[0], givenKey0, givenTs2))
 		actualVal, actualTs, err = db.GetCFWithTS(ro, cfh[0], givenKey0)
-		defer actualVal.Free()
-		defer actualTs.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal.Size(), 0)
 		require.EqualValues(t, actualTs.Size(), 0)
+		actualVal.Free()
+		actualTs.Free()
 	}
 
 	{
 		require.Nil(t, db.PutCFWithTS(wo, cfh[0], givenKey0, givenTs2, givenVal0))
 		actualVal0, actualTs0, err := db.GetCFWithTS(ro, cfh[0], givenKey0)
-		defer actualVal0.Free()
-		defer actualTs0.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal0.Data(), givenVal0)
 		require.EqualValues(t, actualTs0.Data(), givenTs2)
+		actualVal0.Free()
+		actualTs0.Free()
 
 		actualVal1, actualTs1, err := db.GetCFWithTS(ro, cfh[1], givenKey1)
-		defer actualVal1.Free()
-		defer actualTs1.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal1.Data(), givenVal1)
 		require.EqualValues(t, actualTs1.Data(), givenTs1)
+		actualVal1.Free()
+		actualTs1.Free()
 	}
 }
 
@@ -131,11 +131,8 @@ func TestColumnFamilyMultiGetWithTS(t *testing.T) {
 
 	// column family 0 only has givenKey1
 	values, times, err := db.MultiGetCFWithTS(ro, cfh[0], []byte("noexist"), givenKey1, givenKey2, givenKey3)
-	defer values.Destroy()
-	defer times.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 4)
-
 	require.EqualValues(t, values[0].Data(), []byte(nil))
 	require.EqualValues(t, values[1].Data(), givenVal1)
 	require.EqualValues(t, values[2].Data(), []byte(nil))
@@ -145,39 +142,37 @@ func TestColumnFamilyMultiGetWithTS(t *testing.T) {
 	require.EqualValues(t, times[1].Data(), givenTs1)
 	require.EqualValues(t, times[2].Data(), []byte(nil))
 	require.EqualValues(t, times[3].Data(), []byte(nil))
+	values.Destroy()
+	times.Destroy()
 
 	// column family 1 only has givenKey2 and givenKey3
 	values, times, err = db.MultiGetCFWithTS(ro, cfh[1], []byte("noexist"), givenKey1, givenKey2, givenKey3)
-	defer values.Destroy()
-	defer times.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 4)
-
 	require.EqualValues(t, values[0].Data(), []byte(nil))
 	require.EqualValues(t, values[1].Data(), []byte(nil))
 	require.EqualValues(t, values[2].Data(), givenVal2)
 	require.EqualValues(t, values[3].Data(), givenVal3)
-
 	require.EqualValues(t, times[0].Data(), []byte(nil))
 	require.EqualValues(t, times[1].Data(), []byte(nil))
 	require.EqualValues(t, times[2].Data(), givenTs2)
 	require.EqualValues(t, times[3].Data(), givenTs3)
+	values.Destroy()
+	times.Destroy()
 
-	// getting them all from the right CF should return them all
+	// getting them all from the right CF
 	values, times, err = db.MultiGetMultiCFWithTS(ro,
 		ColumnFamilyHandles{cfh[0], cfh[1], cfh[1]},
 		[][]byte{givenKey1, givenKey2, givenKey3},
 	)
-	defer values.Destroy()
-	defer times.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 3)
-
 	require.EqualValues(t, values[0].Data(), givenVal1)
 	require.EqualValues(t, values[1].Data(), givenVal2)
 	require.EqualValues(t, values[2].Data(), givenVal3)
-
-	require.EqualValues(t, times[0].Data(), []byte{})
+	require.EqualValues(t, times[0].Data(), []byte{0, 0, 0, 0, 0, 0, 0, 0})
 	require.EqualValues(t, times[1].Data(), givenTs2)
 	require.EqualValues(t, times[2].Data(), givenTs3)
+	values.Destroy()
+	times.Destroy()
 }

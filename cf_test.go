@@ -91,18 +91,18 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 	b0.PutCF(cfh[0], givenKey0, givenVal0)
 	require.Nil(t, db.Write(wo, b0))
 	actualVal0, err := db.GetCF(ro, cfh[0], givenKey0)
-	defer actualVal0.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, actualVal0.Data(), givenVal0)
+	actualVal0.Free()
 
 	b1 := NewWriteBatch()
 	defer b1.Destroy()
 	b1.PutCF(cfh[1], givenKey1, givenVal1)
 	require.Nil(t, db.Write(wo, b1))
 	actualVal1, err := db.GetCF(ro, cfh[1], givenKey1)
-	defer actualVal1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, actualVal1.Data(), givenVal1)
+	actualVal1.Free()
 
 	actualVal, err := db.GetCF(ro, cfh[0], givenKey1)
 	require.Nil(t, err)
@@ -113,8 +113,8 @@ func TestColumnFamilyBatchPutGet(t *testing.T) {
 
 	{
 		v := db.KeyMayExistsCF(ro, cfh[0], givenKey0, "")
-		defer v.Free()
 		require.True(t, v.Size() > 0)
+		v.Free()
 	}
 
 	// trigger flush
@@ -178,15 +178,15 @@ func TestColumnFamilyPutGetDelete(t *testing.T) {
 	{
 		require.Nil(t, db.PutCF(wo, cfh[0], givenKey0, givenVal0))
 		actualVal0, err := db.GetCF(ro, cfh[0], givenKey0)
-		defer actualVal0.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal0.Data(), givenVal0)
+		actualVal0.Free()
 
 		require.Nil(t, db.PutCF(wo, cfh[1], givenKey1, givenVal1))
 		actualVal1, err := db.GetCF(ro, cfh[1], givenKey1)
-		defer actualVal1.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal1.Data(), givenVal1)
+		actualVal1.Free()
 
 		actualVal, err := db.GetCF(ro, cfh[0], givenKey1)
 		require.Nil(t, err)
@@ -202,16 +202,16 @@ func TestColumnFamilyPutGetDelete(t *testing.T) {
 
 		{
 			v := db.KeyMayExistsCF(ro, cfh[0], givenKey0, "")
-			defer v.Free()
+			v.Free()
 		}
 	}
 
 	{
 		require.Nil(t, db.PutCF(wo, cfh[0], givenKey0, givenVal0))
 		actualVal0, err := db.GetCF(ro, cfh[0], givenKey0)
-		defer actualVal0.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal0.Data(), givenVal0)
+		actualVal0.Free()
 
 		require.Nil(t, db.DeleteRangeCF(wo, cfh[0], givenKey0, givenKey1))
 		actualVal, err := db.GetCF(ro, cfh[0], givenKey0)
@@ -219,9 +219,9 @@ func TestColumnFamilyPutGetDelete(t *testing.T) {
 		require.EqualValues(t, actualVal.Size(), 0)
 
 		actualVal1, err := db.GetCF(ro, cfh[1], givenKey1)
-		defer actualVal1.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, actualVal1.Data(), givenVal1)
+		actualVal1.Free()
 	}
 }
 

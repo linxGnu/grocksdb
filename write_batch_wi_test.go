@@ -40,48 +40,48 @@ func TestWriteBatchWI(t *testing.T) {
 	// check before writing to db
 	ro := NewDefaultReadOptions()
 	v1, err := wb.GetFromDB(db, ro, givenKey1)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
+	v1.Free()
 
 	v2, err := wb.GetFromDB(db, ro, givenKey2)
-	defer v2.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v2.Data(), givenVal2Updated)
+	v2.Free()
 
 	v3, err := wb.GetFromDB(db, ro, givenKey3)
-	defer v3.Free()
 	require.Nil(t, err)
 	require.True(t, v3.Data() == nil)
+	v3.Free()
 
 	v4, err := wb.GetFromDB(db, ro, givenKey4)
-	defer v4.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v4.Data(), givenVal4)
+	v4.Free()
 
 	// perform the batch
 	require.Nil(t, db.WriteWI(wo, wb))
 
 	// check changes
 	v1, err = db.Get(ro, givenKey1)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
+	v1.Free()
 
 	v2, err = db.Get(ro, givenKey2)
-	defer v2.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v2.Data(), givenVal2Updated)
+	v2.Free()
 
 	v3, err = db.Get(ro, givenKey3)
-	defer v3.Free()
 	require.Nil(t, err)
 	require.True(t, v3.Data() == nil)
+	v3.Free()
 
 	v4, err = db.Get(ro, givenKey4)
-	defer v4.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v4.Data(), givenVal4)
+	v4.Free()
 
 	wb.Clear()
 	// DeleteRange not supported

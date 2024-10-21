@@ -36,23 +36,23 @@ func TestTransactionDBCRUD(t *testing.T) {
 
 	// retrieve
 	v1, err := db.Get(ro, givenKey)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
+	v1.Free()
 
 	// update
 	require.Nil(t, db.Put(wo, givenKey, givenVal2))
 	v2, err := db.Get(ro, givenKey)
-	defer v2.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v2.Data(), givenVal2)
+	v2.Free()
 
 	// delete
 	require.Nil(t, db.Delete(wo, givenKey))
 	v3, err := db.Get(ro, givenKey)
-	defer v3.Free()
 	require.Nil(t, err)
 	require.True(t, v3.Data() == nil)
+	v3.Free()
 
 	// transaction
 	txn := db.TransactionBegin(wo, to, nil)
@@ -60,15 +60,15 @@ func TestTransactionDBCRUD(t *testing.T) {
 	// create
 	require.Nil(t, txn.Put(givenTxnKey, givenTxnVal1))
 	v4, err := txn.Get(ro, givenTxnKey)
-	defer v4.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v4.Data(), givenTxnVal1)
+	v4.Free()
 
 	require.Nil(t, txn.Commit())
 	v5, err := db.Get(ro, givenTxnKey)
-	defer v5.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v5.Data(), givenTxnVal1)
+	v5.Free()
 
 	// transaction
 	txn2 := db.TransactionBegin(wo, to, nil)
@@ -78,9 +78,9 @@ func TestTransactionDBCRUD(t *testing.T) {
 	// rollback
 	require.Nil(t, txn2.Rollback())
 	v6, err := txn2.Get(ro, givenTxnKey2)
-	defer v6.Free()
 	require.Nil(t, err)
 	require.True(t, v6.Data() == nil)
+	v6.Free()
 
 	// transaction
 	txn3 := db.TransactionBegin(wo, to, nil)
@@ -97,9 +97,9 @@ func TestTransactionDBCRUD(t *testing.T) {
 	require.Nil(t, txn3.Commit())
 
 	v7, err := db.Get(ro, givenTxnKey)
-	defer v7.Free()
 	require.Nil(t, err)
 	require.True(t, v7.Data() == nil)
+	v7.Free()
 
 	// transaction
 	txn4 := db.TransactionBegin(wo, to, nil)
@@ -115,9 +115,9 @@ func TestTransactionDBCRUD(t *testing.T) {
 	require.Nil(t, txn4.Commit())
 
 	v8, err := db.Get(ro, givenTxnKey)
-	defer v8.Free()
 	require.Nil(t, err)
 	require.True(t, v8.Data() != nil) // due to rebuild -> put -> key exists
+	v8.Free()
 
 	// transaction
 	txn5 := db.TransactionBegin(wo, to, nil)
@@ -139,9 +139,9 @@ func TestTransactionDBCRUD(t *testing.T) {
 	require.Nil(t, txn5.Commit())
 
 	v9, err := db.Get(ro, givenTxnKey2)
-	defer v9.Free()
 	require.Nil(t, err)
-	require.True(t, v8.Data() != nil) // due to rebuild -> put -> key exists
+	require.True(t, v9.Data() != nil) // due to rebuild -> put -> key exists
+	v9.Free()
 }
 
 func TestTransactionDBGetForUpdate(t *testing.T) {
@@ -166,8 +166,8 @@ func TestTransactionDBGetForUpdate(t *testing.T) {
 	defer txn.Destroy()
 
 	v, err := txn.GetForUpdate(ro, givenKey)
-	defer v.Free()
 	require.Nil(t, err)
+	v.Free()
 
 	// expect lock timeout error to be thrown
 	if err := db.Put(wo, givenKey, givenVal); err == nil {
@@ -224,7 +224,7 @@ func TestTransactionDBColumnFamilyBatchPutGet(t *testing.T) {
 	givenKey2 := []byte("hello2")
 	givenVal2 := []byte("world2")
 
-	writeReadBatch := func(cf *ColumnFamilyHandle, keys [][]byte, values [][]byte) {
+	writeReadBatch := func(cf *ColumnFamilyHandle, keys, values [][]byte) {
 		b := NewWriteBatch()
 		defer b.Destroy()
 		for i := range keys {
