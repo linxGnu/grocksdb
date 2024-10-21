@@ -297,9 +297,9 @@ func TestOptions(t *testing.T) {
 	opts.SetMaxSubcompactions(3)
 	require.EqualValues(t, 3, opts.GetMaxSubcompactions())
 
-	require.False(t, opts.IsDBIDWrittenToManifest())
-	opts.WriteDBIDToManifest(true)
 	require.True(t, opts.IsDBIDWrittenToManifest())
+	opts.WriteDBIDToManifest(false)
+	require.False(t, opts.IsDBIDWrittenToManifest())
 
 	require.False(t, opts.TrackAndVerifyWALsInManifestFlag())
 	opts.ToggleTrackAndVerifyWALsInManifestFlag(true)
@@ -410,6 +410,10 @@ func TestOptions(t *testing.T) {
 	require.EqualValues(t, uint64(0xfffffffffffffffe), opts.GetTTL())
 	opts.SetTTL(123)
 	require.EqualValues(t, uint64(123), opts.GetTTL())
+
+	require.True(t, opts.IsIdentityFileWritten())
+	opts.WriteIdentityFile(false)
+	require.False(t, opts.IsIdentityFileWritten())
 
 	opts.SetWriteBufferManager(wbm)
 

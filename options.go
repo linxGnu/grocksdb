@@ -2064,6 +2064,21 @@ func (opts *Options) IsDBIDWrittenToManifest() bool {
 	return charToBool(C.rocksdb_options_get_write_dbid_to_manifest(opts.c))
 }
 
+// WriteIdentityFile toggles identity file writting.
+// It is expected that the Identity file will be obsoleted by recording
+// DB ID in the manifest (see write_dbid_to_manifest). Setting this to true
+// maintains the historical behavior of writing an Identity file, while
+// setting to false is expected to be the future default. This option might
+// eventually be obsolete and removed as Identity files are phased out.
+func (opts *Options) WriteIdentityFile(v bool) {
+	C.rocksdb_options_set_write_identity_file(opts.c, boolToChar(v))
+}
+
+// IsIdentityFileWritten checks if identity file written.
+func (opts *Options) IsIdentityFileWritten() bool {
+	return charToBool(C.rocksdb_options_get_write_identity_file(opts.c))
+}
+
 // ToggleTrackAndVerifyWALsInManifestFlag if true, the log numbers and sizes of the synced WALs are tracked
 // in MANIFEST. During DB recovery, if a synced WAL is missing
 // from disk, or the WAL's size does not match the recorded size in
