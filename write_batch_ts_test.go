@@ -41,16 +41,16 @@ func TestWriteBatchWithTS(t *testing.T) {
 	ro := NewDefaultReadOptions()
 	ro.SetTimestamp(givenTs2)
 	v1, t1, err := db.GetWithTS(ro, givenKey1)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
 	require.EqualValues(t, t1.Data(), givenTs2)
+	v1.Free()
 
 	v2, t2, err := db.GetWithTS(ro, givenKey2)
-	defer v2.Free()
 	require.Nil(t, err)
 	require.True(t, v2.Data() == nil)
 	require.True(t, t2.Data() == nil)
+	v2.Free()
 
 	wb.Clear()
 	// DeleteRange not supported for timestamp

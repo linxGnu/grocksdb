@@ -67,15 +67,15 @@ func TestDBCRUD(t *testing.T) {
 
 	// retrieve
 	v1, err := db.Get(ro, givenKey)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
+	v1.Free()
 
 	{
 		_v1, err := db.GetCF(ro, df, givenKey)
-		defer _v1.Free()
 		require.Nil(t, err)
 		require.EqualValues(t, _v1.Data(), givenVal1)
+		_v1.Free()
 	}
 
 	// retrieve bytes
@@ -86,9 +86,9 @@ func TestDBCRUD(t *testing.T) {
 	// update
 	require.Nil(t, db.Put(wo, givenKey, givenVal2))
 	v2, err := db.Get(ro, givenKey)
-	defer v2.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v2.Data(), givenVal2)
+	v2.Free()
 
 	// retrieve pinned
 	for i := 0; i < 1000; i++ {
@@ -153,40 +153,40 @@ func TestDBCRUDDBPaths(t *testing.T) {
 
 	// retrieve
 	v1, err := db.Get(ro, givenKey)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.True(t, v1.Exists())
 	require.EqualValues(t, v1.Data(), givenVal1)
+	v1.Free()
 
 	// update
 	require.Nil(t, db.Put(wo, givenKey, givenVal2))
 	v2, err := db.Get(ro, givenKey)
-	defer v2.Free()
 	require.Nil(t, err)
 	require.True(t, v2.Exists())
 	require.EqualValues(t, v2.Data(), givenVal2)
+	v2.Free()
 
 	// update
 	require.Nil(t, db.Put(wo, givenKey, givenVal3))
 	v3, err := db.Get(ro, givenKey)
-	defer v3.Free()
 	require.Nil(t, err)
 	require.True(t, v3.Exists())
 	require.EqualValues(t, v3.Data(), givenVal3)
+	v3.Free()
 
 	{
 		v4 := db.KeyMayExists(ro, givenKey, "")
-		defer v4.Free()
 		require.True(t, v4.Size() > 0)
+		v4.Free()
 	}
 
 	// delete
 	require.Nil(t, db.SingleDelete(wo, givenKey))
 	v4, err := db.Get(ro, givenKey)
-	defer v4.Free()
 	require.Nil(t, err)
 	require.False(t, v4.Exists())
 	require.EqualValues(t, v4.Data(), []byte(nil))
+	v4.Free()
 }
 
 func newTestDB(t *testing.T, applyOpts func(opts *Options)) *DB {

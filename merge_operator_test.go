@@ -92,9 +92,9 @@ func TestPartialMergeOperator(t *testing.T) {
 
 	ro := NewDefaultReadOptions()
 	v1, err := db.Get(ro, givenKey)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), fMergeResult)
+	v1.Free()
 }
 
 func TestMergeMultiOperator(t *testing.T) {
@@ -147,9 +147,9 @@ func TestMergeMultiOperator(t *testing.T) {
 
 	ro := NewDefaultReadOptions()
 	v1, err := db.Get(ro, givenKey)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), fMergeResult)
+	v1.Free()
 }
 
 // Mock Objects

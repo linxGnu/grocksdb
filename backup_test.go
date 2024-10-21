@@ -27,9 +27,9 @@ func TestBackupEngine(t *testing.T) {
 
 	// retrieve
 	v1, err := db.Get(ro, givenKey)
-	defer v1.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
+	v1.Free()
 
 	// retrieve bytes
 	_v1, err := db.GetBytes(ro, givenKey)
@@ -39,15 +39,15 @@ func TestBackupEngine(t *testing.T) {
 	// update
 	require.Nil(t, db.Put(wo, givenKey, givenVal2))
 	v2, err := db.Get(ro, givenKey)
-	defer v2.Free()
 	require.Nil(t, err)
 	require.EqualValues(t, v2.Data(), givenVal2)
+	v2.Free()
 
 	// retrieve pinned
 	v3, err := db.GetPinned(ro, givenKey)
-	defer v3.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, v3.Data(), givenVal2)
+	v3.Destroy()
 
 	engine, err := CreateBackupEngine(db)
 	require.Nil(t, err)
