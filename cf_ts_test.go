@@ -131,11 +131,8 @@ func TestColumnFamilyMultiGetWithTS(t *testing.T) {
 
 	// column family 0 only has givenKey1
 	values, times, err := db.MultiGetCFWithTS(ro, cfh[0], []byte("noexist"), givenKey1, givenKey2, givenKey3)
-	defer values.Destroy()
-	defer times.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 4)
-
 	require.EqualValues(t, values[0].Data(), []byte(nil))
 	require.EqualValues(t, values[1].Data(), givenVal1)
 	require.EqualValues(t, values[2].Data(), []byte(nil))
@@ -145,39 +142,37 @@ func TestColumnFamilyMultiGetWithTS(t *testing.T) {
 	require.EqualValues(t, times[1].Data(), givenTs1)
 	require.EqualValues(t, times[2].Data(), []byte(nil))
 	require.EqualValues(t, times[3].Data(), []byte(nil))
+	values.Destroy()
+	times.Destroy()
 
 	// column family 1 only has givenKey2 and givenKey3
 	values, times, err = db.MultiGetCFWithTS(ro, cfh[1], []byte("noexist"), givenKey1, givenKey2, givenKey3)
-	defer values.Destroy()
-	defer times.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 4)
-
 	require.EqualValues(t, values[0].Data(), []byte(nil))
 	require.EqualValues(t, values[1].Data(), []byte(nil))
 	require.EqualValues(t, values[2].Data(), givenVal2)
 	require.EqualValues(t, values[3].Data(), givenVal3)
-
 	require.EqualValues(t, times[0].Data(), []byte(nil))
 	require.EqualValues(t, times[1].Data(), []byte(nil))
 	require.EqualValues(t, times[2].Data(), givenTs2)
 	require.EqualValues(t, times[3].Data(), givenTs3)
+	values.Destroy()
+	times.Destroy()
 
-	// getting them all from the right CF should return them all
+	// getting them all from the right CF
 	values, times, err = db.MultiGetMultiCFWithTS(ro,
 		ColumnFamilyHandles{cfh[0], cfh[1], cfh[1]},
 		[][]byte{givenKey1, givenKey2, givenKey3},
 	)
-	defer values.Destroy()
-	defer times.Destroy()
 	require.Nil(t, err)
 	require.EqualValues(t, len(values), 3)
-
 	require.EqualValues(t, values[0].Data(), givenVal1)
 	require.EqualValues(t, values[1].Data(), givenVal2)
 	require.EqualValues(t, values[2].Data(), givenVal3)
-
-	require.EqualValues(t, times[0].Data(), []byte{})
+	require.EqualValues(t, times[0].Data(), []byte{0, 0, 0, 0, 0, 0, 0, 0})
 	require.EqualValues(t, times[1].Data(), givenTs2)
 	require.EqualValues(t, times[2].Data(), givenTs3)
+	values.Destroy()
+	times.Destroy()
 }
