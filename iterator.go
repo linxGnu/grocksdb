@@ -25,12 +25,18 @@ import (
 //	         return err
 //	     }
 type Iterator struct {
-	c *C.rocksdb_iterator_t
+	c         *C.rocksdb_iterator_t
+	timestamp []byte
 }
 
 // NewNativeIterator creates a Iterator object.
 func newNativeIterator(c *C.rocksdb_iterator_t) *Iterator {
 	return &Iterator{c: c}
+}
+
+// newNativeIteratorWithTS creates a Iterator object with ts.
+func newNativeIteratorWithTS(c *C.rocksdb_iterator_t, ts []byte) *Iterator {
+	return &Iterator{c: c, timestamp: ts}
 }
 
 // Valid returns false only when an Iterator has iterated past either the

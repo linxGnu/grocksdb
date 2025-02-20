@@ -1146,7 +1146,7 @@ func (db *DB) NewIterator(opts *ReadOptions) *Iterator {
 // that uses the ReadOptions given.
 func (db *DB) NewIteratorCF(opts *ReadOptions, cf *ColumnFamilyHandle) *Iterator {
 	cIter := C.rocksdb_create_iterator_cf(db.c, opts.c, cf.c)
-	return newNativeIterator(cIter)
+	return newNativeIteratorWithTS(cIter, opts.timestamp)
 }
 
 // NewIterators returns iterators from a consistent database state across multiple
