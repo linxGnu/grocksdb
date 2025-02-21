@@ -1139,7 +1139,7 @@ func (db *DB) WriteWI(opts *WriteOptions, batch *WriteBatchWI) (err error) {
 // ReadOptions given.
 func (db *DB) NewIterator(opts *ReadOptions) *Iterator {
 	cIter := C.rocksdb_create_iterator(db.c, opts.c)
-	return newNativeIterator(cIter)
+	return newNativeIteratorWithTS(cIter, opts.timestamp)
 }
 
 // NewIteratorCF returns an Iterator over the the database and column family
@@ -1165,7 +1165,7 @@ func (db *DB) NewIterators(opts *ReadOptions, cfs []*ColumnFamilyHandle) (iters 
 		if err = fromCError(cErr); err == nil {
 			iters = make([]*Iterator, n)
 			for i := range iters {
-				iters[i] = newNativeIterator(_iters[i])
+				iters[i] = newNativeIteratorWithTS(_iters[i], opts.timestamp)
 			}
 		}
 	}

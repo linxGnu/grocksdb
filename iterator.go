@@ -34,7 +34,7 @@ func newNativeIterator(c *C.rocksdb_iterator_t) *Iterator {
 	return &Iterator{c: c}
 }
 
-// newNativeIteratorWithTS creates a Iterator object with ts.
+// newNativeIteratorWithTS creates a Iterator object with timestamp.
 func newNativeIteratorWithTS(c *C.rocksdb_iterator_t, ts []byte) *Iterator {
 	return &Iterator{c: c, timestamp: ts}
 }
