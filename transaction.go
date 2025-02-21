@@ -395,7 +395,7 @@ func (transaction *Transaction) DeleteCF(cf *ColumnFamilyHandle, key []byte) (er
 //
 // Caller is responsible for deleting the returned Iterator.
 func (transaction *Transaction) NewIterator(opts *ReadOptions) *Iterator {
-	return newNativeIteratorWithTS(C.rocksdb_transaction_create_iterator(transaction.c, opts.c), opts.timestamp)
+	return newNativeIteratorWithReadOptions(C.rocksdb_transaction_create_iterator(transaction.c, opts.c), opts)
 }
 
 // NewIteratorCF returns an iterator that will iterate on all keys in the specific
@@ -409,7 +409,7 @@ func (transaction *Transaction) NewIterator(opts *ReadOptions) *Iterator {
 //
 // Caller is responsible for deleting the returned Iterator.
 func (transaction *Transaction) NewIteratorCF(opts *ReadOptions, cf *ColumnFamilyHandle) *Iterator {
-	return newNativeIteratorWithTS(C.rocksdb_transaction_create_iterator_cf(transaction.c, opts.c, cf.c), opts.timestamp)
+	return newNativeIteratorWithReadOptions(C.rocksdb_transaction_create_iterator_cf(transaction.c, opts.c, cf.c), opts)
 }
 
 // SetSavePoint records the state of the transaction for future calls to

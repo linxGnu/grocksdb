@@ -25,8 +25,11 @@ import (
 //	         return err
 //	     }
 type Iterator struct {
-	c         *C.rocksdb_iterator_t
-	timestamp []byte
+	c              *C.rocksdb_iterator_t
+	iterUpperBound []byte
+	iterLowerBound []byte
+	timestamp      []byte
+	timestampStart []byte
 }
 
 // NewNativeIterator creates a Iterator object.
@@ -34,9 +37,15 @@ func newNativeIterator(c *C.rocksdb_iterator_t) *Iterator {
 	return &Iterator{c: c}
 }
 
-// newNativeIteratorWithTS creates a Iterator object with timestamp.
-func newNativeIteratorWithTS(c *C.rocksdb_iterator_t, ts []byte) *Iterator {
-	return &Iterator{c: c, timestamp: ts}
+// newNativeIteratorWithReadOptions creates a Iterator object with ReadOptions.
+func newNativeIteratorWithReadOptions(c *C.rocksdb_iterator_t, opts *ReadOptions) *Iterator {
+	return &Iterator{
+		c:              c,
+		iterUpperBound: opts.iterUpperBound,
+		iterLowerBound: opts.iterLowerBound,
+		timestamp:      opts.timestamp,
+		timestampStart: opts.timestampStart,
+	}
 }
 
 // Valid returns false only when an Iterator has iterated past either the
