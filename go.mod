@@ -2,8 +2,6 @@ module github.com/linxGnu/grocksdb
 
 go 1.17
 
-toolchain go1.23.6
-
 require github.com/stretchr/testify v1.10.0
 
 require (
