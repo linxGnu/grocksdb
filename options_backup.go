@@ -272,4 +272,5 @@ func (b *BackupEngineOptions) GetShareFilesWithChecksumNaming() ShareFilesNaming
 // Destroy releases these options.
 func (b *BackupEngineOptions) Destroy() {
 	C.rocksdb_backup_engine_options_destroy(b.c)
+	b.c = nil
 }
