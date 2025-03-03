@@ -2781,8 +2781,6 @@ func (opts *Options) Destroy() {
 		C.rocksdb_env_destroy(opts.env)
 		opts.env = nil
 	}
-
-	opts.bbto = nil
 }
 
 type LatestOptions struct {

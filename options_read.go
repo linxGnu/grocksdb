@@ -322,10 +322,6 @@ func (opts *ReadOptions) GetIOTimeout() uint64 {
 func (opts *ReadOptions) Destroy() {
 	C.rocksdb_readoptions_destroy(opts.c)
 	opts.c = nil
-	opts.iterUpperBound = nil
-	opts.iterLowerBound = nil
-	opts.timestamp = nil
-	opts.timestampStart = nil
 }
 
 // SetTimestamp sets timestamp. Read should return the latest data visible to the
