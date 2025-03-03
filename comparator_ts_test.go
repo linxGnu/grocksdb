@@ -2,6 +2,7 @@ package grocksdb
 
 import (
 	"bytes"
+	"encoding/binary"
 	"runtime"
 	"testing"
 
@@ -17,6 +18,7 @@ func TestComparatorWithTS(t *testing.T) {
 			func(a, b []byte) int {
 				return bytes.Compare(a, b) * -1
 			},
+			binary.LittleEndian.Uint64,
 		)
 		opts.SetComparator(comp)
 	})
