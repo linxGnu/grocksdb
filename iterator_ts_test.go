@@ -191,6 +191,42 @@ func TestIteratorCFWithTS(t *testing.T) {
 	}
 }
 
+func TestIteratorCFWithTSWhenNoDestroy(t *testing.T) {
+	t.Parallel()
+
+	db, cfs, cleanup := newTestDBMultiCF(t, []string{"default"}, func(opts *Options) {
+		opts.SetComparator(newLittleEndianComparatorWithTS())
+	})
+	defer cleanup()
+
+	// insert keys
+	givenTimes := [][]byte{}
+	for _, ts := range []uint64{1, 2, 3, 100} {
+		givenTimes = append(givenTimes, marshalTimestampLittleEndian(ts))
+	}
+	wo := NewDefaultWriteOptions()
+	total := 500
+	for i := 0; i < total; i++ {
+		for _, ts := range givenTimes {
+			require.Nil(t, db.PutCFWithTS(wo, cfs[0], []byte(fmt.Sprintf("key%d", i)), ts, []byte("value")))
+		}
+	}
+
+	ro := NewDefaultReadOptions()
+	ts := marshalTimestamp(10000)
+	ro.SetTimestamp(ts)
+	iter := db.NewIteratorCF(ro, cfs[0])
+	defer iter.Close()
+	for i := 0; i < total; i++ {
+		for iter.SeekToFirst(); iter.Valid(); iter.Next() {
+			key := iter.Key().Data()
+			ts := iter.Timestamp().Data()
+			require.Equal(t, ts, givenTimes[3], "invalid timestamp at %s", string(key))
+		}
+		require.Nil(t, iter.Err())
+	}
+}
+
 func TestIteratorRangeWithTS(t *testing.T) {
 	t.Parallel()
 

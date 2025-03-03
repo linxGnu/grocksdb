@@ -142,6 +142,12 @@ func marshalTimestamp(ts uint64) []byte {
 	return b
 }
 
+func marshalTimestampLittleEndian(ts uint64) []byte {
+	b := make([]byte, timestampSize)
+	binary.LittleEndian.PutUint64(b, ts)
+	return b
+}
+
 func extractUserKey(key []byte) []byte {
 	return key[:len(key)-timestampSize]
 }
@@ -161,13 +167,19 @@ func extractFromInteralKey(internalKey []byte) (key, timestamp []byte) {
 func newDefaultComparatorWithTS() *Comparator {
 	return newComparatorWithTimeStamp("default", func(a, b []byte) int {
 		return bytes.Compare(a, b)
-	})
+	}, binary.BigEndian.Uint64)
 }
 
-func newComparatorWithTimeStamp(name string, userCompare Comparing) *Comparator {
+func newLittleEndianComparatorWithTS() *Comparator {
+	return newComparatorWithTimeStamp("default", func(a, b []byte) int {
+		return bytes.Compare(a, b)
+	}, binary.LittleEndian.Uint64)
+}
+
+func newComparatorWithTimeStamp(name string, userCompare Comparing, encodeFn func([]byte) uint64) *Comparator {
 	compTS := func(a, b []byte) int {
-		aTs := binary.BigEndian.Uint64(a)
-		bTs := binary.BigEndian.Uint64(b)
+		aTs := encodeFn(a)
+		bTs := encodeFn(b)
 		if aTs < bTs {
 			return -1
 		}
