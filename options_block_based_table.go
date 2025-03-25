@@ -100,8 +100,6 @@ func newNativeBlockBasedTableOptions(c *C.rocksdb_block_based_table_options_t) *
 func (opts *BlockBasedTableOptions) Destroy() {
 	C.rocksdb_block_based_options_destroy(opts.c)
 	opts.c = nil
-	opts.cache = nil
-	opts.compCache = nil
 }
 
 // SetChecksum sets checksum types.

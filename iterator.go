@@ -25,12 +25,21 @@ import (
 //	         return err
 //	     }
 type Iterator struct {
-	c *C.rocksdb_iterator_t
+	c    *C.rocksdb_iterator_t
+	opts *ReadOptions
 }
 
 // NewNativeIterator creates a Iterator object.
 func newNativeIterator(c *C.rocksdb_iterator_t) *Iterator {
 	return &Iterator{c: c}
+}
+
+// newNativeIteratorWithReadOptions creates a Iterator object with ReadOptions.
+func newNativeIteratorWithReadOptions(c *C.rocksdb_iterator_t, opts *ReadOptions) *Iterator {
+	return &Iterator{
+		c:    c,
+		opts: opts,
+	}
 }
 
 // Valid returns false only when an Iterator has iterated past either the
