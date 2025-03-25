@@ -101,6 +101,42 @@ func (opts *CompactRangeOptions) TargetLevel() int32 {
 	return int32(C.rocksdb_compactoptions_get_target_level(opts.c))
 }
 
+// SetTargetPathID compaction outputs will be placed in options.db_paths[targetPathID].
+// Behavior is undefined if targetPathID is out of range.
+func (opts *CompactRangeOptions) SetTargetPathID(targetPathID int32) {
+	C.rocksdb_compactoptions_set_target_path_id(opts.c, C.int(targetPathID))
+}
+
+// TargetPathID gets target path id.
+func (opts *CompactRangeOptions) TargetPathID() int32 {
+	return int32(C.rocksdb_compactoptions_get_target_path_id(opts.c))
+}
+
+// SetAllowWriteStall if true, will execute immediately even if doing so would cause the DB to
+// enter write stall mode. Otherwise, it'll sleep until load is low enough.
+func (opts *CompactRangeOptions) SetAllowWriteStall(v bool) {
+	C.rocksdb_compactoptions_set_allow_write_stall(opts.c, boolToChar(v))
+}
+
+// AllowWriteStall gets allow_write_stall status.
+func (opts *CompactRangeOptions) AllowWriteStall() bool {
+	return charToBool(C.rocksdb_compactoptions_get_allow_write_stall(opts.c))
+}
+
+// SetMaxSubCompactions sets maximum number of threads that will
+// concurrently perform a compaction job by breaking it into multiple,
+// smaller ones that are run simultaneously.
+func (opts *CompactRangeOptions) SetMaxSubCompactions(n int32) {
+	C.rocksdb_compactoptions_set_max_subcompactions(opts.c, C.int(n))
+}
+
+// MaxSubCompactions gets maximum number of threads that will
+// concurrently perform a compaction job by breaking it into multiple,
+// smaller ones that are run simultaneously.
+func (opts *CompactRangeOptions) MaxSubCompactions() int32 {
+	return int32(C.rocksdb_compactoptions_get_max_subcompactions(opts.c))
+}
+
 // SetFullHistoryTsLow user-defined timestamp low bound, the data with older timestamp than
 // low bound maybe GCed by compaction.
 // Default: nullptr

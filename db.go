@@ -1676,16 +1676,16 @@ func (db *DB) EnableFileDeletions() (err error) {
 	return
 }
 
-// DeleteFile deletes the file name from the db directory and update the internal state to
-// reflect that. Supports deletion of sst and log files only. 'name' must be
-// path relative to the db directory. eg. 000001.sst, /archive/000003.log.
-func (db *DB) DeleteFile(name string) {
-	cName := C.CString(name)
-
-	C.rocksdb_delete_file(db.c, cName)
-
-	C.free(unsafe.Pointer(cName))
-}
+// // DeleteFile deletes the file name from the db directory and update the internal state to
+// // reflect that. Supports deletion of sst and log files only. 'name' must be
+// // path relative to the db directory. eg. 000001.sst, /archive/000003.log.
+// func (db *DB) DeleteFile(name string) {
+// 	cName := C.CString(name)
+//
+// 	C.rocksdb_delete_file(db.c, cName)
+//
+// 	C.free(unsafe.Pointer(cName))
+// }
 
 // DeleteFileInRange deletes SST files that contain keys between the Range, [r.Start, r.Limit]
 func (db *DB) DeleteFileInRange(r Range) (err error) {

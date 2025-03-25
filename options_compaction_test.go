@@ -29,6 +29,18 @@ func TestOptionCompactions(t *testing.T) {
 	require.EqualValues(t, -1, co.TargetLevel())
 	co.SetTargetLevel(2)
 	require.EqualValues(t, 2, co.TargetLevel())
+
+	require.EqualValues(t, 0, co.TargetPathID())
+	co.SetTargetPathID(1)
+	require.EqualValues(t, 1, co.TargetPathID())
+
+	require.False(t, co.AllowWriteStall())
+	co.SetAllowWriteStall(true)
+	require.True(t, co.AllowWriteStall())
+
+	require.EqualValues(t, 0, co.MaxSubCompactions())
+	co.SetMaxSubCompactions(2)
+	require.EqualValues(t, 2, co.MaxSubCompactions())
 }
 
 func TestFifoCompactOption(t *testing.T) {
