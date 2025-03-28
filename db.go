@@ -761,6 +761,60 @@ func (db *DB) MultiGetWithTS(opts *ReadOptions, keys ...[]byte) (Slices, Slices,
 	return values, times, nil
 }
 
+// BatchedMultiGetCF
+// The MultiGet API that improves performance by batching operations
+// in the read path for greater efficiency. Currently, only the block based
+// table format with full filters are supported. Other table formats such
+// as plain table, block based table with block based filters and
+// partitioned indexes will still work, but will not get any performance
+// benefits.
+//
+// Note that all the keys passed to this API are restricted to a single
+// column family.
+func (db *DB) BatchedMultiGetCF(opts *ReadOptions, cf *ColumnFamilyHandle, sortedInput bool, keys ...[]byte) (PinnableSlices, error) {
+	cfs := make(ColumnFamilyHandles, len(keys))
+	for i := 0; i < len(keys); i++ {
+		cfs[i] = cf
+	}
+
+	cKeys, cKeySizes := byteSlicesToCSlices(keys)
+
+	vals := make(pinnableSliceSlice, len(keys))
+	rocksErrs := make(charsSlice, len(keys))
+
+	C.rocksdb_batched_multi_get_cf(
+		db.c,
+		opts.c,
+		cf.c,
+		C.size_t(len(keys)),
+		cKeys.c(),
+		cKeySizes.c(),
+		vals.c(),
+		rocksErrs.c(),
+		C.bool(sortedInput),
+	)
+
+	var errs []error
+	for i, rocksErr := range rocksErrs {
+		if err := fromCError(rocksErr); err != nil {
+			errs = append(errs, fmt.Errorf("getting %q failed: %v", string(keys[i]), err.Error()))
+		}
+	}
+
+	if len(errs) > 0 {
+		cKeys.Destroy()
+		return nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
+	}
+
+	pinnableSlices := make(PinnableSlices, len(keys))
+	for i, val := range vals {
+		pinnableSlices[i] = newNativePinnableSliceHandle(val)
+	}
+
+	cKeys.Destroy()
+	return pinnableSlices, nil
+}
+
 // MultiGetCF returns the data associated with the passed keys from the column family
 func (db *DB) MultiGetCF(opts *ReadOptions, cf *ColumnFamilyHandle, keys ...[]byte) (Slices, error) {
 	cfs := make(ColumnFamilyHandles, len(keys))
