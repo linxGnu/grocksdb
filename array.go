@@ -10,9 +10,10 @@ import (
 )
 
 type (
-	charsSlice        []*C.char
-	sizeTSlice        []C.size_t
-	columnFamilySlice []*C.rocksdb_column_family_handle_t
+	charsSlice         []*C.char
+	sizeTSlice         []C.size_t
+	columnFamilySlice  []*C.rocksdb_column_family_handle_t
+	pinnableSliceSlice []*C.rocksdb_pinnableslice_t
 )
 
 func (s charsSlice) c() **C.char {
@@ -28,6 +29,11 @@ func (s sizeTSlice) c() *C.size_t {
 func (s columnFamilySlice) c() **C.rocksdb_column_family_handle_t {
 	sH := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 	return (**C.rocksdb_column_family_handle_t)(unsafe.Pointer(sH.Data))
+}
+
+func (s pinnableSliceSlice) c() **C.rocksdb_pinnableslice_t {
+	sH := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+	return (**C.rocksdb_pinnableslice_t)(unsafe.Pointer(sH.Data))
 }
 
 // bytesSliceToCSlices converts a slice of byte slices to two slices with C

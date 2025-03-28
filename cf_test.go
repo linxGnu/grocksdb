@@ -336,3 +336,66 @@ func TestCFMetadata(t *testing.T) {
 	require.NotNil(t, meta)
 	require.Equal(t, "default", meta.Name())
 }
+
+func TestBatchedMultiGetCF(t *testing.T) {
+	t.Parallel()
+
+	db, cfh, cleanup := newTestDBCF(t)
+	defer cleanup()
+
+	var (
+		givenKey1 = []byte("hello1")
+		givenKey2 = []byte("hello2")
+		givenKey3 = []byte("hello3")
+		givenVal1 = []byte("world1")
+		givenVal2 = []byte("world2")
+		givenVal3 = []byte("world3")
+		wo        = NewDefaultWriteOptions()
+		ro        = NewDefaultReadOptions()
+	)
+
+	// create
+	require.Nil(t, db.PutCF(wo, cfh[0], givenKey1, givenVal1))
+	require.Nil(t, db.PutCF(wo, cfh[1], givenKey2, givenVal2))
+	require.Nil(t, db.PutCF(wo, cfh[1], givenKey3, givenVal3))
+
+	// column family 0 only has givenKey1
+	{
+		values, err := db.BatchedMultiGetCF(ro, cfh[0], false, []byte("noexist"), givenKey1, givenKey2, givenKey3)
+		require.Nil(t, err)
+		require.EqualValues(t, len(values), 4)
+		require.EqualValues(t, values[0].Data(), []byte(nil))
+		require.EqualValues(t, values[1].Data(), givenVal1)
+		require.EqualValues(t, values[2].Data(), []byte(nil))
+		require.EqualValues(t, values[3].Data(), []byte(nil))
+		values.Destroy()
+	}
+
+	// column family 1 only has givenKey2 and givenKey3
+	values, err := db.BatchedMultiGetCF(ro, cfh[1], false, []byte("noexist"), givenKey1, givenKey2, givenKey3)
+	require.Nil(t, err)
+	require.EqualValues(t, len(values), 4)
+	require.EqualValues(t, values[0].Data(), []byte(nil))
+	require.EqualValues(t, values[1].Data(), []byte(nil))
+	require.EqualValues(t, values[2].Data(), givenVal2)
+	require.EqualValues(t, values[3].Data(), givenVal3)
+	values.Destroy()
+
+	// test with sorted input
+	{
+		values, err := db.BatchedMultiGetCF(ro, cfh[1], true, givenKey2, givenKey3)
+		require.Nil(t, err)
+		require.EqualValues(t, len(values), 2)
+		require.EqualValues(t, values[0].Data(), givenVal2)
+		require.EqualValues(t, values[1].Data(), givenVal3)
+		values.Destroy()
+	}
+
+	// test with empty keys
+	{
+		values, err := db.BatchedMultiGetCF(ro, cfh[0], false)
+		require.Nil(t, err)
+		require.EqualValues(t, len(values), 0)
+		values.Destroy()
+	}
+}

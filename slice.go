@@ -56,6 +56,14 @@ func (s *Slice) Free() {
 	}
 }
 
+type PinnableSlices []*PinnableSliceHandle
+
+func (s PinnableSlices) Destroy() {
+	for _, s := range s {
+		s.Destroy()
+	}
+}
+
 // PinnableSliceHandle represents a handle to a PinnableSlice.
 type PinnableSliceHandle struct {
 	c *C.rocksdb_pinnableslice_t
