@@ -2305,6 +2305,10 @@ extern ROCKSDB_LIBRARY_API rocksdb_sstfilewriter_t*
 rocksdb_sstfilewriter_create_with_comparator(
     const rocksdb_envoptions_t* env, const rocksdb_options_t* io_options,
     const rocksdb_comparator_t* comparator);
+extern ROCKSDB_LIBRARY_API rocksdb_sstfilewriter_t*
+rocksdb_sstfilewriter_create_with_column_family_handle(
+    const rocksdb_envoptions_t *env, const rocksdb_options_t *io_options,
+    const rocksdb_column_family_handle_t *handle);
 extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_open(
     rocksdb_sstfilewriter_t* writer, const char* name, char** errptr);
 extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_add(
