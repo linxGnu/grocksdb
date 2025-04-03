@@ -33,6 +33,19 @@ func NewSSTFileWriterWithNativeComparator(opts *EnvOptions, dbOpts *Options, cmp
 	return &SSTFileWriter{c: c}
 }
 
+// NewSSTFileWriterWithCFHandle creates an SSTFileWriter object with column family handle.
+func NewSSTFileWriterWithCFHandle(opts *EnvOptions, dbOpts *Options, cfh *ColumnFamilyHandle) *SSTFileWriter {
+	cfh_ := unsafe.Pointer(cfh.c)
+	return NewSSTFileWriterWithNativeCFHandle(opts, dbOpts, cfh_)
+}
+
+// NewSSTFileWriterWithNativeCFHandle creates an SSTFileWriter object with native column family handle.
+func NewSSTFileWriterWithNativeCFHandle(opts *EnvOptions, dbOpts *Options, cfh unsafe.Pointer) *SSTFileWriter {
+	cfh_ := (*C.rocksdb_column_family_handle_t)(cfh)
+	c := C.rocksdb_sstfilewriter_create_with_column_family_handle(opts.c, dbOpts.c, cfh_)
+	return &SSTFileWriter{c: c}
+}
+
 // Open prepares SstFileWriter to write into file located at "path".
 func (w *SSTFileWriter) Open(path string) (err error) {
 	var (
