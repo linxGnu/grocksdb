@@ -1341,6 +1341,11 @@ extern ROCKSDB_LIBRARY_API void rocksdb_options_set_periodic_compaction_seconds(
     rocksdb_options_t*, uint64_t);
 extern ROCKSDB_LIBRARY_API uint64_t
 rocksdb_options_get_periodic_compaction_seconds(rocksdb_options_t*);
+extern ROCKSDB_LIBRARY_API void
+rocksdb_options_set_memtable_op_scan_flush_trigger(rocksdb_options_t*,
+                                                   uint32_t);
+extern ROCKSDB_LIBRARY_API uint32_t
+rocksdb_options_get_memtable_op_scan_flush_trigger(rocksdb_options_t*);
 
 enum {
   rocksdb_statistics_level_disable_all = 0,
@@ -1447,11 +1452,6 @@ extern ROCKSDB_LIBRARY_API void
 rocksdb_options_set_min_write_buffer_number_to_merge(rocksdb_options_t*, int);
 extern ROCKSDB_LIBRARY_API int
 rocksdb_options_get_min_write_buffer_number_to_merge(rocksdb_options_t*);
-extern ROCKSDB_LIBRARY_API void
-rocksdb_options_set_max_write_buffer_number_to_maintain(rocksdb_options_t*,
-                                                        int);
-extern ROCKSDB_LIBRARY_API int
-rocksdb_options_get_max_write_buffer_number_to_maintain(rocksdb_options_t*);
 extern ROCKSDB_LIBRARY_API void
 rocksdb_options_set_max_write_buffer_size_to_maintain(rocksdb_options_t*,
                                                       int64_t);

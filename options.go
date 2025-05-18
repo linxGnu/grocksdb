@@ -1930,6 +1930,26 @@ func (opts *Options) GetPeriodicCompactionSeconds() uint64 {
 	return uint64(C.rocksdb_options_get_periodic_compaction_seconds(opts.c))
 }
 
+// SetMemtableOpScanFlushTrigger when an iterator scans this number of invisible entries (tombstones or
+// hidden puts) from the active memtable during a single iterator operation,
+// we will attempt to flush the memtable. Currently only forward scans are
+// supported (SeekToFirst(), Seek() and Next()).
+// This option helps to reduce the overhead of scanning through a
+// large number of entries in memtable.
+// Users should consider enable deletion-triggered-compaction (see
+// CompactOnDeletionCollectorFactory) together with this option to compact
+// away tombstones after the memtable is flushed.
+//
+// Default: 0 (disabled)
+func (opts *Options) SetMemtableOpScanFlushTrigger(v uint32) {
+	C.rocksdb_options_set_memtable_op_scan_flush_trigger(opts.c, C.uint32_t(v))
+}
+
+// GetMemtableOpScanFlushTrigger see also: SetMemtableOpScanFlushTrigger.
+func (opts *Options) GetMemtableOpScanFlushTrigger() uint32 {
+	return uint32(C.rocksdb_options_get_memtable_op_scan_flush_trigger(opts.c))
+}
+
 // SetStatisticsLevel set statistics level.
 func (opts *Options) SetStatisticsLevel(level StatisticsLevel) {
 	C.rocksdb_options_set_statistics_level(opts.c, C.int(level))
@@ -2445,47 +2465,49 @@ func (opts *Options) GetPrepopulateBlobCache() PrepopulateBlob {
 	return PrepopulateBlob(C.rocksdb_options_get_prepopulate_blob_cache(opts.c))
 }
 
-// SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
-// to maintain in memory including copies of buffers that have already been flushed.
-// Unlike max_write_buffer_number, this parameter does not affect flushing.
-// This controls the minimum amount of write history that will be available
-// in memory for conflict checking when Transactions are used.
+// // SetMaxWriteBufferNumberToMaintain sets total maximum number of write buffers
+// // to maintain in memory including copies of buffers that have already been flushed.
+// // Unlike max_write_buffer_number, this parameter does not affect flushing.
+// // This controls the minimum amount of write history that will be available
+// // in memory for conflict checking when Transactions are used.
+// //
+// // When using an OptimisticTransactionDB:
+// // If this value is too low, some transactions may fail at commit time due
+// // to not being able to determine whether there were any write conflicts.
+// //
+// // When using a TransactionDB:
+// // If Transaction::SetSnapshot is used, TransactionDB will read either
+// // in-memory write buffers or SST files to do write-conflict checking.
+// // Increasing this value can reduce the number of reads to SST files
+// // done for conflict detection.
+// //
+// // Setting this value to 0 will cause write buffers to be freed immediately
+// // after they are flushed.
+// // If this value is set to -1, 'max_write_buffer_number' will be used.
+// //
+// // Default:
+// // If using a TransactionDB/OptimisticTransactionDB, the default value will
+// // be set to the value of 'max_write_buffer_number' if it is not explicitly
+// // set by the user.  Otherwise, the default is 0.
+// //
+// // Deprecated: soon
 //
-// When using an OptimisticTransactionDB:
-// If this value is too low, some transactions may fail at commit time due
-// to not being able to determine whether there were any write conflicts.
+//	func (opts *Options) SetMaxWriteBufferNumberToMaintain(value int) {
+//		C.rocksdb_options_set_max_write_buffer_number_to_maintain(opts.c, C.int(value))
+//	}
 //
-// When using a TransactionDB:
-// If Transaction::SetSnapshot is used, TransactionDB will read either
-// in-memory write buffers or SST files to do write-conflict checking.
-// Increasing this value can reduce the number of reads to SST files
-// done for conflict detection.
+// // GetMaxWriteBufferNumberToMaintain gets total maximum number of write buffers
+// // to maintain in memory including copies of buffers that have already been flushed.
+// // Unlike max_write_buffer_number, this parameter does not affect flushing.
+// // This controls the minimum amount of write history that will be available
+// // in memory for conflict checking when Transactions are used.
+// //
+// // Deprecated: soon
 //
-// Setting this value to 0 will cause write buffers to be freed immediately
-// after they are flushed.
-// If this value is set to -1, 'max_write_buffer_number' will be used.
+//	func (opts *Options) GetMaxWriteBufferNumberToMaintain() int {
+//		return int(C.rocksdb_options_get_max_write_buffer_number_to_maintain(opts.c))
+//	}
 //
-// Default:
-// If using a TransactionDB/OptimisticTransactionDB, the default value will
-// be set to the value of 'max_write_buffer_number' if it is not explicitly
-// set by the user.  Otherwise, the default is 0.
-//
-// Deprecated: soon
-func (opts *Options) SetMaxWriteBufferNumberToMaintain(value int) {
-	C.rocksdb_options_set_max_write_buffer_number_to_maintain(opts.c, C.int(value))
-}
-
-// GetMaxWriteBufferNumberToMaintain gets total maximum number of write buffers
-// to maintain in memory including copies of buffers that have already been flushed.
-// Unlike max_write_buffer_number, this parameter does not affect flushing.
-// This controls the minimum amount of write history that will be available
-// in memory for conflict checking when Transactions are used.
-//
-// Deprecated: soon
-func (opts *Options) GetMaxWriteBufferNumberToMaintain() int {
-	return int(C.rocksdb_options_get_max_write_buffer_number_to_maintain(opts.c))
-}
-
 // SetMaxWriteBufferSizeToMaintain is the total maximum size(bytes) of write buffers to maintain in memory
 // including copies of buffers that have already been flushed. This parameter
 // only affects trimming of flushed buffers and does not affect flushing.

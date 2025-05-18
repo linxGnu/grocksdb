@@ -356,8 +356,8 @@ func TestOptions(t *testing.T) {
 	_, err := GetOptionsFromString(nil, "abc")
 	require.Error(t, err)
 
-	opts.SetMaxWriteBufferNumberToMaintain(45)
-	require.EqualValues(t, 45, opts.GetMaxWriteBufferNumberToMaintain())
+	// opts.SetMaxWriteBufferNumberToMaintain(45)
+	// require.EqualValues(t, 45, opts.GetMaxWriteBufferNumberToMaintain())
 
 	require.False(t, opts.IsManualWALFlush())
 	opts.SetManualWALFlush(true)
@@ -420,6 +420,9 @@ func TestOptions(t *testing.T) {
 	lg := NewStderrLogger(InfoInfoLogLevel, "prefix")
 	opts.SetInfoLog(lg)
 	require.NotNil(t, opts.GetInfoLog())
+
+	opts.SetMemtableOpScanFlushTrigger(12)
+	require.EqualValues(t, 12, opts.GetMemtableOpScanFlushTrigger())
 
 	// cloning
 	cl := opts.Clone()
