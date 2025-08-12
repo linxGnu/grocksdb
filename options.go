@@ -1950,6 +1950,16 @@ func (opts *Options) GetMemtableOpScanFlushTrigger() uint32 {
 	return uint32(C.rocksdb_options_get_memtable_op_scan_flush_trigger(opts.c))
 }
 
+// SetMemtableAvgOpScanFlushTrigger similar to SetMemtableOpScanFlushTrigger.
+func (opts *Options) SetMemtableAvgOpScanFlushTrigger(v uint32) {
+	C.rocksdb_options_set_memtable_avg_op_scan_flush_trigger(opts.c, C.uint32_t(v))
+}
+
+// GetMemtableAvgOpScanFlushTrigger similar to GetMemtableOpScanFlushTrigger
+func (opts *Options) GetMemtableAvgOpScanFlushTrigger() uint32 {
+	return uint32(C.rocksdb_options_get_memtable_avg_op_scan_flush_trigger(opts.c))
+}
+
 // SetStatisticsLevel set statistics level.
 func (opts *Options) SetStatisticsLevel(level StatisticsLevel) {
 	C.rocksdb_options_set_statistics_level(opts.c, C.int(level))

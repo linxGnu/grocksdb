@@ -194,12 +194,17 @@ func OpenDbColumnFamiliesWithTTL(
 	name string,
 	cfNames []string,
 	cfOpts []*Options,
-	ttls []C.int,
+	ttls []int,
 ) (db *DB, cfHandles []*ColumnFamilyHandle, err error) {
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
 		err = ErrColumnFamilyMustMatch
 		return
+	}
+
+	ttlsCInt := make([]C.int, 0, len(ttls))
+	for _, v := range ttls {
+		ttlsCInt = append(ttlsCInt, C.int(v))
 	}
 
 	cName := C.CString(name)
@@ -223,7 +228,7 @@ func OpenDbColumnFamiliesWithTTL(
 		&cNames[0],
 		&cOpts[0],
 		&cHandles[0],
-		&ttls[0],
+		&ttlsCInt[0],
 		&cErr,
 	)
 	if err = fromCError(cErr); err == nil {
