@@ -424,6 +424,9 @@ func TestOptions(t *testing.T) {
 	opts.SetMemtableOpScanFlushTrigger(12)
 	require.EqualValues(t, 12, opts.GetMemtableOpScanFlushTrigger())
 
+	opts.SetMemtableAvgOpScanFlushTrigger(11)
+	require.EqualValues(t, 11, opts.GetMemtableAvgOpScanFlushTrigger())
+
 	// cloning
 	cl := opts.Clone()
 	require.EqualValues(t, 5, cl.GetTableCacheNumshardbits())

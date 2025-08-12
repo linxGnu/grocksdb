@@ -76,4 +76,12 @@ Almost C API, excepts:
 - [ ] writebatch_update_timestamps/writebatch_wi_update_timestamps/writebatch_iterate_cf
 - [ ] approximate_sizes_cf_with_flags
 - [ ] logger_create_callback_logger
+- [ ] event listeners:
+  - [ ] flushjobinfo*
+  - [ ] compactionjobinfo*
+  - [ ] subcompactionjobinfo*
+  - [ ] externalfileingestioninfo*
+  - [ ] writestallinfo*
+  - [ ] memtableinfo*
+- [ ] sst_file_manager
 

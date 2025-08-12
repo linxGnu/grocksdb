@@ -39,10 +39,18 @@ func TestWriteBatchWI(t *testing.T) {
 
 	// check before writing to db
 	ro := NewDefaultReadOptions()
+
 	v1, err := wb.GetFromDB(db, ro, givenKey1)
 	require.Nil(t, err)
 	require.EqualValues(t, v1.Data(), givenVal1)
 	v1.Free()
+
+	{
+		v11, err := wb.GetPinnableFromDB(db, ro, givenKey1)
+		require.Nil(t, err)
+		require.EqualValues(t, v11.Data(), givenVal1)
+		v11.Destroy()
+	}
 
 	v2, err := wb.GetFromDB(db, ro, givenKey2)
 	require.Nil(t, err)

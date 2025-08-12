@@ -209,6 +209,21 @@ func (wb *WriteBatchWI) GetFromDB(db *DB, opts *ReadOptions, key []byte) (slice 
 	return
 }
 
+// GetPinnableFromDB returns the pinnable data associated with the key from the database and write batch.
+func (wb *WriteBatchWI) GetPinnableFromDB(db *DB, opts *ReadOptions, key []byte) (slice *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = refGoBytes(key)
+	)
+
+	cValue := C.rocksdb_writebatch_wi_get_pinned_from_batch_and_db(wb.c, db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		slice = newNativePinnableSliceHandle(cValue)
+	}
+
+	return
+}
+
 // GetFromDBWithCF returns the data associated with the key from the database and write batch.
 // Key belongs to specific column family.
 func (wb *WriteBatchWI) GetFromDBWithCF(db *DB, opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slice *Slice, err error) {
@@ -221,6 +236,22 @@ func (wb *WriteBatchWI) GetFromDBWithCF(db *DB, opts *ReadOptions, cf *ColumnFam
 	cValue := C.rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb.c, db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cValLen, &cErr)
 	if err = fromCError(cErr); err == nil {
 		slice = NewSlice(cValue, cValLen)
+	}
+
+	return
+}
+
+// GetPinnableFromDBWithCF returns the pinnable data associated with the key from the database and write batch.
+// Key belongs to specific column family.
+func (wb *WriteBatchWI) GetPinnableFromDBWithCF(db *DB, opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slice *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = refGoBytes(key)
+	)
+
+	cValue := C.rocksdb_writebatch_wi_get_pinned_from_batch_and_db_cf(wb.c, db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		slice = newNativePinnableSliceHandle(cValue)
 	}
 
 	return
@@ -246,6 +277,12 @@ func (wb *WriteBatchWI) NewIteratorWithBase(db *DB, baseIter *Iterator) *Iterato
 	return newNativeIterator(cIter)
 }
 
+// NewIteratorWithBaseReadOpts similar to NewIteratorWithBase but with read options.
+func (wb *WriteBatchWI) NewIteratorWithBaseReadOpts(db *DB, baseIter *Iterator, opts *ReadOptions) *Iterator {
+	cIter := C.rocksdb_writebatch_wi_create_iterator_with_base_readopts(wb.c, baseIter.c, opts.c)
+	return newNativeIterator(cIter)
+}
+
 // NewIteratorWithBaseCF will create a new Iterator that will use WBWIIterator as a delta and
 // base_iterator as base.
 //
@@ -263,6 +300,12 @@ func (wb *WriteBatchWI) NewIteratorWithBase(db *DB, baseIter *Iterator) *Iterato
 // called.
 func (wb *WriteBatchWI) NewIteratorWithBaseCF(db *DB, baseIter *Iterator, cf *ColumnFamilyHandle) *Iterator {
 	cIter := C.rocksdb_writebatch_wi_create_iterator_with_base_cf(wb.c, baseIter.c, cf.c)
+	return newNativeIterator(cIter)
+}
+
+// NewIteratorWithBaseCFReadOpts similar to NewIteratorWithBaseCF but with read options.
+func (wb *WriteBatchWI) NewIteratorWithBaseCFReadOpts(db *DB, baseIter *Iterator, cf *ColumnFamilyHandle, opts *ReadOptions) *Iterator {
+	cIter := C.rocksdb_writebatch_wi_create_iterator_with_base_cf_readopts(wb.c, baseIter.c, cf.c, opts.c)
 	return newNativeIterator(cIter)
 }
 
