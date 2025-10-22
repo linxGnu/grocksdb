@@ -36,6 +36,14 @@ func (s pinnableSliceSlice) c() **C.rocksdb_pinnableslice_t {
 	return (**C.rocksdb_pinnableslice_t)(unsafe.Pointer(sH.Data))
 }
 
+func (s pinnableSliceSlice) destroy() {
+	for _, v := range s {
+		if v != nil {
+			C.rocksdb_pinnableslice_destroy(v)
+		}
+	}
+}
+
 // bytesSliceToCSlices converts a slice of byte slices to two slices with C
 // datatypes. One containing pointers to copies of the byte slices and one
 // containing their sizes.
@@ -58,6 +66,8 @@ func byteSlicesToCSlices(vals [][]byte) (charsSlice, sizeTSlice) {
 
 func (s charsSlice) Destroy() {
 	for _, chars := range s {
-		C.free(unsafe.Pointer(chars))
+		if chars != nil {
+			C.free(unsafe.Pointer(chars))
+		}
 	}
 }

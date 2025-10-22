@@ -702,6 +702,7 @@ func (db *DB) MultiGet(opts *ReadOptions, keys ...[]byte) (Slices, error) {
 
 	if len(errs) > 0 {
 		cKeys.Destroy()
+		vals.Destroy()
 		return nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
 	}
 
@@ -749,6 +750,8 @@ func (db *DB) MultiGetWithTS(opts *ReadOptions, keys ...[]byte) (Slices, Slices,
 
 	if len(errs) > 0 {
 		cKeys.Destroy()
+		vals.Destroy()
+		timestamps.Destroy()
 		return nil, nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
 	}
 
@@ -808,6 +811,7 @@ func (db *DB) BatchedMultiGetCF(opts *ReadOptions, cf *ColumnFamilyHandle, sorte
 
 	if len(errs) > 0 {
 		cKeys.Destroy()
+		vals.destroy()
 		return nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
 	}
 
@@ -861,6 +865,7 @@ func (db *DB) MultiGetCFMultiCF(opts *ReadOptions, cfs ColumnFamilyHandles, keys
 
 	if len(errs) > 0 {
 		cKeys.Destroy()
+		vals.Destroy()
 		return nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
 	}
 
@@ -918,6 +923,8 @@ func (db *DB) MultiGetMultiCFWithTS(opts *ReadOptions, cfs ColumnFamilyHandles, 
 
 	if len(errs) > 0 {
 		cKeys.Destroy()
+		vals.Destroy()
+		timestamps.Destroy()
 		return nil, nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
 	}
 
