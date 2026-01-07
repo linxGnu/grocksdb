@@ -12,6 +12,12 @@ func TestOptions(t *testing.T) {
 	wbm := NewWriteBufferManager(123456, true)
 	defer wbm.Destroy()
 
+	env := NewDefaultEnv()
+	defer env.Destroy()
+
+	sstFileManager := NewSSTFileManager(env)
+	defer sstFileManager.Destroy()
+
 	opts := NewDefaultOptions()
 	defer opts.Destroy()
 
@@ -248,7 +254,8 @@ func TestOptions(t *testing.T) {
 	require.EqualValues(t, 12, opts.GetCompressionOptionsParallelThreads())
 
 	opts.AddCompactOnDeletionCollectorFactory(12, 13)
-	opts.AddCompactOnDeletionCollectorFactoryWithRatio(12, 13, 5.5)
+	opts.AddCompactOnDeletionCollectorFactoryDelRatio(12, 13, 5.5)
+	opts.AddCompactOnDeletionCollectorFactoryMinFileSize(12, 13, 5.5, 100)
 
 	require.EqualValues(t, 0, opts.GetCompressionOptionsMaxDictBufferBytes())
 	opts.SetCompressionOptionsMaxDictBufferBytes(213 << 10)
@@ -426,6 +433,8 @@ func TestOptions(t *testing.T) {
 
 	opts.SetMemtableAvgOpScanFlushTrigger(11)
 	require.EqualValues(t, 11, opts.GetMemtableAvgOpScanFlushTrigger())
+
+	opts.SetSSTFileManager(sstFileManager)
 
 	// cloning
 	cl := opts.Clone()
