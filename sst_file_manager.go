@@ -3,10 +3,13 @@ package grocksdb
 // #include "rocksdb/c.h"
 import "C"
 
+// SSTFileManager is used to track SST and blob files in the DB and control
+// their deletion rate. All SSTFileManager public functions are thread-safe.
 type SSTFileManager struct {
 	c *C.rocksdb_sst_file_manager_t
 }
 
+// NewSSTFileManager creates new SSTFileManager.
 func NewSSTFileManager(env *Env) *SSTFileManager {
 	return &SSTFileManager{c: C.rocksdb_sst_file_manager_create(env.c)}
 }
@@ -33,6 +36,8 @@ func (s *SSTFileManager) SetMaxAllowedSpaceUsage(space uint64) {
 // In other words, at its maximum disk space consumption, the compaction
 // should still leave compaction_buffer_size available on the disk so that
 // other background functions may continue, such as logging and flushing.
+//
+// thread-safe.
 func (s *SSTFileManager) SetCompactionBufferSize(size uint64) {
 	C.rocksdb_sst_file_manager_set_compaction_buffer_size(s.c, C.uint64_t(size))
 }
@@ -66,21 +71,21 @@ func (s *SSTFileManager) GetDeleteRateBytesPerSecond() int64 {
 }
 
 // SetDeleteRateBytesPerSecond updates the delete rate limit in bytes per second.
-// zero means disable delete rate limiting and delete files immediately
+// zero means disable delete rate limiting and delete files immediately.
 //
 // thread-safe
 func (s *SSTFileManager) SetDeleteRateBytesPerSecond(rate int64) {
 	C.rocksdb_sst_file_manager_set_delete_rate_bytes_per_second(s.c, C.int64_t(rate))
 }
 
-// GetMaxTrashDBRatio returns trash/DB size ratio where new files will be deleted immediately
+// GetMaxTrashDBRatio returns trash/DB size ratio where new files will be deleted immediately.
 //
 // thread-safe
 func (s *SSTFileManager) GetMaxTrashDBRatio() float64 {
 	return float64(C.rocksdb_sst_file_manager_get_max_trash_db_ratio(s.c))
 }
 
-// SetMaxTrashDBRatio updates trash/DB size ratio where new files will be deleted immediately
+// SetMaxTrashDBRatio updates trash/DB size ratio where new files will be deleted immediately.
 //
 // thread-safe
 func (s *SSTFileManager) SetMaxTrashDBRatio(ratio float64) {

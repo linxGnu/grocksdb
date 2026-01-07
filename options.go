@@ -1647,7 +1647,7 @@ func (opts *Options) AddCompactOnDeletionCollectorFactoryDelRatio(windowSize, nu
 }
 
 // AddCompactOnDeletionCollectorFactoryMinFileSize similar to AddCompactOnDeletionCollectorFactoryDelRatio
-// with specific deletion ratio.
+// with specific min file size.
 func (opts *Options) AddCompactOnDeletionCollectorFactoryMinFileSize(windowSize, numDelsTrigger uint, deletionRatio float64, minFileSize uint64) {
 	C.rocksdb_options_add_compact_on_deletion_collector_factory_min_file_size(opts.c, C.size_t(windowSize), C.size_t(numDelsTrigger), C.double(deletionRatio), C.uint64_t(minFileSize))
 }
@@ -2798,7 +2798,7 @@ func (opts *Options) SetMemtableWholeKeyFiltering(value bool) {
 	C.rocksdb_options_set_memtable_whole_key_filtering(opts.c, boolToChar(value))
 }
 
-// SetSSTFileManager sets SetSSTFileManager
+// SetSSTFileManager sets SetSSTFileManager.
 func (opts *Options) SetSSTFileManager(s *SSTFileManager) {
 	C.rocksdb_options_set_sst_file_manager(opts.c, s.c)
 }
