@@ -12,6 +12,12 @@ func TestOptions(t *testing.T) {
 	wbm := NewWriteBufferManager(123456, true)
 	defer wbm.Destroy()
 
+	env := NewDefaultEnv()
+	defer env.Destroy()
+
+	sstFileManager := NewSSTFileManager(env)
+	defer sstFileManager.Destroy()
+
 	opts := NewDefaultOptions()
 	defer opts.Destroy()
 
@@ -426,6 +432,8 @@ func TestOptions(t *testing.T) {
 
 	opts.SetMemtableAvgOpScanFlushTrigger(11)
 	require.EqualValues(t, 11, opts.GetMemtableAvgOpScanFlushTrigger())
+
+	opts.SetSSTFileManager(sstFileManager)
 
 	// cloning
 	cl := opts.Clone()

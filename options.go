@@ -147,7 +147,7 @@ func GetOptionsFromString(base *Options, optStr string) (newOpt *Options, err er
 		base.Destroy()
 	}
 
-	return
+	return newOpt, err
 }
 
 // Clone the options
@@ -1551,7 +1551,7 @@ func (opts *Options) GetStatisticsString() (stats string) {
 	cValue := C.rocksdb_options_statistics_get_string(opts.c)
 	stats = C.GoString(cValue)
 	C.rocksdb_free(unsafe.Pointer(cValue))
-	return
+	return stats
 }
 
 func (opts *Options) GetTickerCount(tickerType TickerType) uint64 {
@@ -1574,7 +1574,7 @@ func (opts *Options) GetHistogramData(histogramType HistogramType) (histogram Hi
 
 	C.rocksdb_statistics_histogram_data_destroy(hData)
 
-	return
+	return histogram
 }
 
 // SetRateLimiter sets the rate limiter of the options.
@@ -2792,6 +2792,11 @@ func (opts *Options) SetMemtableWholeKeyFiltering(value bool) {
 	C.rocksdb_options_set_memtable_whole_key_filtering(opts.c, boolToChar(value))
 }
 
+// SetSSTFileManager sets SetSSTFileManager
+func (opts *Options) SetSSTFileManager(s *SSTFileManager) {
+	C.rocksdb_options_set_sst_file_manager(opts.c, s.c)
+}
+
 // Destroy deallocates the Options object.
 func (opts *Options) Destroy() {
 	C.rocksdb_options_destroy(opts.c)
@@ -2875,7 +2880,7 @@ func LoadLatestOptions(path string, env *Env, ignoreUnknownOpts bool, cache *Cac
 	}
 
 	C.free(unsafe.Pointer(cPath))
-	return
+	return lo, err
 }
 
 // Options gets the latest options.

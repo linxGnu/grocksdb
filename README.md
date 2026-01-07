@@ -83,5 +83,4 @@ Almost C API, excepts:
   - [ ] externalfileingestioninfo*
   - [ ] writestallinfo*
   - [ ] memtableinfo*
-- [ ] sst_file_manager
 
