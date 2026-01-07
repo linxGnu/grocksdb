@@ -1640,10 +1640,16 @@ func (opts *Options) AddCompactOnDeletionCollectorFactory(windowSize, numDelsTri
 	C.rocksdb_options_add_compact_on_deletion_collector_factory(opts.c, C.size_t(windowSize), C.size_t(numDelsTrigger))
 }
 
-// AddCompactOnDeletionCollectorFactoryWithRatio similar to AddCompactOnDeletionCollectorFactory
+// AddCompactOnDeletionCollectorFactoryDelRatio similar to AddCompactOnDeletionCollectorFactory
 // with specific deletion ratio.
-func (opts *Options) AddCompactOnDeletionCollectorFactoryWithRatio(windowSize, numDelsTrigger uint, deletionRatio float64) {
+func (opts *Options) AddCompactOnDeletionCollectorFactoryDelRatio(windowSize, numDelsTrigger uint, deletionRatio float64) {
 	C.rocksdb_options_add_compact_on_deletion_collector_factory_del_ratio(opts.c, C.size_t(windowSize), C.size_t(numDelsTrigger), C.double(deletionRatio))
+}
+
+// AddCompactOnDeletionCollectorFactoryMinFileSize similar to AddCompactOnDeletionCollectorFactoryDelRatio
+// with specific deletion ratio.
+func (opts *Options) AddCompactOnDeletionCollectorFactoryMinFileSize(windowSize, numDelsTrigger uint, deletionRatio float64, minFileSize uint64) {
+	C.rocksdb_options_add_compact_on_deletion_collector_factory_min_file_size(opts.c, C.size_t(windowSize), C.size_t(numDelsTrigger), C.double(deletionRatio), C.uint64_t(minFileSize))
 }
 
 // SetManualWALFlush if true WAL is not flushed automatically after each write. Instead it

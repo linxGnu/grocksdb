@@ -83,4 +83,5 @@ Almost C API, excepts:
   - [ ] externalfileingestioninfo*
   - [ ] writestallinfo*
   - [ ] memtableinfo*
+  - [ ] onbackground_error_cb
 
