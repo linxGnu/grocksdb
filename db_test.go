@@ -439,4 +439,113 @@ func TestCreateCFs(t *testing.T) {
 
 	_, err = db.CreateColumnFamilies(o, []string{})
 	require.NoError(t, err)
+
+	db.Flush(NewDefaultFlushOptions())
+	db.CompactRangeCF(cfs[0], Range{Start: []byte{0, 0, 0}, Limit: []byte{0xff, 0xff}})
+
+	{
+		checkpoint, err := db.NewCheckpoint()
+		require.NoError(t, err)
+
+		_ = os.RemoveAll("exported_dir")
+		metadata, err := checkpoint.ExportColumnFamily(cfs[0], "exported_dir")
+		require.NoError(t, err)
+		defer func() {
+			metadata.Destroy()
+			_ = os.RemoveAll("exported_dir")
+		}()
+
+		require.Equal(t, "leveldb.BytewiseComparator", metadata.GetComparatorName())
+		metadata.SetComparatorName("leveldb.BytewiseComparator")
+		require.Equal(t, "leveldb.BytewiseComparator", metadata.GetComparatorName())
+
+		files := metadata.GetFiles()
+		defer files.Destroy()
+		require.NotNil(t, files)
+		require.Equal(t, 1, files.Count())
+		for i := 0; i < 5; i++ {
+			require.Empty(t, files.ColumnFamilyName(0))
+			require.NotEmpty(t, files.Name(0))
+			require.NotEmpty(t, files.Directory(0))
+			require.Equal(t, 6, files.Level(0))
+			require.True(t, files.Size(0) > 0)
+			require.NotEmpty(t, files.SmallestKey(0))
+			require.NotEmpty(t, files.LargestKey(0))
+
+			require.NotEmpty(t, files.SmallestSeqNo(0))
+			require.NotEmpty(t, files.LargestSeqNo(0))
+
+			require.EqualValues(t, 0, files.NumEntries(0))
+			require.EqualValues(t, 0, files.NumDeletions(0))
+		}
+
+		metadata.SetFiles(NewLiveFiles()) // trying to set live files
+	}
+
+	{
+		checkpoint, err := db.NewCheckpoint()
+		require.NoError(t, err)
+
+		_ = os.RemoveAll("exported_dir")
+		metadata, err := checkpoint.ExportColumnFamily(cfs[0], "exported_dir")
+		require.NoError(t, err)
+		defer func() {
+			metadata.Destroy()
+			_ = os.RemoveAll("exported_dir")
+		}()
+
+		anotherDB := newTestDB(t, nil)
+		defer anotherDB.Close()
+
+		defOpts := NewDefaultOptions()
+		defer defOpts.Destroy()
+
+		importOpts := NewImportColumnFamilyOption()
+		defer importOpts.Destroy()
+
+		_, err = anotherDB.CreateColumnFamilyWithImport(defOpts, "other1", importOpts, metadata)
+		require.NoError(t, err)
+	}
+
+	{
+		files := db.LiveFiles()
+		defer files.Destroy()
+		require.NotNil(t, files)
+		require.Equal(t, 1, files.Count())
+		for i := 0; i < 5; i++ {
+			require.NotEmpty(t, files.ColumnFamilyName(0))
+			require.NotEmpty(t, files.Name(0))
+			require.NotEmpty(t, files.Directory(0))
+			require.Equal(t, 6, files.Level(0))
+			require.True(t, files.Size(0) > 0)
+			require.NotEmpty(t, files.SmallestKey(0))
+			require.NotEmpty(t, files.LargestKey(0))
+
+			require.NotEmpty(t, files.SmallestSeqNo(0))
+			require.NotEmpty(t, files.LargestSeqNo(0))
+
+			require.EqualValues(t, 1, files.NumEntries(0))
+			require.EqualValues(t, 0, files.NumDeletions(0))
+
+			lf := NewLiveFile()
+			lf.SetColumnFamilyName("other1")
+			lf.SetLevel(1)
+			lf.SetName("test")
+			lf.SetDirectory("here")
+			lf.SetSize(100)
+			lf.SetSmallestKey([]byte{1, 2, 3})
+			lf.SetLargestKey([]byte{9, 9, 9})
+
+			lf.SetSmallestSeqNo(0)
+			lf.SetLargestSeqNo(1000)
+			lf.SetNumEntries(1)
+			lf.SetNumDeletions(2)
+
+			files.AddLiveFile(lf)
+
+			// test destroying
+			toDelete := NewLiveFile()
+			defer toDelete.Destroy()
+		}
+	}
 }

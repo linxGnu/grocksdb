@@ -39,7 +39,28 @@ func (checkpoint *Checkpoint) CreateCheckpoint(checkpointDir string, logSizeForF
 	err = fromCError(cErr)
 
 	C.free(unsafe.Pointer(cDir))
-	return
+	return err
+}
+
+// ExportColumnFamily exports all live SST files of a specified Column Family onto export_dir,
+// returning SST files information in metadata.
+//   - SST files will be created as hard links when the directory specified
+//     is in the same partition as the db directory, copied otherwise.
+//   - export_dir should not already exist and will be created by this API.
+//   - Always triggers a flush.
+func (checkpoint *Checkpoint) ExportColumnFamily(cf *ColumnFamilyHandle, exportDir string) (metadata *ExportImportFileMetadata, err error) {
+	cDir := C.CString(exportDir)
+
+	var cErr *C.char
+	c := C.rocksdb_checkpoint_export_column_family(checkpoint.c, cf.c, cDir, &cErr)
+	err = fromCError(cErr)
+	C.free(unsafe.Pointer(cDir))
+
+	if err == nil {
+		metadata = NewNativeExportImportFileMetadata(c)
+	}
+
+	return metadata, err
 }
 
 // Destroy deallocates the Checkpoint object.
