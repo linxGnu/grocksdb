@@ -770,6 +770,7 @@ func (db *DB) MultiGetWithTS(opts *ReadOptions, keys ...[]byte) (Slices, Slices,
 }
 
 // BatchedMultiGetCF
+//
 // The MultiGet API that improves performance by batching operations
 // in the read path for greater efficiency. Currently, only the block based
 // table format with full filters are supported. Other table formats such
@@ -780,11 +781,6 @@ func (db *DB) MultiGetWithTS(opts *ReadOptions, keys ...[]byte) (Slices, Slices,
 // Note that all the keys passed to this API are restricted to a single
 // column family.
 func (db *DB) BatchedMultiGetCF(opts *ReadOptions, cf *ColumnFamilyHandle, sortedInput bool, keys ...[]byte) (PinnableSlices, error) {
-	cfs := make(ColumnFamilyHandles, len(keys))
-	for i := 0; i < len(keys); i++ {
-		cfs[i] = cf
-	}
-
 	cKeys, cKeySizes := byteSlicesToCSlices(keys)
 
 	vals := make(pinnableSliceSlice, len(keys))
@@ -821,6 +817,51 @@ func (db *DB) BatchedMultiGetCF(opts *ReadOptions, cf *ColumnFamilyHandle, sorte
 	}
 
 	cKeys.Destroy()
+	return pinnableSlices, nil
+}
+
+// BatchedMultiGetCFSlice
+//
+// Similar to BatchedMultiGetCF.
+// Takes rocksdb_slice_t array directly, avoiding key conversion. faster than rocksdb_batched_multi_get_cf for operations with many keys.
+// Eliminates overhead of converting keys from separate pointer+size arrays to Slice objects.
+func (db *DB) BatchedMultiGetCFSlice(opts *ReadOptions, cf *ColumnFamilyHandle, sortedInput bool, keys []OptimizedSlice) (PinnableSlices, error) {
+	cKeys := make(optimizeSliceSlice, len(keys))
+	for i := 0; i < len(keys); i++ {
+		cKeys[i] = keys[i].c
+	}
+
+	vals := make(pinnableSliceSlice, len(keys))
+	rocksErrs := make(charsSlice, len(keys))
+
+	C.rocksdb_batched_multi_get_cf_slice(
+		db.c,
+		opts.c,
+		cf.c,
+		C.size_t(len(keys)),
+		cKeys.c(),
+		vals.c(),
+		rocksErrs.c(),
+		C.bool(sortedInput),
+	)
+
+	var errs []error
+	for i, rocksErr := range rocksErrs {
+		if err := fromCError(rocksErr); err != nil {
+			errs = append(errs, fmt.Errorf("getting %q failed: %v", keys[i].Data(), err.Error()))
+		}
+	}
+
+	if len(errs) > 0 {
+		vals.destroy()
+		return nil, fmt.Errorf("failed to get %d keys, first error: %v", len(errs), errs[0])
+	}
+
+	pinnableSlices := make(PinnableSlices, len(keys))
+	for i, val := range vals {
+		pinnableSlices[i] = newNativePinnableSliceHandle(val)
+	}
+
 	return pinnableSlices, nil
 }
 

@@ -64,6 +64,21 @@ func (s PinnableSlices) Destroy() {
 	}
 }
 
+// OptimizedSlice for high-performance C API operations
+// This struct is ABI-compatible with rocksdb::Slice for zero-copy interop.
+// Used by slice iterator functions and batched operations.
+type OptimizedSlice struct {
+	c C.rocksdb_slice_t
+}
+
+func newNativeOptimizeSlice(c C.rocksdb_slice_t) OptimizedSlice {
+	return OptimizedSlice{c: c}
+}
+
+func (o OptimizedSlice) Data() []byte {
+	return refCBytes(o.c.data, o.c.size)
+}
+
 // PinnableSliceHandle represents a handle to a PinnableSlice.
 type PinnableSliceHandle struct {
 	c *C.rocksdb_pinnableslice_t

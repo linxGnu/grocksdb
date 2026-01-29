@@ -71,6 +71,10 @@ func (iter *Iterator) Key() *Slice {
 	return &Slice{data: cKey, size: cLen, freed: true}
 }
 
+func (iter *Iterator) KeySlice() OptimizedSlice {
+	return newNativeOptimizeSlice(C.rocksdb_iter_key_slice(iter.c))
+}
+
 // Timestamp returns the timestamp in the database the iterator currently holds.
 func (iter *Iterator) Timestamp() *Slice {
 	var cLen C.size_t
@@ -81,6 +85,10 @@ func (iter *Iterator) Timestamp() *Slice {
 	return &Slice{data: cTs, size: cLen, freed: true}
 }
 
+func (iter *Iterator) TimestampSlice() OptimizedSlice {
+	return newNativeOptimizeSlice(C.rocksdb_iter_timestamp_slice(iter.c))
+}
+
 // Value returns the value in the database the iterator currently holds.
 func (iter *Iterator) Value() *Slice {
 	var cLen C.size_t
@@ -89,6 +97,10 @@ func (iter *Iterator) Value() *Slice {
 		return nil
 	}
 	return &Slice{data: cVal, size: cLen, freed: true}
+}
+
+func (iter *Iterator) ValueSlice() OptimizedSlice {
+	return newNativeOptimizeSlice(C.rocksdb_iter_value_slice(iter.c))
 }
 
 // Next moves the iterator to the next sequential key in the database.
@@ -130,7 +142,7 @@ func (iter *Iterator) Err() (err error) {
 	var cErr *C.char
 	C.rocksdb_iter_get_error(iter.c, &cErr)
 	err = fromCError(cErr)
-	return
+	return err
 }
 
 // Refresh if supported, the DB state that the iterator reads from is updated to
@@ -145,7 +157,7 @@ func (iter *Iterator) Refresh() (err error) {
 	var cErr *C.char
 	C.rocksdb_iter_refresh(iter.c, &cErr)
 	err = fromCError(cErr)
-	return
+	return err
 }
 
 // Close closes the iterator.
