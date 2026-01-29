@@ -43,7 +43,7 @@ func OpenDb(opts *Options, name string) (db *DB, err error) {
 	}
 
 	C.free(unsafe.Pointer(cName))
-	return
+	return db, err
 }
 
 // OpenDbWithTTL opens a database with TTL support with the specified options.
@@ -63,7 +63,7 @@ func OpenDbWithTTL(opts *Options, name string, ttl int) (db *DB, err error) {
 	}
 
 	C.free(unsafe.Pointer(cName))
-	return
+	return db, err
 }
 
 // OpenDbForReadOnly opens a database with the specified options for readonly usage.
@@ -83,7 +83,7 @@ func OpenDbForReadOnly(opts *Options, name string, errorIfWalFileExists bool) (d
 	}
 
 	C.free(unsafe.Pointer(cName))
-	return
+	return db, err
 }
 
 // OpenDbAsSecondary creates a secondary instance that
@@ -115,7 +115,7 @@ func OpenDbAsSecondary(opts *Options, name, secondaryPath string) (db *DB, err e
 
 	C.free(unsafe.Pointer(cName))
 	C.free(unsafe.Pointer(cPath))
-	return
+	return db, err
 }
 
 // OpenDbColumnFamilies opens a database with the specified column families.
@@ -128,7 +128,7 @@ func OpenDbColumnFamilies(
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
 		err = ErrColumnFamilyMustMatch
-		return
+		return db, cfHandles, err
 	}
 
 	cName := C.CString(name)
@@ -170,7 +170,7 @@ func OpenDbColumnFamilies(
 	for _, s := range cNames {
 		C.free(unsafe.Pointer(s))
 	}
-	return
+	return db, cfHandles, err
 }
 
 // OpenDbColumnFamiliesWithTTL opens a database with the specified column families along with their ttls.
@@ -199,7 +199,7 @@ func OpenDbColumnFamiliesWithTTL(
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
 		err = ErrColumnFamilyMustMatch
-		return
+		return db, cfHandles, err
 	}
 
 	ttlsCInt := make([]C.int, 0, len(ttls))
@@ -247,7 +247,7 @@ func OpenDbColumnFamiliesWithTTL(
 	for _, s := range cNames {
 		C.free(unsafe.Pointer(s))
 	}
-	return
+	return db, cfHandles, err
 }
 
 // OpenDbForReadOnlyColumnFamilies opens a database with the specified column
@@ -262,7 +262,7 @@ func OpenDbForReadOnlyColumnFamilies(
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
 		err = ErrColumnFamilyMustMatch
-		return
+		return db, cfHandles, err
 	}
 
 	cName := C.CString(name)
@@ -305,7 +305,7 @@ func OpenDbForReadOnlyColumnFamilies(
 	for _, s := range cNames {
 		C.free(unsafe.Pointer(s))
 	}
-	return
+	return db, cfHandles, err
 }
 
 // OpenDbAsSecondaryColumnFamilies opens database as secondary instance with column families.
@@ -328,7 +328,7 @@ func OpenDbAsSecondaryColumnFamilies(
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
 		err = ErrColumnFamilyMustMatch
-		return
+		return db, cfHandles, err
 	}
 
 	cName := C.CString(name)
@@ -374,7 +374,7 @@ func OpenDbAsSecondaryColumnFamilies(
 	for _, s := range cNames {
 		C.free(unsafe.Pointer(s))
 	}
-	return
+	return db, cfHandles, err
 }
 
 // OpenDbAndTrimHistory opens DB and trim data newer than specified timestamp.
@@ -392,7 +392,7 @@ func OpenDbAndTrimHistory(opts *Options,
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
 		err = ErrColumnFamilyMustMatch
-		return
+		return db, cfHandles, err
 	}
 
 	cName := C.CString(name)
@@ -438,7 +438,7 @@ func OpenDbAndTrimHistory(opts *Options,
 	for _, s := range cNames {
 		C.free(unsafe.Pointer(s))
 	}
-	return
+	return db, cfHandles, err
 }
 
 // ListColumnFamilies lists the names of the column families in the DB.
@@ -465,7 +465,7 @@ func ListColumnFamilies(opts *Options, name string) (names []string, err error) 
 
 	C.rocksdb_list_column_families_destroy(cNames, cLen)
 	C.free(unsafe.Pointer(cName))
-	return
+	return names, err
 }
 
 // Name returns the name of the database.
@@ -496,7 +496,7 @@ func (db *DB) KeyMayExists(opts *ReadOptions, key []byte, timestamp string) (sli
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice
 }
 
 // KeyMayExistsCF the value is only allocated (using malloc) and returned if it is found and
@@ -523,7 +523,7 @@ func (db *DB) KeyMayExistsCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []by
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice
 }
 
 // Get returns the data associated with the key from the database.
@@ -539,7 +539,7 @@ func (db *DB) Get(opts *ReadOptions, key []byte) (slice *Slice, err error) {
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetWithTS returns the data and timestamp associated with the key from the database.
@@ -558,7 +558,7 @@ func (db *DB) GetWithTS(opts *ReadOptions, key []byte) (value, timestamp *Slice,
 		timestamp = NewSlice(cTs, cTsLen)
 	}
 
-	return
+	return value, timestamp, err
 }
 
 // GetBytes is like Get but returns a copy of the data.
@@ -579,7 +579,7 @@ func (db *DB) GetBytes(opts *ReadOptions, key []byte) (data []byte, err error) {
 		C.rocksdb_free(unsafe.Pointer(cValue))
 	}
 
-	return
+	return data, err
 }
 
 // GetBytesWithTS is like Get but returns a copy of the data and timestamp.
@@ -604,7 +604,7 @@ func (db *DB) GetBytesWithTS(opts *ReadOptions, key []byte) (data, timestamp []b
 		C.rocksdb_free(unsafe.Pointer(cTs))
 	}
 
-	return
+	return data, timestamp, err
 }
 
 // GetCF returns the data associated with the key from the database and column family.
@@ -620,7 +620,7 @@ func (db *DB) GetCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slic
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetCFWithTS returns the data and timestamp associated with the key from the database and column family.
@@ -639,7 +639,7 @@ func (db *DB) GetCFWithTS(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte)
 		timestamp = NewSlice(cTs, cTsLen)
 	}
 
-	return
+	return value, timestamp, err
 }
 
 // GetPinned returns the data associated with the key from the database.
@@ -654,7 +654,7 @@ func (db *DB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHan
 		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
-	return
+	return handle, err
 }
 
 // GetPinnedCF returns the data associated with the key from the database, specific column family.
@@ -669,7 +669,7 @@ func (db *DB) GetPinnedCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte)
 		handle = newNativePinnableSliceHandle(cHandle)
 	}
 
-	return
+	return handle, err
 }
 
 // MultiGet returns the data associated with the passed keys from the database
@@ -953,7 +953,7 @@ func (db *DB) Put(opts *WriteOptions, key, value []byte) (err error) {
 	C.rocksdb_put(db.c, opts.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // PutWithTS writes data associated with a key and timestamp to the database.
@@ -968,7 +968,7 @@ func (db *DB) PutWithTS(opts *WriteOptions, key, ts, value []byte) (err error) {
 	C.rocksdb_put_with_ts(db.c, opts.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), cValue, C.size_t(len(value)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // PutCF writes data associated with a key to the database and column family.
@@ -982,7 +982,7 @@ func (db *DB) PutCF(opts *WriteOptions, cf *ColumnFamilyHandle, key, value []byt
 	C.rocksdb_put_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // PutCFWithTS writes data associated with a key and timestamp to the database and column family.
@@ -997,7 +997,7 @@ func (db *DB) PutCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts, v
 	C.rocksdb_put_cf_with_ts(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), cValue, C.size_t(len(value)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // Delete removes the data associated with the key from the database.
@@ -1010,7 +1010,7 @@ func (db *DB) Delete(opts *WriteOptions, key []byte) (err error) {
 	C.rocksdb_delete(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // DeleteCF removes the data associated with the key from the database and column family.
@@ -1023,7 +1023,7 @@ func (db *DB) DeleteCF(opts *WriteOptions, cf *ColumnFamilyHandle, key []byte) (
 	C.rocksdb_delete_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // DeleteWithTS removes the data associated with the key and timestamp from the database.
@@ -1037,7 +1037,7 @@ func (db *DB) DeleteWithTS(opts *WriteOptions, key, ts []byte) (err error) {
 	C.rocksdb_delete_with_ts(db.c, opts.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // DeleteCFWithTS removes the data associated with the key and timestamp from the database and column family.
@@ -1051,7 +1051,7 @@ func (db *DB) DeleteCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, key, ts
 	C.rocksdb_delete_cf_with_ts(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // SingleDeleteWithTS removes the data associated with the key and timestamp from the database.
@@ -1065,7 +1065,7 @@ func (db *DB) SingleDeleteWithTS(opts *WriteOptions, key, ts []byte) (err error)
 	C.rocksdb_singledelete_with_ts(db.c, opts.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // SingleDeleteCFWithTS removes the data associated with the key and timestamp from the database and column family.
@@ -1079,7 +1079,7 @@ func (db *DB) SingleDeleteCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, k
 	C.rocksdb_singledelete_cf_with_ts(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // DeleteRangeCF deletes keys that are between [startKey, endKey)
@@ -1093,7 +1093,7 @@ func (db *DB) DeleteRangeCF(opts *WriteOptions, cf *ColumnFamilyHandle, startKey
 	C.rocksdb_delete_range_cf(db.c, opts.c, cf.c, cStartKey, C.size_t(len(startKey)), cEndKey, C.size_t(len(endKey)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // SingleDelete removes the database entry for "key". Requires that the key exists
@@ -1121,7 +1121,7 @@ func (db *DB) SingleDelete(opts *WriteOptions, key []byte) (err error) {
 	C.rocksdb_singledelete(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // SingleDeleteCF removes the database entry for "key". Requires that the key exists
@@ -1149,7 +1149,7 @@ func (db *DB) SingleDeleteCF(opts *WriteOptions, cf *ColumnFamilyHandle, key []b
 	C.rocksdb_singledelete_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // Merge merges the data associated with the key with the actual data in the database.
@@ -1163,7 +1163,7 @@ func (db *DB) Merge(opts *WriteOptions, key, value []byte) (err error) {
 	C.rocksdb_merge(db.c, opts.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // MergeCF merges the data associated with the key with the actual data in the
@@ -1178,7 +1178,7 @@ func (db *DB) MergeCF(opts *WriteOptions, cf *ColumnFamilyHandle, key, value []b
 	C.rocksdb_merge_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // Write a batch to the database.
@@ -1188,7 +1188,7 @@ func (db *DB) Write(opts *WriteOptions, batch *WriteBatch) (err error) {
 	C.rocksdb_write(db.c, opts.c, batch.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // WriteWI writes a batch wi to the database.
@@ -1198,7 +1198,7 @@ func (db *DB) WriteWI(opts *WriteOptions, batch *WriteBatchWI) (err error) {
 	C.rocksdb_write_writebatch_wi(db.c, opts.c, batch.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // NewIterator returns an Iterator over the the database that uses the
@@ -1235,7 +1235,7 @@ func (db *DB) NewIterators(opts *ReadOptions, cfs []*ColumnFamilyHandle) (iters 
 			}
 		}
 	}
-	return
+	return iters, err
 }
 
 // GetUpdatesSince if the sequence number is non existent, it returns an iterator
@@ -1257,7 +1257,7 @@ func (db *DB) GetUpdatesSince(seqNumber uint64) (iter *WalIterator, err error) {
 		iter = newNativeWalIterator(unsafe.Pointer(cIter))
 	}
 
-	return
+	return iter, err
 }
 
 // GetLatestSequenceNumber returns sequence number of the most recent transaction.
@@ -1286,7 +1286,7 @@ func (db *DB) GetProperty(propName string) (value string) {
 
 	C.rocksdb_free(unsafe.Pointer(cValue))
 	C.free(unsafe.Pointer(cprop))
-	return
+	return value
 }
 
 // GetIntProperty similar to `GetProperty`, but only works for a subset of properties whose
@@ -1295,7 +1295,7 @@ func (db *DB) GetIntProperty(propName string) (value uint64, success bool) {
 	cProp := C.CString(propName)
 	success = C.rocksdb_property_int(db.c, cProp, (*C.uint64_t)(&value)) == 0
 	C.free(unsafe.Pointer(cProp))
-	return
+	return value, success
 }
 
 // GetIntPropertyCF similar to `GetProperty`, but only works for a subset of properties whose
@@ -1304,7 +1304,7 @@ func (db *DB) GetIntPropertyCF(propName string, cf *ColumnFamilyHandle) (value u
 	cProp := C.CString(propName)
 	success = C.rocksdb_property_int_cf(db.c, cf.c, cProp, (*C.uint64_t)(&value)) == 0
 	C.free(unsafe.Pointer(cProp))
-	return
+	return value, success
 }
 
 // GetPropertyCF returns the value of a database property.
@@ -1316,7 +1316,7 @@ func (db *DB) GetPropertyCF(propName string, cf *ColumnFamilyHandle) (value stri
 
 	C.rocksdb_free(unsafe.Pointer(cValue))
 	C.free(unsafe.Pointer(cProp))
-	return
+	return value
 }
 
 // CreateColumnFamily create a new column family.
@@ -1332,7 +1332,27 @@ func (db *DB) CreateColumnFamily(opts *Options, name string) (handle *ColumnFami
 	}
 
 	C.free(unsafe.Pointer(cName))
-	return
+	return handle, err
+}
+
+func (db *DB) CreateColumnFamilyWithImport(
+	opts *Options,
+	name string,
+	importOpts *ImportColumnFamilyOption,
+	metadata *ExportImportFileMetadata,
+) (handle *ColumnFamilyHandle, err error) {
+	var (
+		cErr  *C.char
+		cName = C.CString(name)
+	)
+
+	cHandle := C.rocksdb_create_column_family_with_import(db.c, opts.c, cName, importOpts.c, metadata.c, &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = newNativeColumnFamilyHandle(cHandle)
+	}
+
+	C.free(unsafe.Pointer(cName))
+	return handle, err
 }
 
 // GetDefaultColumnFamily gets default column family handle.
@@ -1370,7 +1390,7 @@ func (db *DB) CreateColumnFamilies(opts *Options, names []string) (handles []*Co
 		C.free(unsafe.Pointer(cNames[i]))
 	}
 
-	return
+	return handles, err
 }
 
 // CreateColumnFamilyWithTTL create a new column family along with its ttl.
@@ -1401,7 +1421,7 @@ func (db *DB) CreateColumnFamilyWithTTL(opts *Options, name string, ttl int) (ha
 	}
 
 	C.free(unsafe.Pointer(cName))
-	return
+	return handle, err
 }
 
 // DropColumnFamily drops a column family.
@@ -1411,7 +1431,7 @@ func (db *DB) DropColumnFamily(c *ColumnFamilyHandle) (err error) {
 	C.rocksdb_drop_column_family(db.c, c.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // GetApproximateSizes returns the approximate number of bytes of file system
@@ -1538,7 +1558,7 @@ func (db *DB) SetOptions(keys, values []string) (err error) {
 		C.free(unsafe.Pointer(cValues[i]))
 	}
 
-	return
+	return err
 }
 
 // SetOptionsCF dynamically changes options through the SetOptions API for specific Column Family.
@@ -1573,7 +1593,7 @@ func (db *DB) SetOptionsCF(cf *ColumnFamilyHandle, keys, values []string) (err e
 		C.free(unsafe.Pointer(cValues[i]))
 	}
 
-	return
+	return err
 }
 
 // LiveFileMetadata is a metadata which is associated with each SST file.
@@ -1661,7 +1681,7 @@ func (db *DB) SuggestCompactRange(r Range) (err error) {
 	C.rocksdb_suggest_compact_range(db.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // SuggestCompactRangeCF only for leveled compaction.
@@ -1673,7 +1693,7 @@ func (db *DB) SuggestCompactRangeCF(cf *ColumnFamilyHandle, r Range) (err error)
 	C.rocksdb_suggest_compact_range_cf(db.c, cf.c, cStart, C.size_t(len(r.Start)), cLimit, C.size_t(len(r.Limit)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // Flush triggers a manual flush for the database.
@@ -1683,7 +1703,7 @@ func (db *DB) Flush(opts *FlushOptions) (err error) {
 	C.rocksdb_flush(db.c, opts.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // FlushCF triggers a manual flush for the database on specific column family.
@@ -1693,7 +1713,7 @@ func (db *DB) FlushCF(cf *ColumnFamilyHandle, opts *FlushOptions) (err error) {
 	C.rocksdb_flush_cf(db.c, opts.c, cf.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // FlushCFs triggers a manual flush for the database on specific column families.
@@ -1708,7 +1728,7 @@ func (db *DB) FlushCFs(cfs []*ColumnFamilyHandle, opts *FlushOptions) (err error
 		C.rocksdb_flush_cfs(db.c, opts.c, &_cfs[0], C.int(n), &cErr)
 		err = fromCError(cErr)
 	}
-	return
+	return err
 }
 
 // FlushWAL flushes the WAL memory buffer to the file. If sync is true, it calls SyncWAL
@@ -1719,7 +1739,7 @@ func (db *DB) FlushWAL(sync bool) (err error) {
 	C.rocksdb_flush_wal(db.c, boolToChar(sync), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // DisableFileDeletions disables file deletions and should be used when backup the database.
@@ -1729,7 +1749,7 @@ func (db *DB) DisableFileDeletions() (err error) {
 	C.rocksdb_disable_file_deletions(db.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // EnableFileDeletions enables file deletions for the database.
@@ -1739,7 +1759,7 @@ func (db *DB) EnableFileDeletions() (err error) {
 	C.rocksdb_enable_file_deletions(db.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // // DeleteFile deletes the file name from the db directory and update the internal state to
@@ -1768,7 +1788,7 @@ func (db *DB) DeleteFileInRange(r Range) (err error) {
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // DeleteFileInRangeCF deletes SST files that contain keys between the Range, [r.Start, r.Limit], and
@@ -1788,7 +1808,7 @@ func (db *DB) DeleteFileInRangeCF(cf *ColumnFamilyHandle, r Range) (err error) {
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // IncreaseFullHistoryTsLow increases the full_history_ts of column family. The new ts_low value should
@@ -1802,7 +1822,7 @@ func (db *DB) IncreaseFullHistoryTsLow(handle *ColumnFamilyHandle, ts []byte) (e
 	C.rocksdb_increase_full_history_ts_low(db.c, handle.c, cTs, C.size_t(len(ts)), &cErr)
 
 	err = fromCError(cErr)
-	return
+	return err
 }
 
 // GetFullHistoryTsLow returns current full_history_ts value.
@@ -1818,7 +1838,7 @@ func (db *DB) GetFullHistoryTsLow(handle *ColumnFamilyHandle) (slice *Slice, err
 	}
 
 	err = fromCError(cErr)
-	return
+	return slice, err
 }
 
 // IngestExternalFile loads a list of external SST files.
@@ -1844,7 +1864,7 @@ func (db *DB) IngestExternalFile(filePaths []string, opts *IngestExternalFileOpt
 		C.free(unsafe.Pointer(s))
 	}
 
-	return
+	return err
 }
 
 // IngestExternalFileCF loads a list of external SST files for a column family.
@@ -1871,7 +1891,7 @@ func (db *DB) IngestExternalFileCF(handle *ColumnFamilyHandle, filePaths []strin
 		C.free(unsafe.Pointer(s))
 	}
 
-	return
+	return err
 }
 
 // NewCheckpoint creates a new Checkpoint for this db.
@@ -1883,7 +1903,7 @@ func (db *DB) NewCheckpoint() (cp *Checkpoint, err error) {
 	if err = fromCError(cErr); err == nil {
 		cp = newNativeCheckpoint(cCheckpoint)
 	}
-	return
+	return cp, err
 }
 
 // TryCatchUpWithPrimary to make the secondary
@@ -1899,7 +1919,7 @@ func (db *DB) TryCatchUpWithPrimary() (err error) {
 	var cErr *C.char
 	C.rocksdb_try_catch_up_with_primary(db.c, &cErr)
 	err = fromCError(cErr)
-	return
+	return err
 }
 
 // CancelAllBackgroundWork requests stopping background work, if wait is true wait until it's done
@@ -1922,7 +1942,7 @@ func (db *DB) GetColumnFamilyMetadata() (m *ColumnFamilyMetadata) {
 	if c := C.rocksdb_get_column_family_metadata(db.c); c != nil {
 		m = newColumnFamilyMetadata(c)
 	}
-	return
+	return m
 }
 
 // GetColumnFamilyMetadataCF returns the metadata of the specified column family.
@@ -1930,7 +1950,7 @@ func (db *DB) GetColumnFamilyMetadataCF(cf *ColumnFamilyHandle) (m *ColumnFamily
 	if c := C.rocksdb_get_column_family_metadata_cf(db.c, cf.c); c != nil {
 		m = newColumnFamilyMetadata(c)
 	}
-	return
+	return m
 }
 
 // WaitForCompact waits for all flush and compactions jobs to finish. Jobs to wait
@@ -1948,7 +1968,13 @@ func (db *DB) WaitForCompact(opts *WaitForCompactOptions) (err error) {
 	C.rocksdb_wait_for_compact(db.c, opts.p, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
+}
+
+// LiveFiles obtains a list of all live table (SST) files and how they fit into the
+// LSM-trees, such as column family, level, key range, etc.
+func (db *DB) LiveFiles() *LiveFiles {
+	return NewNativeLiveFiles(C.rocksdb_livefiles(db.c))
 }
 
 // Close the database.
@@ -1969,7 +1995,7 @@ func DestroyDb(name string, opts *Options) (err error) {
 	err = fromCError(cErr)
 
 	C.free(unsafe.Pointer(cName))
-	return
+	return err
 }
 
 // RepairDb repairs a database.
@@ -1983,5 +2009,5 @@ func RepairDb(name string, opts *Options) (err error) {
 	err = fromCError(cErr)
 
 	C.free(unsafe.Pointer(cName))
-	return
+	return err
 }
