@@ -643,13 +643,39 @@ func (db *DB) GetCFWithTS(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte)
 }
 
 // GetPinned returns the data associated with the key from the database.
-func (db *DB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHandle, err error) {
+func (db *DB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
 	)
 
 	cHandle := C.rocksdb_get_pinned(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = newNativePinnableSlice(cHandle)
+	}
+
+	return handle, err
+}
+
+// GetPinnedV2
+//
+// High-performance zero-copy Get variants
+//
+//	These functions avoid unnecessary memory allocations and copies.
+//	The returned buffer is valid until the handle is destroyed.
+//	Bindings should migrate to these for better performance. */
+//
+// Zero-copy get that returns a handle to pinned data.
+//
+//	The data remains valid until rocksdb_pinnable_handle_destroy is called.
+//	Returns NULL on error or not found. Check errptr to distinguish. */
+func (db *DB) GetPinnedV2(opts *ReadOptions, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = refGoBytes(key)
+	)
+
+	cHandle := C.rocksdb_get_pinned_v2(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
 		handle = newNativePinnableSliceHandle(cHandle)
 	}
@@ -658,13 +684,28 @@ func (db *DB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHan
 }
 
 // GetPinnedCF returns the data associated with the key from the database, specific column family.
-func (db *DB) GetPinnedCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+func (db *DB) GetPinnedCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
 	)
 
 	cHandle := C.rocksdb_get_pinned_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
+	if err = fromCError(cErr); err == nil {
+		handle = newNativePinnableSlice(cHandle)
+	}
+
+	return handle, err
+}
+
+// GetPinnedCFV2 similar to GetPinnedV2
+func (db *DB) GetPinnedCFV2(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+	var (
+		cErr *C.char
+		cKey = refGoBytes(key)
+	)
+
+	cHandle := C.rocksdb_get_pinned_cf_v2(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
 		handle = newNativePinnableSliceHandle(cHandle)
 	}
@@ -813,7 +854,7 @@ func (db *DB) BatchedMultiGetCF(opts *ReadOptions, cf *ColumnFamilyHandle, sorte
 
 	pinnableSlices := make(PinnableSlices, len(keys))
 	for i, val := range vals {
-		pinnableSlices[i] = newNativePinnableSliceHandle(val)
+		pinnableSlices[i] = newNativePinnableSlice(val)
 	}
 
 	cKeys.Destroy()
@@ -859,7 +900,7 @@ func (db *DB) BatchedMultiGetCFSlice(opts *ReadOptions, cf *ColumnFamilyHandle, 
 
 	pinnableSlices := make(PinnableSlices, len(keys))
 	for i, val := range vals {
-		pinnableSlices[i] = newNativePinnableSliceHandle(val)
+		pinnableSlices[i] = newNativePinnableSlice(val)
 	}
 
 	return pinnableSlices, nil

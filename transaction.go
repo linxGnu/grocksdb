@@ -28,7 +28,7 @@ func (transaction *Transaction) SetName(name string) (err error) {
 	C.rocksdb_transaction_set_name(transaction.c, name_, C.size_t(len(name)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // GetName of transaction.
@@ -43,7 +43,7 @@ func (transaction *Transaction) Prepare() (err error) {
 	var cErr *C.char
 	C.rocksdb_transaction_prepare(transaction.c, &cErr)
 	err = fromCError(cErr)
-	return
+	return err
 }
 
 // Commit commits the transaction to the database.
@@ -51,7 +51,7 @@ func (transaction *Transaction) Commit() (err error) {
 	var cErr *C.char
 	C.rocksdb_transaction_commit(transaction.c, &cErr)
 	err = fromCError(cErr)
-	return
+	return err
 }
 
 // Rollback performs a rollback on the transaction.
@@ -59,7 +59,7 @@ func (transaction *Transaction) Rollback() (err error) {
 	var cErr *C.char
 	C.rocksdb_transaction_rollback(transaction.c, &cErr)
 	err = fromCError(cErr)
-	return
+	return err
 }
 
 // Get returns the data associated with the key from the database given this transaction.
@@ -77,11 +77,11 @@ func (transaction *Transaction) Get(opts *ReadOptions, key []byte) (slice *Slice
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetPinned returns the data associated with the key from the transaction.
-func (transaction *Transaction) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHandle, err error) {
+func (transaction *Transaction) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
@@ -89,10 +89,10 @@ func (transaction *Transaction) GetPinned(opts *ReadOptions, key []byte) (handle
 
 	cHandle := C.rocksdb_transaction_get_pinned(transaction.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = newNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSlice(cHandle)
 	}
 
-	return
+	return handle, err
 }
 
 // GetWithCF returns the data associated with the key from the database, with column family, given this transaction.
@@ -110,11 +110,11 @@ func (transaction *Transaction) GetWithCF(opts *ReadOptions, cf *ColumnFamilyHan
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetPinnedWithCF returns the data associated with the key from the transaction.
-func (transaction *Transaction) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+func (transaction *Transaction) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
@@ -122,10 +122,10 @@ func (transaction *Transaction) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFam
 
 	cHandle := C.rocksdb_transaction_get_pinned_cf(transaction.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = newNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSlice(cHandle)
 	}
 
-	return
+	return handle, err
 }
 
 // GetForUpdate returns the data associated with the key and puts an exclusive lock on the key
@@ -144,12 +144,12 @@ func (transaction *Transaction) GetForUpdate(opts *ReadOptions, key []byte) (sli
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetPinnedForUpdate returns the data associated with the key and puts an exclusive lock on the key
 // from the database given this transaction.
-func (transaction *Transaction) GetPinnedForUpdate(opts *ReadOptions, key []byte) (handle *PinnableSliceHandle, err error) {
+func (transaction *Transaction) GetPinnedForUpdate(opts *ReadOptions, key []byte) (handle *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
@@ -160,10 +160,10 @@ func (transaction *Transaction) GetPinnedForUpdate(opts *ReadOptions, key []byte
 		C.uchar(byte(1)), /*exclusive*/
 		&cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = newNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSlice(cHandle)
 	}
 
-	return
+	return handle, err
 }
 
 // GetForUpdateWithCF queries the data associated with the key and puts an exclusive lock on the key
@@ -182,12 +182,12 @@ func (transaction *Transaction) GetForUpdateWithCF(opts *ReadOptions, cf *Column
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetPinnedForUpdateWithCF returns the data associated with the key and puts an exclusive lock on the key
 // from the database given this transaction.
-func (transaction *Transaction) GetPinnedForUpdateWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+func (transaction *Transaction) GetPinnedForUpdateWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
@@ -198,10 +198,10 @@ func (transaction *Transaction) GetPinnedForUpdateWithCF(opts *ReadOptions, cf *
 		C.uchar(byte(1)), /*exclusive*/
 		&cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = newNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSlice(cHandle)
 	}
 
-	return
+	return handle, err
 }
 
 // MultiGet returns the data associated with the passed keys from the transaction.
@@ -307,7 +307,7 @@ func (transaction *Transaction) Put(key, value []byte) (err error) {
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // PutCF writes data associated with a key to the transaction. Key belongs to column family.
@@ -323,7 +323,7 @@ func (transaction *Transaction) PutCF(cf *ColumnFamilyHandle, key, value []byte)
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // Merge key, value to the transaction.
@@ -339,7 +339,7 @@ func (transaction *Transaction) Merge(key, value []byte) (err error) {
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // MergeCF key, value to the transaction on specific column family.
@@ -355,7 +355,7 @@ func (transaction *Transaction) MergeCF(cf *ColumnFamilyHandle, key, value []byt
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // Delete removes the data associated with the key from the transaction.
@@ -368,7 +368,7 @@ func (transaction *Transaction) Delete(key []byte) (err error) {
 	C.rocksdb_transaction_delete(transaction.c, cKey, C.size_t(len(key)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // DeleteCF removes the data associated with the key (belongs to specific column family) from the transaction.
@@ -381,7 +381,7 @@ func (transaction *Transaction) DeleteCF(cf *ColumnFamilyHandle, key []byte) (er
 	C.rocksdb_transaction_delete_cf(transaction.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // NewIterator returns an iterator that will iterate on all keys in the default
@@ -426,7 +426,7 @@ func (transaction *Transaction) RollbackToSavePoint() (err error) {
 	var cErr *C.char
 	C.rocksdb_transaction_rollback_to_savepoint(transaction.c, &cErr)
 	err = fromCError(cErr)
-	return
+	return err
 }
 
 // GetSnapshot returns the Snapshot created by the last call to SetSnapshot().
@@ -455,7 +455,7 @@ func (transaction *Transaction) RebuildFromWriteBatch(wb *WriteBatch) (err error
 	if err == nil {
 		wb.Destroy()
 	}
-	return
+	return err
 }
 
 // RebuildFromWriteBatchWI rebuilds transaction from write_batch.
@@ -467,7 +467,7 @@ func (transaction *Transaction) RebuildFromWriteBatchWI(wb *WriteBatchWI) (err e
 	if err == nil {
 		wb.Destroy()
 	}
-	return
+	return err
 }
 
 // SetCommitTimestamp sets the commit timestamp for the transaction.
