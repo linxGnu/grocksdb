@@ -40,7 +40,7 @@ func OpenTransactionDb(
 	}
 
 	C.free(unsafe.Pointer(cName))
-	return
+	return tdb, err
 }
 
 // OpenTransactionDbColumnFamilies opens a database with the specified column families.
@@ -54,7 +54,7 @@ func OpenTransactionDbColumnFamilies(
 	numColumnFamilies := len(cfNames)
 	if numColumnFamilies != len(cfOpts) {
 		err = ErrColumnFamilyMustMatch
-		return
+		return db, cfHandles, err
 	}
 
 	cName := C.CString(name)
@@ -98,7 +98,7 @@ func OpenTransactionDbColumnFamilies(
 	for _, s := range cNames {
 		C.free(unsafe.Pointer(s))
 	}
-	return
+	return db, cfHandles, err
 }
 
 // NewSnapshot creates a new snapshot of the database.
@@ -121,7 +121,7 @@ func (db *TransactionDB) GetProperty(propName string) (value string) {
 
 	C.rocksdb_free(unsafe.Pointer(cValue))
 	C.free(unsafe.Pointer(cprop))
-	return
+	return value
 }
 
 // GetIntProperty similar to `GetProperty`, but only works for a subset of properties whose
@@ -130,7 +130,7 @@ func (db *TransactionDB) GetIntProperty(propName string) (value uint64, success 
 	cProp := C.CString(propName)
 	success = C.rocksdb_transactiondb_property_int(db.c, cProp, (*C.uint64_t)(&value)) == 0
 	C.free(unsafe.Pointer(cProp))
-	return
+	return value, success
 }
 
 // GetBaseDB gets base db.
@@ -182,11 +182,11 @@ func (db *TransactionDB) Get(opts *ReadOptions, key []byte) (slice *Slice, err e
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetPinned returns the data associated with the key from the database.
-func (db *TransactionDB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSliceHandle, err error) {
+func (db *TransactionDB) GetPinned(opts *ReadOptions, key []byte) (handle *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
@@ -194,10 +194,10 @@ func (db *TransactionDB) GetPinned(opts *ReadOptions, key []byte) (handle *Pinna
 
 	cHandle := C.rocksdb_transactiondb_get_pinned(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = newNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSlice(cHandle)
 	}
 
-	return
+	return handle, err
 }
 
 // GetCF returns the data associated with the key from the database, from column family.
@@ -215,11 +215,11 @@ func (db *TransactionDB) GetCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetPinnedWithCF returns the data associated with the key from the database.
-func (db *TransactionDB) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSliceHandle, err error) {
+func (db *TransactionDB) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (handle *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
@@ -227,10 +227,10 @@ func (db *TransactionDB) GetPinnedWithCF(opts *ReadOptions, cf *ColumnFamilyHand
 
 	cHandle := C.rocksdb_transactiondb_get_pinned_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		handle = newNativePinnableSliceHandle(cHandle)
+		handle = newNativePinnableSlice(cHandle)
 	}
 
-	return
+	return handle, err
 }
 
 // MultiGet returns the data associated with the passed keys from the database.
@@ -336,7 +336,7 @@ func (db *TransactionDB) Put(opts *WriteOptions, key, value []byte) (err error) 
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // PutCF writes data associated with a key to the database on specific column family.
@@ -352,7 +352,7 @@ func (db *TransactionDB) PutCF(opts *WriteOptions, cf *ColumnFamilyHandle, key, 
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // Merge writes data associated with a key to the database.
@@ -368,7 +368,7 @@ func (db *TransactionDB) Merge(opts *WriteOptions, key, value []byte) (err error
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // MergeCF writes data associated with a key to the database on specific column family.
@@ -384,7 +384,7 @@ func (db *TransactionDB) MergeCF(opts *WriteOptions, cf *ColumnFamilyHandle, key
 	)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // Delete removes the data associated with the key from the database.
@@ -397,7 +397,7 @@ func (db *TransactionDB) Delete(opts *WriteOptions, key []byte) (err error) {
 	C.rocksdb_transactiondb_delete(db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // DeleteCF removes the data associated with the key from the database on specific column family.
@@ -410,7 +410,7 @@ func (db *TransactionDB) DeleteCF(opts *WriteOptions, cf *ColumnFamilyHandle, ke
 	C.rocksdb_transactiondb_delete_cf(db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // NewCheckpoint creates a new Checkpoint for this db.
@@ -424,7 +424,7 @@ func (db *TransactionDB) NewCheckpoint() (cp *Checkpoint, err error) {
 		cp = newNativeCheckpoint(cCheckpoint)
 	}
 
-	return
+	return cp, err
 }
 
 // CreateColumnFamily create a new column family.
@@ -440,7 +440,7 @@ func (db *TransactionDB) CreateColumnFamily(opts *Options, name string) (handle 
 	}
 
 	C.free(unsafe.Pointer(cName))
-	return
+	return handle, err
 }
 
 // Write writes a WriteBatch to the database.
@@ -450,7 +450,7 @@ func (db *TransactionDB) Write(opts *WriteOptions, batch *WriteBatch) (err error
 	C.rocksdb_transactiondb_write(db.c, opts.c, batch.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // Flush triggers a manual flush for the database.
@@ -460,7 +460,7 @@ func (db *TransactionDB) Flush(opts *FlushOptions) (err error) {
 	C.rocksdb_transactiondb_flush(db.c, opts.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // FlushCF triggers a manual flush for the database on specific column family.
@@ -470,7 +470,7 @@ func (db *TransactionDB) FlushCF(cf *ColumnFamilyHandle, opts *FlushOptions) (er
 	C.rocksdb_transactiondb_flush_cf(db.c, opts.c, cf.c, &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // FlushCFs triggers a manual flush for the database on specific column families.
@@ -485,7 +485,7 @@ func (db *TransactionDB) FlushCFs(cfs []*ColumnFamilyHandle, opts *FlushOptions)
 		C.rocksdb_transactiondb_flush_cfs(db.c, opts.c, &_cfs[0], C.int(n), &cErr)
 		err = fromCError(cErr)
 	}
-	return
+	return err
 }
 
 // FlushWAL flushes the WAL memory buffer to the file. If sync is true, it calls SyncWAL
@@ -496,7 +496,7 @@ func (db *TransactionDB) FlushWAL(sync bool) (err error) {
 	C.rocksdb_transactiondb_flush_wal(db.c, boolToChar(sync), &cErr)
 	err = fromCError(cErr)
 
-	return
+	return err
 }
 
 // NewIterator returns an Iterator over the the database that uses the

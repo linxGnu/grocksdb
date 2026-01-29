@@ -74,7 +74,7 @@ func fromCError(cErr *C.char) (err error) {
 		err = errors.New(C.GoString(cErr))
 		C.rocksdb_free(unsafe.Pointer(cErr))
 	}
-	return
+	return err
 }
 
 func toString(cVal *C.char, len C.int) string {

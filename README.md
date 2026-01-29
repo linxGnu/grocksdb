@@ -76,6 +76,7 @@ Almost C API, excepts:
 - [ ] writebatch_update_timestamps/writebatch_wi_update_timestamps/writebatch_iterate_cf
 - [ ] approximate_sizes_cf_with_flags
 - [ ] logger_create_callback_logger
+- [ ] get_into_buffer/get_into_buffer_cf
 - [ ] event listeners:
   - [ ] flushjobinfo*
   - [ ] compactionjobinfo*

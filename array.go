@@ -14,6 +14,7 @@ type (
 	sizeTSlice         []C.size_t
 	columnFamilySlice  []*C.rocksdb_column_family_handle_t
 	pinnableSliceSlice []*C.rocksdb_pinnableslice_t
+	optimizeSliceSlice []C.rocksdb_slice_t
 )
 
 func (s charsSlice) c() **C.char {
@@ -34,6 +35,11 @@ func (s columnFamilySlice) c() **C.rocksdb_column_family_handle_t {
 func (s pinnableSliceSlice) c() **C.rocksdb_pinnableslice_t {
 	sH := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 	return (**C.rocksdb_pinnableslice_t)(unsafe.Pointer(sH.Data))
+}
+
+func (s optimizeSliceSlice) c() *C.rocksdb_slice_t {
+	sH := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+	return (*C.rocksdb_slice_t)(unsafe.Pointer(sH.Data))
 }
 
 func (s pinnableSliceSlice) destroy() {

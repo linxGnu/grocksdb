@@ -157,7 +157,7 @@ func (wb *WriteBatchWI) RollbackToSavePoint() (err error) {
 	var cErr *C.char
 	C.rocksdb_writebatch_wi_rollback_to_save_point(wb.c, &cErr)
 	err = fromCError(cErr)
-	return
+	return err
 }
 
 // Get returns the data associated with the key from batch.
@@ -173,7 +173,7 @@ func (wb *WriteBatchWI) Get(opts *Options, key []byte) (slice *Slice, err error)
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetWithCF returns the data associated with the key from batch.
@@ -190,7 +190,7 @@ func (wb *WriteBatchWI) GetWithCF(opts *Options, cf *ColumnFamilyHandle, key []b
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetFromDB returns the data associated with the key from the database and write batch.
@@ -206,11 +206,11 @@ func (wb *WriteBatchWI) GetFromDB(db *DB, opts *ReadOptions, key []byte) (slice 
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetPinnableFromDB returns the pinnable data associated with the key from the database and write batch.
-func (wb *WriteBatchWI) GetPinnableFromDB(db *DB, opts *ReadOptions, key []byte) (slice *PinnableSliceHandle, err error) {
+func (wb *WriteBatchWI) GetPinnableFromDB(db *DB, opts *ReadOptions, key []byte) (slice *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
@@ -218,10 +218,10 @@ func (wb *WriteBatchWI) GetPinnableFromDB(db *DB, opts *ReadOptions, key []byte)
 
 	cValue := C.rocksdb_writebatch_wi_get_pinned_from_batch_and_db(wb.c, db.c, opts.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		slice = newNativePinnableSliceHandle(cValue)
+		slice = newNativePinnableSlice(cValue)
 	}
 
-	return
+	return slice, err
 }
 
 // GetFromDBWithCF returns the data associated with the key from the database and write batch.
@@ -238,12 +238,12 @@ func (wb *WriteBatchWI) GetFromDBWithCF(db *DB, opts *ReadOptions, cf *ColumnFam
 		slice = NewSlice(cValue, cValLen)
 	}
 
-	return
+	return slice, err
 }
 
 // GetPinnableFromDBWithCF returns the pinnable data associated with the key from the database and write batch.
 // Key belongs to specific column family.
-func (wb *WriteBatchWI) GetPinnableFromDBWithCF(db *DB, opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slice *PinnableSliceHandle, err error) {
+func (wb *WriteBatchWI) GetPinnableFromDBWithCF(db *DB, opts *ReadOptions, cf *ColumnFamilyHandle, key []byte) (slice *PinnableSlice, err error) {
 	var (
 		cErr *C.char
 		cKey = refGoBytes(key)
@@ -251,10 +251,10 @@ func (wb *WriteBatchWI) GetPinnableFromDBWithCF(db *DB, opts *ReadOptions, cf *C
 
 	cValue := C.rocksdb_writebatch_wi_get_pinned_from_batch_and_db_cf(wb.c, db.c, opts.c, cf.c, cKey, C.size_t(len(key)), &cErr)
 	if err = fromCError(cErr); err == nil {
-		slice = newNativePinnableSliceHandle(cValue)
+		slice = newNativePinnableSlice(cValue)
 	}
 
-	return
+	return slice, err
 }
 
 // NewIteratorWithBase will create a new Iterator that will use WBWIIterator as a delta and

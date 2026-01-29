@@ -56,7 +56,7 @@ func (s *Slice) Free() {
 	}
 }
 
-type PinnableSlices []*PinnableSliceHandle
+type PinnableSlices []*PinnableSlice
 
 func (s PinnableSlices) Destroy() {
 	for _, s := range s {
@@ -64,23 +64,37 @@ func (s PinnableSlices) Destroy() {
 	}
 }
 
-// PinnableSliceHandle represents a handle to a PinnableSlice.
-type PinnableSliceHandle struct {
+// OptimizedSlice for high-performance C API operations
+// This struct is ABI-compatible with rocksdb::Slice for zero-copy interop.
+// Used by slice iterator functions and batched operations.
+type OptimizedSlice struct {
+	c C.rocksdb_slice_t
+}
+
+func newNativeOptimizeSlice(c C.rocksdb_slice_t) OptimizedSlice {
+	return OptimizedSlice{c: c}
+}
+
+func (o OptimizedSlice) Data() []byte {
+	return refCBytes(o.c.data, o.c.size)
+}
+
+// PinnableSlice is the handle to pinned data.
+type PinnableSlice struct {
 	c *C.rocksdb_pinnableslice_t
 }
 
-// NewNativePinnableSliceHandle creates a PinnableSliceHandle object.
-func newNativePinnableSliceHandle(c *C.rocksdb_pinnableslice_t) *PinnableSliceHandle {
-	return &PinnableSliceHandle{c: c}
+func newNativePinnableSlice(c *C.rocksdb_pinnableslice_t) *PinnableSlice {
+	return &PinnableSlice{c: c}
 }
 
 // Exists returns if underlying data exists.
-func (h *PinnableSliceHandle) Exists() bool {
+func (h *PinnableSlice) Exists() bool {
 	return h.c != nil
 }
 
 // Data returns the data of the slice.
-func (h *PinnableSliceHandle) Data() []byte {
+func (h *PinnableSlice) Data() []byte {
 	if h.Exists() {
 		var cValLen C.size_t
 		cValue := C.rocksdb_pinnableslice_value(h.c, &cValLen)
@@ -91,7 +105,40 @@ func (h *PinnableSliceHandle) Data() []byte {
 }
 
 // Destroy calls the destructor of the underlying pinnable slice handle.
+func (h *PinnableSlice) Destroy() {
+	if h.Exists() {
+		C.rocksdb_pinnableslice_destroy(h.c)
+		h.c = nil
+	}
+}
+
+// PinnableSliceHandle is high-performance zero-copy handle to pinned data.
+type PinnableSliceHandle struct {
+	c *C.rocksdb_pinnable_handle_t
+}
+
+func newNativePinnableSliceHandle(c *C.rocksdb_pinnable_handle_t) *PinnableSliceHandle {
+	return &PinnableSliceHandle{c: c}
+}
+
+// Exists returns if underlying data exists.
+func (h *PinnableSliceHandle) Exists() bool {
+	return h.c != nil
+}
+
+func (h *PinnableSliceHandle) Data() []byte {
+	if h.Exists() {
+		var cValLen C.size_t
+		cValue := C.rocksdb_pinnable_handle_get_value(h.c, &cValLen)
+		return refCBytes(cValue, cValLen)
+	}
+
+	return nil
+}
+
 func (h *PinnableSliceHandle) Destroy() {
-	C.rocksdb_pinnableslice_destroy(h.c)
-	h.c = nil
+	if h.Exists() {
+		C.rocksdb_pinnable_handle_destroy(h.c)
+		h.c = nil
+	}
 }

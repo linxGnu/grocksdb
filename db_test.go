@@ -91,18 +91,77 @@ func TestDBCRUD(t *testing.T) {
 	v2.Free()
 
 	// retrieve pinned
-	for i := 0; i < 1000; i++ {
-		v3, e := db.GetPinned(ro, givenKey)
-		require.Nil(t, e)
-		require.EqualValues(t, v3.Data(), givenVal2)
-		v3.Destroy()
-		v3.Destroy()
+	for i := 0; i < 100; i++ {
+		{
+			v3, e := db.GetPinned(ro, givenKey)
+			require.Nil(t, e)
+			require.EqualValues(t, v3.Data(), givenVal2)
+			v3.Destroy()
+			v3.Destroy()
+		}
 
-		v3NE, e := db.GetPinned(ro, []byte("justFake"))
-		require.Nil(t, e)
-		require.False(t, v3NE.Exists())
-		v3NE.Destroy()
-		v3NE.Destroy()
+		{
+			v3, e := db.GetPinnedCF(ro, df, givenKey)
+			require.Nil(t, e)
+			require.EqualValues(t, v3.Data(), givenVal2)
+			v3.Destroy()
+			v3.Destroy()
+		}
+
+		{
+			v3NE, e := db.GetPinned(ro, []byte("justFake"))
+			require.Nil(t, e)
+			require.False(t, v3NE.Exists())
+			v3NE.Destroy()
+			v3NE.Destroy()
+		}
+
+		{
+			v3NE, e := db.GetPinnedCF(ro, df, []byte("justFake"))
+			require.Nil(t, e)
+			require.False(t, v3NE.Exists())
+			v3NE.Destroy()
+			v3NE.Destroy()
+		}
+
+		runtime.GC()
+	}
+
+	// retrieve pinned
+	for i := 0; i < 100; i++ {
+		{
+			v3, e := db.GetPinnedV2(ro, givenKey)
+			require.Nil(t, e)
+			require.EqualValues(t, v3.Data(), givenVal2)
+			v3.Destroy()
+			v3.Destroy()
+		}
+
+		{
+			v3, e := db.GetPinnedCFV2(ro, df, givenKey)
+			require.Nil(t, e)
+			require.EqualValues(t, v3.Data(), givenVal2)
+			v3.Destroy()
+			v3.Destroy()
+		}
+
+		{
+			v3NE, e := db.GetPinnedV2(ro, []byte("justFake"))
+			require.Nil(t, e)
+			require.False(t, v3NE.Exists())
+			v3NE.Destroy()
+			v3NE.Destroy()
+		}
+
+		{
+			v3NE, e := db.GetPinnedCFV2(ro, df, []byte("justFake"))
+			require.Nil(t, e)
+			require.False(t, v3NE.Exists())
+			v3NE.Destroy()
+			v3NE.Destroy()
+		}
+
+		runtime.GC()
 	}
 
 	// delete

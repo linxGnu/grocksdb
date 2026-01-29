@@ -391,6 +391,20 @@ func TestBatchedMultiGetCF(t *testing.T) {
 		values.Destroy()
 	}
 
+	{
+		iter := db.NewIterator(ro)
+
+		keys := make([]OptimizedSlice, 0, 8)
+		for iter.SeekToFirst(); iter.Valid(); iter.Next() {
+			keys = append(keys, iter.KeySlice())
+		}
+
+		values, err := db.BatchedMultiGetCFSlice(ro, cfh[1], true, keys)
+		require.Nil(t, err)
+		require.EqualValues(t, 1, len(values))
+		values.Destroy()
+	}
+
 	// test with empty keys
 	{
 		values, err := db.BatchedMultiGetCF(ro, cfh[0], false)
