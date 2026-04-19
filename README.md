@@ -85,4 +85,6 @@ Almost C API, excepts:
   - [ ] writestallinfo*
   - [ ] memtableinfo*
   - [ ] onbackground_error_cb
+- [ ] compactionservice
+- [ ] rocksdb_open_and_compact*
 
