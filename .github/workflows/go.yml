@@ -7,6 +7,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,16 +21,16 @@ jobs:
 
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
           go-version: ^1.17
         id: go
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Cache prebuilt static libs
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: cache-prebuilt-static-libs
         continue-on-error: false
         with:
@@ -50,13 +51,85 @@ jobs:
         run: go test -v -tags testing -count=1 -coverprofile=coverage.out
 
       - name: Convert coverage to lcov
-        uses: jandelgado/gcov2lcov-action@v1.0.9
+        uses: jandelgado/gcov2lcov-action@v1.2.0
         with:
           infile: coverage.out
           outfile: coverage.lcov
 
       - name: Coveralls
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.github_token }}
-          path-to-lcov: coverage.lcov
+          file: coverage.lcov
+
+  build-windows:
+    name: CI (Windows)
+
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ^1.17
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v5
+
+      - name: Set up MSYS2 UCRT64 toolchain
+        uses: msys2/setup-msys2@v2
+        id: msys2
+        with:
+          msystem: UCRT64
+          update: true
+          # NOTE: do not pin `location` to C:\ — the windows runner ships a
+          # preinstalled MSYS2 at C:\msys64 and the action refuses to overwrite
+          # it. Let the action install to its default root and tell the build
+          # scripts where that is via $env:UCRT64 below.
+          install: >-
+            base-devel
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            git
+            mingw-w64-ucrt-x86_64-lz4
+            mingw-w64-ucrt-x86_64-zstd
+            mingw-w64-ucrt-x86_64-zlib
+            mingw-w64-ucrt-x86_64-snappy
+            mingw-w64-ucrt-x86_64-bzip2
+
+      - name: Add UCRT64 to PATH
+        # ${{ steps.msys2.outputs.msys2-location }} is the MSYS2 install root the
+        # action actually used (default location, not necessarily C:\msys64).
+        run: Add-Content $env:GITHUB_PATH "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin"
+
+      - name: Cache prebuilt static RocksDB
+        uses: actions/cache@v5
+        id: cache-rocksdb-windows
+        continue-on-error: false
+        with:
+          path: |
+            deps/
+          key: ${{ runner.os }}-${{ runner.arch }}-rocksdb-${{ hashFiles('build-deps.ps1') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-rocksdb-
+
+      - name: Build RocksDB static lib
+        if: steps.cache-rocksdb-windows.outputs.cache-hit != 'true'
+        env:
+          # Point the build scripts at the MSYS2 UCRT64 root the action installed
+          # (default location), instead of their hardcoded C:\msys64\ucrt64 default.
+          UCRT64: ${{ steps.msys2.outputs.msys2-location }}\ucrt64
+        run: .\build-deps.ps1
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Build & test grocksdb
+        env:
+          UCRT64: ${{ steps.msys2.outputs.msys2-location }}\ucrt64
+        run: .\build-grocksdb.ps1

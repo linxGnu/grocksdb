@@ -21,7 +21,22 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # --- Toolchain (UCRT64 GCC) ---
-$Ucrt64 = 'C:\msys64\ucrt64'
+# Default to the standard MSYS2 install root. Allow an override via $env:UCRT64
+# for environments where MSYS2 lives elsewhere (e.g. CI runners). If the override
+# is unset and the default path is missing, discover gcc on PATH and derive the
+# root from it (msys2/setup-msys2 puts C:\msys64\ucrt64\bin on PATH).
+if ($env:UCRT64) {
+    $Ucrt64 = $env:UCRT64
+} elseif (Test-Path 'C:\msys64\ucrt64') {
+    $Ucrt64 = 'C:\msys64\ucrt64'
+} else {
+    $gccOnPath = Get-Command gcc.exe -ErrorAction SilentlyContinue
+    if ($gccOnPath) {
+        $Ucrt64 = Split-Path -Parent (Split-Path -Parent $gccOnPath.Source)
+    } else {
+        $Ucrt64 = 'C:\msys64\ucrt64'  # keep default so the error message is actionable
+    }
+}
 $Gcc    = Join-Path $Ucrt64 'bin\gcc.exe'
 $Gpp    = Join-Path $Ucrt64 'bin\g++.exe'
 

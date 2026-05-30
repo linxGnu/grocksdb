@@ -21,7 +21,23 @@ $ErrorActionPreference = 'Stop'
 $RocksDbTag = 'v11.1.1'
 
 # --- Toolchain locations (MSYS2 UCRT64) ---
-$Ucrt64 = 'C:\msys64\ucrt64'
+# Default to the standard MSYS2 install root. Allow an override via $env:UCRT64
+# for environments where MSYS2 lives elsewhere (e.g. CI runners). If the override
+# is unset and the default path is missing, fall back to discovering gcc on PATH
+# (msys2/setup-msys2 adds C:\msys64\ucrt64\bin to PATH) and derive the root from it.
+if ($env:UCRT64) {
+    $Ucrt64 = $env:UCRT64
+} elseif (Test-Path 'C:\msys64\ucrt64') {
+    $Ucrt64 = 'C:\msys64\ucrt64'
+} else {
+    $gccOnPath = Get-Command gcc.exe -ErrorAction SilentlyContinue
+    if ($gccOnPath) {
+        # <ucrt64>\bin\gcc.exe -> <ucrt64>
+        $Ucrt64 = Split-Path -Parent (Split-Path -Parent $gccOnPath.Source)
+    } else {
+        $Ucrt64 = 'C:\msys64\ucrt64'  # keep default so the error message is actionable
+    }
+}
 $Gcc    = Join-Path $Ucrt64 'bin\gcc.exe'
 $Gpp    = Join-Path $Ucrt64 'bin\g++.exe'
 $Cmake  = Join-Path $Ucrt64 'bin\cmake.exe'
