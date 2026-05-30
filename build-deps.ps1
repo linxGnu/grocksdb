@@ -2,7 +2,7 @@
 <#
   build-deps.ps1 — clone & statically build RocksDB into ./deps
 
-  Builds RocksDB v10.10.1 as a static library (librocksdb.a) using the MSYS2
+  Builds RocksDB v11.1.1 as a static library (librocksdb.a) using the MSYS2
   UCRT64 GCC toolchain + CMake + Ninja, so that grocksdb can link against it.
 
   Run from the grocksdb repo root:
@@ -15,10 +15,10 @@
 $ErrorActionPreference = 'Stop'
 
 # --- Version ---
-# grocksdb (this repo) targets the RocksDB 10.10.1 C API. Build the matching tag so
-# the CGO wrappers in c.h / grocksdb.c link cleanly. Newer RocksDB (11.x) changes the
-# C API and will NOT link against this binding.
-$RocksDbTag = 'v10.10.1'
+# grocksdb (this repo) targets the RocksDB 11.1.1 C API. Build the matching tag so
+# the CGO wrappers in c.h / grocksdb.c link cleanly. Using a different RocksDB minor
+# version may add/remove C API symbols and fail to link against this binding.
+$RocksDbTag = 'v11.1.1'
 
 # --- Toolchain locations (MSYS2 UCRT64) ---
 $Ucrt64 = 'C:\msys64\ucrt64'

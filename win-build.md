@@ -1,6 +1,6 @@
 # Building grocksdb on Windows (static RocksDB, from source)
 
-This guide builds **RocksDB v10.10.1** from source as a **static library**
+This guide builds **RocksDB v11.1.1** from source as a **static library**
 (`librocksdb.a`) and then compiles and tests the **grocksdb** CGO binding against
 it, using the MSYS2 **UCRT64** GCC toolchain + **CMake** + **Ninja**, driven from
 **PowerShell**.
@@ -82,7 +82,7 @@ This gives you:
 
 1. Verifies the UCRT64 toolchain (`gcc.exe`, `g++.exe`, `cmake.exe`, `ninja.exe`).
 2. **Removes** an existing `./deps` if present, then **recreates** it.
-3. **Clones** RocksDB `v10.10.1` into `./deps/rocksdb`.
+3. **Clones** RocksDB `v11.1.1` into `./deps/rocksdb`.
 4. Builds it as a **static** library with the UCRT64 GCC toolchain + CMake + Ninja.
 5. Copies `librocksdb.a` next to `include/` for simple CGO link paths.
 
@@ -121,10 +121,10 @@ Result:
   assume a 3.5 policy baseline and configure anyway. It **must be quoted**;
   unquoted, PowerShell splits the token at the `.` and passes a stray `.5`.
 
-> **Why RocksDB v10.10.1?** This grocksdb checkout is written against the RocksDB
-> **10.10.1** C API (`rocksdb/c.h`), so we build that exact tag. Newer RocksDB
-> (11.x) changes the C API and won't link against this binding. RocksDB 10.10.1
-> also builds cleanly under the GCC in current UCRT64.
+> **Why RocksDB v11.1.1?** This grocksdb checkout is written against the RocksDB
+> **11.1.1** C API (`rocksdb/c.h`), so we build that exact tag. A different RocksDB
+> minor version may add or remove C API symbols and fail to link against this
+> binding. RocksDB 11.1.1 also builds cleanly under the GCC in current UCRT64.
 
 ---
 
