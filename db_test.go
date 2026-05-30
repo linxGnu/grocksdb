@@ -296,7 +296,6 @@ func newTestDBMultiCF(t *testing.T, columns []string, applyOpts func(opts *Optio
 	opts.SetCreateIfMissingColumnFamilies(true)
 	opts.SetCreateIfMissing(true)
 	opts.SetCompression(ZSTDCompression)
-	opts.SetSkipCheckingSSTFileSizesOnDBOpen(true)
 	opts.SetRateLimiter(NewRateLimiter(2<<30, 1<<20, 100<<20))
 	opts.SetUniversalCompactionOptions(NewDefaultUniversalCompactionOptions())
 

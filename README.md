@@ -74,6 +74,7 @@ Almost C API, excepts:
 - [ ] transactiondb_property_value/transactiondb_property_int
 - [ ] optimistictransactiondb_property_value/optimistictransactiondb_property_int
 - [ ] writebatch_update_timestamps/writebatch_wi_update_timestamps/writebatch_iterate_cf
+- [ ] writebatch_iterate_ld/writebatch_iterate_cf_ld
 - [ ] approximate_sizes_cf_with_flags
 - [ ] logger_create_callback_logger
 - [ ] get_into_buffer/get_into_buffer_cf
@@ -87,4 +88,13 @@ Almost C API, excepts:
   - [ ] onbackground_error_cb
 - [ ] compactionservice
 - [ ] rocksdb_open_and_compact*
+- [ ] file_checksum_gen_factory (crc32c factory/set_file_checksum_gen_factory)
+- [ ] sst_partitioner_factory (fixed_prefix factory/set_sst_partitioner_factory)
+- [ ] table_properties_collector_factory (add_table_properties_collector_factory)
+- [ ] block_based_options_set_separate_key_value_in_data_block
+- [ ] block_based_options_set_index_block_search_type
+- [ ] block_based_options_set_block_align
+- [ ] options_set_open_files_async/options_get_open_files_async
+- [ ] fifo_compaction_options_set_max_data_files_size/get_max_data_files_size
+- [ ] fifo_compaction_options_set_use_kv_ratio_compaction/get_use_kv_ratio_compaction
 

@@ -343,10 +343,6 @@ func TestOptions(t *testing.T) {
 	opts.SetSkipStatsUpdateOnDBOpen(true)
 	require.EqualValues(t, true, opts.SkipStatsUpdateOnDBOpen())
 
-	require.EqualValues(t, false, opts.SkipCheckingSSTFileSizesOnDBOpen())
-	opts.SetSkipCheckingSSTFileSizesOnDBOpen(true)
-	require.EqualValues(t, true, opts.SkipCheckingSSTFileSizesOnDBOpen())
-
 	opts.CompactionReadaheadSize(88 << 20)
 	require.EqualValues(t, 88<<20, opts.GetCompactionReadaheadSize())
 
