@@ -192,3 +192,45 @@ func TestDecodeVarint_ISSUE131(t *testing.T) {
 		}
 	}
 }
+
+func TestWriteBatchIterateLD(t *testing.T) {
+	t.Parallel()
+
+	wb := NewWriteBatch()
+	defer wb.Destroy()
+
+	wb.Put([]byte("k1"), []byte("v1"))
+	wb.PutLogData([]byte("blob1"))
+	wb.Delete([]byte("k2"))
+	wb.Merge([]byte("k3"), []byte("v3"))
+
+	h := &recordingHandler{}
+	wb.Iterate(h)
+
+	require.Equal(t, []string{"k1"}, h.puts)
+	require.Equal(t, []string{"v1"}, h.putVals)
+	require.Equal(t, []string{"k2"}, h.deletes)
+	require.Equal(t, []string{"blob1"}, h.logs)
+}
+
+type recordingHandler struct {
+	puts, putVals, deletes, logs []string
+}
+
+func (h *recordingHandler) Put(key, value []byte) {
+	h.puts = append(h.puts, string(key))
+	h.putVals = append(h.putVals, string(value))
+}
+func (h *recordingHandler) Delete(key []byte)   { h.deletes = append(h.deletes, string(key)) }
+func (h *recordingHandler) LogData(blob []byte) { h.logs = append(h.logs, string(blob)) }
+func (h *recordingHandler) PutCF(cf uint32, key, value []byte) {
+	h.puts = append(h.puts, string(key))
+	h.putVals = append(h.putVals, string(value))
+}
+func (h *recordingHandler) DeleteCF(cf uint32, key []byte) {
+	h.deletes = append(h.deletes, string(key))
+}
+func (h *recordingHandler) MergeCF(cf uint32, key, value []byte) {
+	h.puts = append(h.puts, string(key))
+	h.putVals = append(h.putVals, string(value))
+}

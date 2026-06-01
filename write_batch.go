@@ -1,6 +1,7 @@
 package grocksdb
 
 // #include "rocksdb/c.h"
+// #include "grocksdb.h"
 import "C"
 
 import (
@@ -167,6 +168,77 @@ func (wb *WriteBatch) NewIterator() *WriteBatchIterator {
 		return &WriteBatchIterator{}
 	}
 	return &WriteBatchIterator{data: data[12:]}
+}
+
+// WriteBatchHandler receives callbacks while iterating over the records of a
+// WriteBatch via Iterate / IterateCF. The CF* methods are only invoked by
+// IterateCF; the non-CF Put/Delete are only invoked by Iterate. LogData is
+// invoked by both for blob entries added via PutLogData.
+//
+// The byte slices passed to handler methods are only valid for the duration of
+// the call; copy them if they must outlive it.
+type WriteBatchHandler interface {
+	Put(key, value []byte)
+	Delete(key []byte)
+	LogData(blob []byte)
+
+	PutCF(cf uint32, key, value []byte)
+	DeleteCF(cf uint32, key []byte)
+	MergeCF(cf uint32, key, value []byte)
+}
+
+// Iterate replays the batch into the provided handler using RocksDB's native
+// (lazy-data) iteration, invoking Put, Delete and LogData. This handles large
+// values that the pure-Go NewIterator cannot.
+func (wb *WriteBatch) Iterate(handler WriteBatchHandler) {
+	idx := writeBatchHandlers.Append(handler)
+	C.gorocksdb_writebatch_iterate_ld(wb.c, C.uintptr_t(idx))
+}
+
+// IterateCF is like Iterate but also reports the column family id for each
+// record and invokes the CF* handler methods (including MergeCF).
+func (wb *WriteBatch) IterateCF(handler WriteBatchHandler) {
+	idx := writeBatchHandlers.Append(handler)
+	C.gorocksdb_writebatch_iterate_cf_ld(wb.c, C.uintptr_t(idx))
+}
+
+// Hold references to write batch handlers across the cgo boundary.
+var writeBatchHandlers = NewCOWList()
+
+//export gorocksdb_writebatch_put
+func gorocksdb_writebatch_put(idx int, cKey *C.char, cKeyLen C.size_t, cVal *C.char, cValLen C.size_t) {
+	h := writeBatchHandlers.Get(idx).(WriteBatchHandler)
+	h.Put(refCBytes(cKey, cKeyLen), refCBytes(cVal, cValLen))
+}
+
+//export gorocksdb_writebatch_deleted
+func gorocksdb_writebatch_deleted(idx int, cKey *C.char, cKeyLen C.size_t) {
+	h := writeBatchHandlers.Get(idx).(WriteBatchHandler)
+	h.Delete(refCBytes(cKey, cKeyLen))
+}
+
+//export gorocksdb_writebatch_logdata
+func gorocksdb_writebatch_logdata(idx int, cBlob *C.char, cBlobLen C.size_t) {
+	h := writeBatchHandlers.Get(idx).(WriteBatchHandler)
+	h.LogData(refCBytes(cBlob, cBlobLen))
+}
+
+//export gorocksdb_writebatch_put_cf
+func gorocksdb_writebatch_put_cf(idx int, cf C.uint32_t, cKey *C.char, cKeyLen C.size_t, cVal *C.char, cValLen C.size_t) {
+	h := writeBatchHandlers.Get(idx).(WriteBatchHandler)
+	h.PutCF(uint32(cf), refCBytes(cKey, cKeyLen), refCBytes(cVal, cValLen))
+}
+
+//export gorocksdb_writebatch_deleted_cf
+func gorocksdb_writebatch_deleted_cf(idx int, cf C.uint32_t, cKey *C.char, cKeyLen C.size_t) {
+	h := writeBatchHandlers.Get(idx).(WriteBatchHandler)
+	h.DeleteCF(uint32(cf), refCBytes(cKey, cKeyLen))
+}
+
+//export gorocksdb_writebatch_merge_cf
+func gorocksdb_writebatch_merge_cf(idx int, cf C.uint32_t, cKey *C.char, cKeyLen C.size_t, cVal *C.char, cValLen C.size_t) {
+	h := writeBatchHandlers.Get(idx).(WriteBatchHandler)
+	h.MergeCF(uint32(cf), refCBytes(cKey, cKeyLen), refCBytes(cVal, cValLen))
 }
 
 // SetSavePoint records the state of the batch for future calls to RollbackToSavePoint().

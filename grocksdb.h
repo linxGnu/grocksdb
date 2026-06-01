@@ -25,3 +25,12 @@ extern void gorocksdb_mergeoperator_delete_value(void* state, const char* v, siz
 /* Slice Transform */
 
 extern rocksdb_slicetransform_t* gorocksdb_slicetransform_create(uintptr_t idx);
+
+/* Logger */
+
+extern rocksdb_logger_t* gorocksdb_logger_create_callback(int log_level, uintptr_t idx);
+
+/* WriteBatch lazy-data iteration */
+
+extern void gorocksdb_writebatch_iterate_ld(rocksdb_writebatch_t* wb, uintptr_t idx);
+extern void gorocksdb_writebatch_iterate_cf_ld(rocksdb_writebatch_t* wb, uintptr_t idx);

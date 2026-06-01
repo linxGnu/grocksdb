@@ -111,6 +111,8 @@ type Options struct {
 	cmo  *C.rocksdb_mergeoperator_t
 	cst  *C.rocksdb_slicetransform_t
 	ccf  *C.rocksdb_compactionfilter_t
+	cfcg *C.rocksdb_file_checksum_gen_factory_t
+	cspf *C.rocksdb_sst_partitioner_factory_t
 }
 
 // NewDefaultOptions creates the default Options.
@@ -511,6 +513,41 @@ func (opts *Options) SetMaxOpenFiles(value int) {
 // GetMaxOpenFiles gets the number of open files that can be used by the DB.
 func (opts *Options) GetMaxOpenFiles() int {
 	return int(C.rocksdb_options_get_max_open_files(opts.c))
+}
+
+// SetOpenFilesAsync enables opening SST files asynchronously (in parallel)
+// when the DB is opened, which can speed up open time for DBs with many files.
+//
+// Default: false
+func (opts *Options) SetOpenFilesAsync(value bool) {
+	C.rocksdb_options_set_open_files_async(opts.c, boolToChar(value))
+}
+
+// OpenFilesAsync checks whether files are opened asynchronously on DB open.
+func (opts *Options) OpenFilesAsync() bool {
+	return charToBool(C.rocksdb_options_get_open_files_async(opts.c))
+}
+
+// SetFileChecksumGenFactory sets the factory used to generate (and verify)
+// per-SST-file checksums.
+//
+// The Options takes ownership of the factory's native handle and frees it on
+// Destroy; callers should not also call Destroy on the factory.
+func (opts *Options) SetFileChecksumGenFactory(factory *FileChecksumGenFactory) {
+	C.rocksdb_file_checksum_gen_factory_destroy(opts.cfcg)
+	opts.cfcg = factory.c
+	C.rocksdb_options_set_file_checksum_gen_factory(opts.c, factory.c)
+}
+
+// SetSSTPartitionerFactory sets the factory that decides where compaction
+// output SST files should be cut.
+//
+// The Options takes ownership of the factory's native handle and frees it on
+// Destroy; callers should not also call Destroy on the factory.
+func (opts *Options) SetSSTPartitionerFactory(factory *SSTPartitionerFactory) {
+	C.rocksdb_sst_partitioner_factory_destroy(opts.cspf)
+	opts.cspf = factory.c
+	C.rocksdb_options_set_sst_partitioner_factory(opts.c, factory.c)
 }
 
 // SetMaxFileOpeningThreads sets the maximum number of file opening threads.
@@ -2807,6 +2844,12 @@ func (opts *Options) Destroy() {
 
 	C.rocksdb_mergeoperator_destroy(opts.cmo)
 	opts.cmo = nil
+
+	C.rocksdb_file_checksum_gen_factory_destroy(opts.cfcg)
+	opts.cfcg = nil
+
+	C.rocksdb_sst_partitioner_factory_destroy(opts.cspf)
+	opts.cspf = nil
 
 	if opts.env != nil {
 		C.rocksdb_env_destroy(opts.env)

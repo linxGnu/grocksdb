@@ -49,6 +49,17 @@ const (
 	KDataBlockIndexTypeBinarySearchAndHash DataBlockIndexType = 1
 )
 
+// IndexBlockSearchType specifies the search type used within an index block.
+type IndexBlockSearchType int
+
+const (
+	// KBinarySearchIndexBlockSearchType uses binary search within the index block.
+	KBinarySearchIndexBlockSearchType IndexBlockSearchType = 0
+	// KInterpolationSearchIndexBlockSearchType uses interpolation search within
+	// the index block.
+	KInterpolationSearchIndexBlockSearchType IndexBlockSearchType = 1
+)
+
 // BlockBasedPinningTier is used to specify which tier of block-based tables should
 // be affected by a block cache pinning setting.
 type BlockBasedPinningTier int
@@ -245,6 +256,28 @@ func (opts *BlockBasedTableOptions) SetIndexType(value IndexType) {
 // SetDataBlockIndexType sets data block index type
 func (opts *BlockBasedTableOptions) SetDataBlockIndexType(value DataBlockIndexType) {
 	C.rocksdb_block_based_options_set_data_block_index_type(opts.c, C.int(value))
+}
+
+// SetIndexBlockSearchType sets the search type used within an index block.
+//
+// Default: KBinarySearchIndexBlockSearchType
+func (opts *BlockBasedTableOptions) SetIndexBlockSearchType(value IndexBlockSearchType) {
+	C.rocksdb_block_based_options_set_index_block_search_type(opts.c, C.int(value))
+}
+
+// SetSeparateKeyValueInDataBlock stores keys and values separately within a
+// data block when enabled.
+//
+// Default: false
+func (opts *BlockBasedTableOptions) SetSeparateKeyValueInDataBlock(value bool) {
+	C.rocksdb_block_based_options_set_separate_key_value_in_data_block(opts.c, boolToChar(value))
+}
+
+// SetBlockAlign aligns data blocks on the block size boundary when enabled.
+//
+// Default: false
+func (opts *BlockBasedTableOptions) SetBlockAlign(value bool) {
+	C.rocksdb_block_based_options_set_block_align(opts.c, boolToChar(value))
 }
 
 // SetDataBlockHashRatio is valid only when data_block_hash_index_type is

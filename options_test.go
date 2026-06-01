@@ -467,3 +467,18 @@ func TestOptions2(t *testing.T) {
 		require.Empty(t, opts.GetStatisticsString())
 	})
 }
+
+func TestOptionsOpenFilesAsyncAndFactories(t *testing.T) {
+	t.Parallel()
+
+	opts := NewDefaultOptions()
+	defer opts.Destroy()
+
+	require.False(t, opts.OpenFilesAsync())
+	opts.SetOpenFilesAsync(true)
+	require.True(t, opts.OpenFilesAsync())
+
+	// Ownership of the factories is transferred to opts; freed on opts.Destroy().
+	opts.SetFileChecksumGenFactory(NewCRC32CFileChecksumGenFactory())
+	opts.SetSSTPartitionerFactory(NewFixedPrefixSSTPartitionerFactory(8))
+}

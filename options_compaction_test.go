@@ -52,6 +52,13 @@ func TestFifoCompactOption(t *testing.T) {
 	fo.SetMaxTableFilesSize(2 << 10)
 	require.EqualValues(t, 2<<10, fo.GetMaxTableFilesSize())
 
+	fo.SetMaxDataFilesSize(4 << 10)
+	require.EqualValues(t, 4<<10, fo.GetMaxDataFilesSize())
+
+	require.False(t, fo.UseKVRatioCompaction())
+	fo.SetUseKVRatioCompaction(true)
+	require.True(t, fo.UseKVRatioCompaction())
+
 	require.False(t, fo.AllowCompaction())
 	fo.SetAllowCompaction(true)
 	require.True(t, fo.AllowCompaction())

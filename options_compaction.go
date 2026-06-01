@@ -177,6 +177,35 @@ func (opts *FIFOCompactionOptions) GetMaxTableFilesSize() uint64 {
 	return uint64(C.rocksdb_fifo_compaction_options_get_max_table_files_size(opts.c))
 }
 
+// SetMaxDataFilesSize sets the max size of all data files (excluding metadata
+// files such as blob files). Once the total sum of data files reaches this,
+// the oldest data file will be deleted.
+//
+// A value of 0 means this limit is not enforced.
+//
+// Default: 0
+func (opts *FIFOCompactionOptions) SetMaxDataFilesSize(value uint64) {
+	C.rocksdb_fifo_compaction_options_set_max_data_files_size(opts.c, C.uint64_t(value))
+}
+
+// GetMaxDataFilesSize gets the max size of all data files.
+func (opts *FIFOCompactionOptions) GetMaxDataFilesSize() uint64 {
+	return uint64(C.rocksdb_fifo_compaction_options_get_max_data_files_size(opts.c))
+}
+
+// SetUseKVRatioCompaction enables intra-L0 compaction triggered by the ratio
+// of garbage (deleted/overwritten) key-values to live key-values.
+//
+// Default: false
+func (opts *FIFOCompactionOptions) SetUseKVRatioCompaction(value bool) {
+	C.rocksdb_fifo_compaction_options_set_use_kv_ratio_compaction(opts.c, boolToChar(value))
+}
+
+// UseKVRatioCompaction checks if kv-ratio-triggered compaction is enabled.
+func (opts *FIFOCompactionOptions) UseKVRatioCompaction() bool {
+	return charToBool(C.rocksdb_fifo_compaction_options_get_use_kv_ratio_compaction(opts.c))
+}
+
 // SetAllowCompaction allows compaction or not.
 func (opts *FIFOCompactionOptions) SetAllowCompaction(allow bool) {
 	C.rocksdb_fifo_compaction_options_set_allow_compaction(opts.c, boolToChar(allow))
