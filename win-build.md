@@ -74,13 +74,34 @@ This gives you:
 
 > Visual Studio / MSBuild and vcpkg are **not** required.
 
+### How the scripts find MSYS2 (UCRT64 root detection)
+
+Both `build-deps.ps1` and `build-grocksdb.ps1` locate the UCRT64 toolchain root
+in this order — the first hit wins:
+
+1. **`$env:UCRT64`** — explicit override pointing directly at the UCRT64 root
+   (e.g. `D:\msys64\ucrt64`). Used by CI runners (`msys2/setup-msys2`).
+2. **`$env:MSYS2_ROOT`** — MSYS2 install root; the scripts use `<root>\ucrt64`.
+3. **`C:\msys64`** — the standard MSYS2 install location.
+4. **Registry fallback** — the MSYS2 installer's uninstall entry
+   (`...\Windows\CurrentVersion\Uninstall`, `InstallLocation`) under HKCU/HKLM.
+
+If MSYS2 lives somewhere non-standard and wasn't installed via the installer
+(no registry entry), set one of the environment variables for the session:
+
+```powershell
+$env:MSYS2_ROOT = 'D:\tools\msys64'      # or:
+$env:UCRT64     = 'D:\tools\msys64\ucrt64'
+```
+
 ---
 
 ## Step 1 — build RocksDB: `build-deps.ps1`
 
 `build-deps.ps1` (in the repo root) does the following:
 
-1. Verifies the UCRT64 toolchain (`gcc.exe`, `g++.exe`, `cmake.exe`, `ninja.exe`).
+1. Locates the UCRT64 root (see *How the scripts find MSYS2* above) and verifies
+   the toolchain (`gcc.exe`, `g++.exe`, `cmake.exe`, `ninja.exe`).
 2. **Removes** an existing `./deps` if present, then **recreates** it.
 3. **Clones** RocksDB `v11.1.1` into `./deps/rocksdb`.
 4. Builds it as a **static** library with the UCRT64 GCC toolchain + CMake + Ninja.
@@ -148,7 +169,8 @@ powershell -ExecutionPolicy Bypass -File .\build-grocksdb.ps1
 
 What it does:
 
-1. Verifies the UCRT64 toolchain and that `deps\rocksdb\librocksdb.a` +
+1. Locates the UCRT64 root (same detection order as `build-deps.ps1`), then
+   verifies the toolchain and that `deps\rocksdb\librocksdb.a` +
    `deps\rocksdb\include\rocksdb\c.h` exist (i.e. `build-deps.ps1` ran).
 2. Sets the CGO toolchain (`CC`/`CXX` → UCRT64 GCC, `CGO_ENABLED=1`).
 3. Sets `CGO_CFLAGS`/`CGO_CXXFLAGS` to `-I deps\rocksdb\include`.

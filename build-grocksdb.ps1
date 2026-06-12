@@ -21,22 +21,35 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # --- Toolchain (UCRT64 GCC) ---
-# Default to the standard MSYS2 install root. Allow an override via $env:UCRT64
-# for environments where MSYS2 lives elsewhere (e.g. CI runners). If the override
-# is unset and the default path is missing, discover gcc on PATH and derive the
-# root from it (msys2/setup-msys2 puts C:\msys64\ucrt64\bin on PATH).
-if ($env:UCRT64) {
-    $Ucrt64 = $env:UCRT64
-} elseif (Test-Path 'C:\msys64\ucrt64') {
-    $Ucrt64 = 'C:\msys64\ucrt64'
-} else {
-    $gccOnPath = Get-Command gcc.exe -ErrorAction SilentlyContinue
-    if ($gccOnPath) {
-        $Ucrt64 = Split-Path -Parent (Split-Path -Parent $gccOnPath.Source)
-    } else {
-        $Ucrt64 = 'C:\msys64\ucrt64'  # keep default so the error message is actionable
+# Detection order (same as build-deps.ps1):
+#   1. $env:UCRT64      — explicit override (e.g. CI runners / msys2/setup-msys2)
+#   2. $env:MSYS2_ROOT  — MSYS2 install root; UCRT64 lives at <root>\ucrt64
+#   3. C:\msys64        — standard MSYS2 install root
+#   4. Registry         — MSYS2 installer uninstall entry (InstallLocation)
+function Find-Ucrt64 {
+    if ($env:UCRT64) { return $env:UCRT64 }
+    if ($env:MSYS2_ROOT) {
+        $candidate = Join-Path $env:MSYS2_ROOT 'ucrt64'
+        if (Test-Path $candidate) { return $candidate }
     }
+    if (Test-Path 'C:\msys64\ucrt64') { return 'C:\msys64\ucrt64' }
+    $uninstallKeys = @(
+        'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+    foreach ($keyPath in $uninstallKeys) {
+        $entry = Get-ItemProperty -Path $keyPath -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -like 'MSYS2*' -and $_.InstallLocation } |
+            Select-Object -First 1
+        if ($entry) {
+            $candidate = Join-Path $entry.InstallLocation 'ucrt64'
+            if (Test-Path $candidate) { return $candidate }
+        }
+    }
+    return 'C:\msys64\ucrt64'  # keep default so the error message is actionable
 }
+$Ucrt64 = Find-Ucrt64
 $Gcc    = Join-Path $Ucrt64 'bin\gcc.exe'
 $Gpp    = Join-Path $Ucrt64 'bin\g++.exe'
 
