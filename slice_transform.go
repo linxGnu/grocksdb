@@ -13,6 +13,10 @@ type SliceTransform interface {
 	InDomain(src []byte) bool
 
 	// Determine whether dst=Transform(src) for some src.
+	//
+	// Deprecated: RocksDB removed the in_range callback from the C API
+	// (rocksdb_slicetransform_create) as of v11.x, so this method is no longer
+	// invoked by RocksDB. It is retained only for backward source compatibility.
 	InRange(src []byte) bool
 
 	// Return the name of this transformation.
@@ -75,13 +79,6 @@ func gorocksdb_slicetransform_in_domain(idx int, cKey *C.char, cKeyLen C.size_t)
 	key := refCBytes(cKey, cKeyLen)
 	inDomain := sliceTransforms.Get(idx).(sliceTransformWrapper).sliceTransform.InDomain(key)
 	return boolToChar(inDomain)
-}
-
-//export gorocksdb_slicetransform_in_range
-func gorocksdb_slicetransform_in_range(idx int, cKey *C.char, cKeyLen C.size_t) C.uchar {
-	key := refCBytes(cKey, cKeyLen)
-	inRange := sliceTransforms.Get(idx).(sliceTransformWrapper).sliceTransform.InRange(key)
-	return boolToChar(inRange)
 }
 
 //export gorocksdb_slicetransform_name
