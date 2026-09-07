@@ -354,6 +354,17 @@ func (opts *BlockBasedTableOptions) SetFormatVersion(value int) {
 	C.rocksdb_block_based_options_set_format_version(opts.c, C.int(value))
 }
 
+// SetSeparateKeyValueInDataBlock when true, data blocks store keys and values separately. Keys are stored
+// at the beginning of the block, followed by values at the end. This can
+// improve read performance at a cost of a varint per restart interval (~1 bit
+// per key by default), in addition to improving compression. Small values or
+// low block_restart_interval may prefer to set this as false.
+//
+// Default: false
+func (opts *BlockBasedTableOptions) SetSeparateKeyValueInDataBlock(value bool) {
+	C.rocksdb_block_based_options_set_separate_key_value_in_data_block(opts.c, boolToChar(value))
+}
+
 // SetCacheIndexAndFilterBlocksWithHighPriority if cache_index_and_filter_blocks is enabled,
 // cache index and filter blocks with high priority. If set to true, depending on implementation of
 // block cache, index and filter blocks may be less likely to be evicted

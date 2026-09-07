@@ -87,4 +87,5 @@ Almost C API, excepts:
   - [ ] onbackground_error_cb
 - [ ] compactionservice
 - [ ] rocksdb_open_and_compact*
+- [ ] rocksdb_writebatch_iterate*
 
