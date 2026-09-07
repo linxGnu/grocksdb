@@ -2274,18 +2274,6 @@ func (opts *Options) SkipStatsUpdateOnDBOpen() bool {
 	return charToBool(C.rocksdb_options_get_skip_stats_update_on_db_open(opts.c))
 }
 
-// SetSkipCheckingSSTFileSizesOnDBOpen skips checking sst file sizes on db openning
-//
-// Default: false
-func (opts *Options) SetSkipCheckingSSTFileSizesOnDBOpen(value bool) {
-	C.rocksdb_options_set_skip_checking_sst_file_sizes_on_db_open(opts.c, boolToChar(value))
-}
-
-// SkipCheckingSSTFileSizesOnDBOpen checks if skips_checking_sst_file_sizes_on_db_openning is set.
-func (opts *Options) SkipCheckingSSTFileSizesOnDBOpen() bool {
-	return charToBool(C.rocksdb_options_get_skip_checking_sst_file_sizes_on_db_open(opts.c))
-}
-
 /* Blob Options Settings */
 
 // EnableBlobFiles when set, large values (blobs) are written to separate blob files, and

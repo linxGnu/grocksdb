@@ -15,4 +15,9 @@ func TestBBT(t *testing.T) {
 	b.SetTopLevelIndexPinningTier(KFallbackPinningTier)
 	b.SetPartitionPinningTier(KNonePinningTier)
 	b.SetUnpartitionedPinningTier(KAllPinningTier)
+	b.SetFormatVersion(4)
+	b.SetSeparateKeyValueInDataBlock(true)
+	b.SetDataBlockIndexType(KDataBlockIndexTypeBinarySearch)
+	b.SetIndexBlockSearchType(KIndexBlockSearchTypeBinary)
+	b.SetBlockAlign(true)
 }

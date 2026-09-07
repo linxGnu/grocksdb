@@ -60,6 +60,5 @@ rocksdb_slicetransform_t* gorocksdb_slicetransform_create(uintptr_t idx) {
     	gorocksdb_destruct_handler,
     	(char* (*)(void*, const char*, size_t, size_t*))(gorocksdb_slicetransform_transform),
     	(unsigned char (*)(void*, const char*, size_t))(gorocksdb_slicetransform_in_domain),
-    	(unsigned char (*)(void*, const char*, size_t))(gorocksdb_slicetransform_in_range),
     	(const char* (*)(void*))(gorocksdb_slicetransform_name));
 }
