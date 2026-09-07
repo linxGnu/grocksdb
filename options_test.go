@@ -205,6 +205,10 @@ func TestOptions(t *testing.T) {
 	opts.SetParanoidChecks(true)
 	require.EqualValues(t, true, opts.ParanoidChecks())
 
+	require.False(t, opts.OpenFilesAsync())
+	opts.SetOpenFilesAsync(true)
+	require.True(t, opts.OpenFilesAsync())
+
 	require.EqualValues(t, InfoInfoLogLevel, opts.GetInfoLogLevel())
 	opts.SetInfoLogLevel(WarnInfoLogLevel)
 	require.EqualValues(t, WarnInfoLogLevel, opts.GetInfoLogLevel())
