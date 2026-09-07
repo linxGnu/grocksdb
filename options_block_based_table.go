@@ -49,6 +49,21 @@ const (
 	KDataBlockIndexTypeBinarySearchAndHash DataBlockIndexType = 1
 )
 
+// IndexBlockSearchType the search algorithm used when seeking to entries in the index block.
+type IndexBlockSearchType uint
+
+const (
+	// KIndexBlockSearchTypeBinary binary search
+	KIndexBlockSearchTypeBinary IndexBlockSearchType = 0
+	// kIndexBlockSearchTypeInterpolation interpolation search, which may be better suited for uniformly
+	// distributed keys. This will only be applicable if the comparator is the
+	// byte-wise comparator. Avoid using
+	// IndexShorteningMode::kShortenSeparatorsAndSuccessor as shortening the
+	// succesor can skew the end key and make interpolation search significantly
+	// less performant.
+	KIndexBlockSearchTypeInterpolation IndexBlockSearchType = 1
+)
+
 // BlockBasedPinningTier is used to specify which tier of block-based tables should
 // be affected by a block cache pinning setting.
 type BlockBasedPinningTier int
@@ -168,6 +183,11 @@ func (opts *BlockBasedTableOptions) SetUnpartitionedPinningTier(tier BlockBasedP
 	C.rocksdb_block_based_options_set_unpartitioned_pinning_tier(opts.c, C.int(tier))
 }
 
+// SetBlockAlign aligns data blocks on lesser of page size and block size.
+func (opts *BlockBasedTableOptions) SetBlockAlign(value bool) {
+	C.rocksdb_block_based_options_set_block_align(opts.c, boolToChar(value))
+}
+
 // SetBlockSizeDeviation sets the block size deviation.
 // This is used opts close a block before it reaches the configured
 // 'block_size'. If the percentage of free space in the current block is less
@@ -245,6 +265,11 @@ func (opts *BlockBasedTableOptions) SetIndexType(value IndexType) {
 // SetDataBlockIndexType sets data block index type
 func (opts *BlockBasedTableOptions) SetDataBlockIndexType(value DataBlockIndexType) {
 	C.rocksdb_block_based_options_set_data_block_index_type(opts.c, C.int(value))
+}
+
+// SetIndexBlockSearchType sets index block search type
+func (opts *BlockBasedTableOptions) SetIndexBlockSearchType(value IndexBlockSearchType) {
+	C.rocksdb_block_based_options_set_index_block_search_type(opts.c, C.int(value))
 }
 
 // SetDataBlockHashRatio is valid only when data_block_hash_index_type is
@@ -327,7 +352,9 @@ func (opts *BlockBasedTableOptions) SetUseDeltaEncoding(value bool) {
 	C.rocksdb_block_based_options_set_use_delta_encoding(opts.c, boolToChar(value))
 }
 
-// SetFormatVersion set format version. We currently have five options:
+// SetFormatVersion set format version.
+//
+// We currently have five options:
 // 0 -- This version is currently written out by all RocksDB's versions by
 // default.  Can be read by really old RocksDB's. Doesn't support changing
 // checksum (default is CRC32).
