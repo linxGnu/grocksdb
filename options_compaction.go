@@ -161,7 +161,7 @@ func newNativeFIFOCompactionOptions(c *C.rocksdb_fifo_compaction_options_t) *FIF
 	return &FIFOCompactionOptions{c: c}
 }
 
-// SetMaxTableFilesSize sets the max table file size.
+// SetMaxTableFilesSize sets the max table files size.
 // Once the total sum of table files reaches this, we will delete the oldest
 // table file
 //
@@ -170,11 +170,73 @@ func (opts *FIFOCompactionOptions) SetMaxTableFilesSize(value uint64) {
 	C.rocksdb_fifo_compaction_options_set_max_table_files_size(opts.c, C.uint64_t(value))
 }
 
-// GetMaxTableFilesSize gets the max table file size.
+// GetMaxTableFilesSize gets the max table files size.
 // Once the total sum of table files reaches this, we will delete the oldest
 // table file
 func (opts *FIFOCompactionOptions) GetMaxTableFilesSize() uint64 {
 	return uint64(C.rocksdb_fifo_compaction_options_get_max_table_files_size(opts.c))
+}
+
+// SetMaxDataFilesSize sets the max data files size.
+//
+// When non-zero, FIFO compaction uses the combined size of SST files and
+// blob files for size-based trimming decisions. When the total data size
+// (SST + blob) exceeds this limit, the oldest SST files are dropped along
+// with their associated blob files.
+//
+// When non-zero, this takes precedence over max_table_files_size for all
+// FIFO compaction decisions: size-based dropping, TTL threshold checks,
+// and compaction score computation. max_table_files_size is ignored.
+//
+// When zero (default), FIFO compaction uses max_table_files_size which
+// only considers SST file sizes, maintaining backward compatibility.
+//
+// This option is primarily intended for use with integrated BlobDB where
+// blob files can represent a significant portion of the total data.
+//
+// Dynamically changeable through SetOptions() API.
+// Default: 0 (use MaxTableFilesSize behavior)
+func (opts *FIFOCompactionOptions) SetMaxDataFilesSize(value uint64) {
+	C.rocksdb_fifo_compaction_options_set_max_data_files_size(opts.c, C.uint64_t(value))
+}
+
+// GetMaxDataFilesSize gets the max data files size.
+func (opts *FIFOCompactionOptions) GetMaxDataFilesSize() uint64 {
+	return uint64(C.rocksdb_fifo_compaction_options_get_max_data_files_size(opts.c))
+}
+
+// SetUseKVRatioCompaction when true, enables a capacity-derived intra-L0 compaction strategy
+// optimized for BlobDB workloads where SST files are much smaller than
+// write_buffer_size. Uses the observed key/value size ratio (SST vs blob
+// file sizes) to compute a target compacted file size, producing uniform
+// files for predictable FIFO trimming.
+//
+// Uses level0_file_num_compaction_trigger as the target max L0 file count.
+//
+// When max_compaction_bytes is 0, the target is auto-calculated from the
+// data capacity and observed SST/blob ratio. When max_compaction_bytes is
+// explicitly set to a non-zero value, it overrides the auto-calculated
+// target.
+//
+// Recommends:
+//   - allow_compaction = true (master switch for intra-L0 compaction)
+//   - max_data_files_size > 0 (needed to compute the target file size)
+//
+// If these are not met, kv_ratio compaction is skipped and the old
+// cost-based intra-L0 compaction algorithm is used as a fallback.
+//
+// When false, the old intra-L0 strategy is used if allow_compaction is
+// true (PickCostBasedIntraL0Compaction with 1.1 * write_buffer_size guard).
+//
+// Dynamically changeable through SetOptions() API.
+// Default: false
+func (opts *FIFOCompactionOptions) SetUseKVRatioCompaction(value bool) {
+	C.rocksdb_fifo_compaction_options_set_use_kv_ratio_compaction(opts.c, boolToChar(value))
+}
+
+// GetUseKVRatioCompaction return use_kv_ratio_compaction flag.
+func (opts *FIFOCompactionOptions) GetUseKVRatioCompaction() bool {
+	return charToBool(C.rocksdb_fifo_compaction_options_get_use_kv_ratio_compaction(opts.c))
 }
 
 // SetAllowCompaction allows compaction or not.
